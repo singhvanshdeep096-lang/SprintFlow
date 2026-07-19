@@ -13,13 +13,13 @@ import { PRIORITY_CONFIG, STATUS_CONFIG } from '../../constants';
 import { useNavigate } from 'react-router-dom';
 
 // ===== Stat Card =====
-function StatCard({ label, value, icon: Icon, color, trend, trendLabel, delay = 0 }) {
+function StatCard({ label, value, icon: Icon, color, trend, delay = 0 }) {
   const colorMap = {
-    blue: { bg: 'stat-card-blue', iconBg: 'bg-primary-100', iconColor: 'text-primary-600' },
-    green: { bg: 'stat-card-green', iconBg: 'bg-success-100', iconColor: 'text-success-600' },
-    yellow: { bg: 'stat-card-yellow', iconBg: 'bg-yellow-100', iconColor: 'text-yellow-600' },
-    red: { bg: 'stat-card-red', iconBg: 'bg-red-100', iconColor: 'text-red-600' },
-    purple: { bg: 'stat-card-purple', iconBg: 'bg-purple-100', iconColor: 'text-purple-600' },
+    blue:   { bg: 'stat-card-blue',   iconBg: 'bg-primary-100',  iconColor: 'text-primary-600'  },
+    green:  { bg: 'stat-card-green',  iconBg: 'bg-success-100',  iconColor: 'text-success-600'  },
+    yellow: { bg: 'stat-card-yellow', iconBg: 'bg-yellow-100',   iconColor: 'text-yellow-600'   },
+    red:    { bg: 'stat-card-red',    iconBg: 'bg-red-100',      iconColor: 'text-red-600'      },
+    purple: { bg: 'stat-card-purple', iconBg: 'bg-purple-100',   iconColor: 'text-purple-600'   },
   };
 
   const c = colorMap[color] || colorMap.blue;
@@ -30,34 +30,43 @@ function StatCard({ label, value, icon: Icon, color, trend, trendLabel, delay = 
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.4, ease: 'easeOut' }}
       whileHover={{ y: -3, transition: { duration: 0.2 } }}
-      className={`${c.bg} rounded-2xl p-5 border border-white/60 relative overflow-hidden`}
+      className={`${c.bg} rounded-2xl border border-white/60 flex flex-col justify-between overflow-hidden`}
+      style={{ padding: '14px 16px', minHeight: '110px' }}
     >
-      <div className="flex items-start justify-between mb-4">
-        <div className={`${c.iconBg} rounded-xl p-2.5`}>
-          <Icon size={20} className={c.iconColor} />
+      {/* Icon + trend row */}
+      <div className="flex items-center justify-between">
+        <div className={`${c.iconBg} rounded-xl flex items-center justify-center flex-shrink-0`} style={{ width: 34, height: 34 }}>
+          <Icon size={16} className={c.iconColor} />
         </div>
         {trend !== undefined && (
-          <div className={`flex items-center gap-1 text-xs font-semibold ${trend >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
-            <TrendingUp size={12} className={trend < 0 ? 'rotate-180' : ''} />
+          <span
+            className={`flex items-center gap-0.5 text-[11px] font-semibold px-1.5 py-0.5 rounded-full flex-shrink-0 ${
+              trend >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'
+            }`}
+          >
+            <TrendingUp size={10} className={trend < 0 ? 'rotate-180' : ''} />
             {Math.abs(trend)}%
-          </div>
+          </span>
         )}
       </div>
-      <div>
+
+      {/* Value + label */}
+      <div style={{ marginTop: 10 }}>
         <motion.p
-          initial={{ scale: 0.5, opacity: 0 }}
+          initial={{ scale: 0.7, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: delay + 0.1, type: 'spring', stiffness: 300 }}
-          className="text-3xl font-bold text-surface-900 mb-1"
+          transition={{ delay: delay + 0.1, type: 'spring', stiffness: 260 }}
+          className="font-bold text-surface-900 leading-none"
+          style={{ fontSize: 26 }}
         >
           {value.toLocaleString()}
         </motion.p>
-        <p className="text-sm font-medium text-surface-600">{label}</p>
-        {trendLabel && <p className="text-xs text-surface-400 mt-1">{trendLabel}</p>}
+        <p className="text-surface-500 font-medium" style={{ fontSize: 12, marginTop: 4 }}>{label}</p>
       </div>
     </motion.div>
   );
 }
+
 
 // ===== Activity Item =====
 function ActivityItem({ activity, delay }) {
@@ -229,14 +238,21 @@ export default function Dashboard() {
         </motion.div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
-        <StatCard label="Total Projects" value={stats.totalProjects} icon={FolderKanban} color="blue" trend={12} trendLabel="vs last month" delay={0.05} />
-        <StatCard label="Total Tasks" value={stats.totalTasks} icon={CheckSquare} color="purple" trend={8} trendLabel="vs last month" delay={0.1} />
-        <StatCard label="Completed" value={stats.completedTasks} icon={CheckCircle2} color="green" trend={24} trendLabel="this month" delay={0.15} />
-        <StatCard label="In Progress" value={stats.pendingTasks} icon={Clock} color="yellow" delay={0.2} />
-        <StatCard label="Overdue" value={stats.overdueTasks} icon={AlertTriangle} color="red" delay={0.25} />
-        <StatCard label="Team Members" value={stats.teamMembers} icon={Users} color="blue" trend={2} trendLabel="new this month" delay={0.3} />
+      {/* Stats Grid — auto-fill so cards always pack into one row */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(6, 1fr)',
+          gap: 12,
+          marginBottom: 32,
+        }}
+      >
+        <StatCard label="Total Projects" value={stats.totalProjects} icon={FolderKanban} color="blue"   trend={12} delay={0.05} />
+        <StatCard label="Total Tasks"    value={stats.totalTasks}    icon={CheckSquare}  color="purple" trend={8}  delay={0.1}  />
+        <StatCard label="Completed"      value={stats.completedTasks} icon={CheckCircle2} color="green"  trend={24} delay={0.15} />
+        <StatCard label="In Progress"    value={stats.pendingTasks}  icon={Clock}        color="yellow"            delay={0.2}  />
+        <StatCard label="Overdue"        value={stats.overdueTasks}  icon={AlertTriangle} color="red"             delay={0.25} />
+        <StatCard label="Team Members"   value={stats.teamMembers}   icon={Users}        color="blue"   trend={2}  delay={0.3}  />
       </div>
 
       {/* Main Content */}
