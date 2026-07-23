@@ -28,3 +28,11 @@ package-lock.json
 *.njsproj
 *.sln
 *.sw?
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyc
+
+# SQLite database
+*.db
+

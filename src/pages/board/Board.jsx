@@ -1,22 +1,20 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
-  Plus, MoreHorizontal, MessageSquare, Paperclip, Flag, Calendar,
-  CheckSquare, User, Tag, ChevronDown, Search, Filter, AlertCircle
+  Plus, MessageSquare, Paperclip, Flag, Calendar,
+  CheckSquare, User, Search
 } from 'lucide-react';
 import PageTransition from '../../components/common/PageTransition';
 import Avatar from '../../components/common/Avatar';
-import Badge from '../../components/common/Badge/Badge';
 import Button from '../../components/common/Button';
 import Drawer from '../../components/common/Drawer/Drawer';
-import { updateTaskStatus, addTask, openTaskDrawer } from '../../redux/taskSlice';
-import { MEMBERS, LABELS } from '../../constants/data';
-import { KANBAN_COLUMNS, PRIORITY_CONFIG, STATUS_CONFIG } from '../../constants';
+import { updateTaskStatusAsync, addTaskAsync, openTaskDrawer, closeTaskDrawer } from '../../redux/taskSlice';
+import { KANBAN_COLUMNS, PRIORITY_CONFIG } from '../../constants';
 import { useToast } from '../../hooks/useToast';
 import TaskDetail from '../task/TaskDetail';
+import userService from '../../services/user.service';
 
-// ===== Priority Icon =====
 function PriorityIcon({ priority }) {
   const config = PRIORITY_CONFIG[priority];
   if (!config) return null;
@@ -27,10 +25,8 @@ function PriorityIcon({ priority }) {
   );
 }
 
-// ===== Task Card =====
-function TaskCard({ task, onOpen, delay }) {
-  const assignee = MEMBERS.find((m) => m.id === task.assigneeId);
-  const priorityCfg = PRIORITY_CONFIG[task.priority] || PRIORITY_CONFIG.medium;
+function TaskCard({ task, members, onOpen, delay }) {
+  const assignee = members.find((m) => m.id === task.assigneeId);
   const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'done';
 
   const completedSubtasks = task.subtasks?.filter((s) => s.done).length || 0;
@@ -45,39 +41,29 @@ function TaskCard({ task, onOpen, delay }) {
       transition={{ delay: Math.min(delay, 0.3), duration: 0.25 }}
       whileHover={{ y: -2, boxShadow: '0 8px 24px rgba(37, 99, 235, 0.1)' }}
       onClick={() => onOpen(task)}
-      className="task-card bg-white"
+      className="task-card bg-white cursor-pointer"
     >
-      {/* Priority + Title */}
       <div className="flex items-start gap-2 mb-3">
         <PriorityIcon priority={task.priority} />
         <h4 className="text-sm font-semibold text-surface-800 leading-snug flex-1">{task.title}</h4>
       </div>
 
-      {/* Labels */}
       {task.labels && task.labels.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-3">
-          {task.labels.slice(0, 2).map((label) => {
-            const labelData = LABELS.find((l) => l.name === label);
-            return (
-              <span
-                key={label}
-                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide"
-                style={{
-                  backgroundColor: labelData ? `${labelData.color}18` : '#F1F5F9',
-                  color: labelData ? labelData.color : '#64748B',
-                }}
-              >
-                {label}
-              </span>
-            );
-          })}
+          {task.labels.slice(0, 2).map((label) => (
+            <span
+              key={label}
+              className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-primary-50 text-primary-600"
+            >
+              {label}
+            </span>
+          ))}
           {task.labels.length > 2 && (
             <span className="text-[10px] text-surface-400 px-1">+{task.labels.length - 2}</span>
           )}
         </div>
       )}
 
-      {/* Subtasks progress */}
       {totalSubtasks > 0 && (
         <div className="mb-3">
           <div className="flex items-center justify-between text-[10px] text-surface-400 mb-1">
@@ -98,7 +84,6 @@ function TaskCard({ task, onOpen, delay }) {
         </div>
       )}
 
-      {/* Footer */}
       <div className="flex items-center justify-between mt-2">
         <div className="flex items-center gap-2">
           {assignee ? (
@@ -111,7 +96,7 @@ function TaskCard({ task, onOpen, delay }) {
           {task.dueDate && (
             <span className={`flex items-center gap-0.5 text-[10px] font-medium ${isOverdue ? 'text-danger-600' : 'text-surface-400'}`}>
               <Calendar size={9} />
-              {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              {task.dueDate}
             </span>
           )}
         </div>
@@ -134,7 +119,6 @@ function TaskCard({ task, onOpen, delay }) {
   );
 }
 
-// ===== Add Task Form =====
 function AddTaskInline({ columnStatus, onAdd, onCancel }) {
   const [title, setTitle] = useState('');
   const { success } = useToast();
@@ -143,19 +127,13 @@ function AddTaskInline({ columnStatus, onAdd, onCancel }) {
     e.preventDefault();
     if (!title.trim()) return;
     onAdd({
-      id: `task-${Date.now()}`,
       title: title.trim(),
       status: columnStatus,
       priority: 'medium',
       projectId: 'proj-1',
-      assigneeId: null,
-      labels: [],
-      dueDate: null,
-      commentCount: 0,
-      attachmentCount: 0,
+      assigneeId: 'user-1',
+      labels: ['Frontend'],
       subtasks: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
     });
     success('Task created', `"${title}" added to the board.`);
     setTitle('');
@@ -186,8 +164,7 @@ function AddTaskInline({ columnStatus, onAdd, onCancel }) {
   );
 }
 
-// ===== Kanban Column =====
-function KanbanColumn({ column, tasks, onAddTask, onOpenTask }) {
+function KanbanColumn({ column, tasks, members, onAddTask, onOpenTask }) {
   const [addingTask, setAddingTask] = useState(false);
   const dispatch = useDispatch();
   const [dragOver, setDragOver] = useState(false);
@@ -198,7 +175,9 @@ function KanbanColumn({ column, tasks, onAddTask, onOpenTask }) {
     e.preventDefault();
     setDragOver(false);
     const taskId = e.dataTransfer.getData('taskId');
-    if (taskId) dispatch(updateTaskStatus({ taskId, status: column.status }));
+    if (taskId) {
+      dispatch(updateTaskStatusAsync({ taskId, status: column.status }));
+    }
   };
 
   const handleDragStart = (e, task) => {
@@ -212,7 +191,6 @@ function KanbanColumn({ column, tasks, onAddTask, onOpenTask }) {
       transition={{ duration: 0.35 }}
       className="kanban-column"
     >
-      {/* Column Header */}
       <div className="flex items-center justify-between mb-3 px-1">
         <div className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: column.color }} />
@@ -233,7 +211,6 @@ function KanbanColumn({ column, tasks, onAddTask, onOpenTask }) {
         </div>
       </div>
 
-      {/* Task List */}
       <div
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -249,7 +226,7 @@ function KanbanColumn({ column, tasks, onAddTask, onOpenTask }) {
               draggable
               onDragStart={(e) => handleDragStart(e, task)}
             >
-              <TaskCard task={task} onOpen={onOpenTask} delay={i * 0.04} />
+              <TaskCard task={task} members={members} onOpen={onOpenTask} delay={i * 0.04} />
             </div>
           ))}
         </AnimatePresence>
@@ -276,7 +253,6 @@ function KanbanColumn({ column, tasks, onAddTask, onOpenTask }) {
         )}
       </div>
 
-      {/* Add Task Button */}
       {!addingTask && (
         <motion.button
           whileHover={{ scale: 1.01 }}
@@ -291,7 +267,6 @@ function KanbanColumn({ column, tasks, onAddTask, onOpenTask }) {
   );
 }
 
-// ===== Main Board =====
 export default function Board() {
   const dispatch = useDispatch();
   const tasks = useSelector((state) => state.tasks.list);
@@ -299,6 +274,11 @@ export default function Board() {
   const isDrawerOpen = useSelector((state) => state.tasks.isDrawerOpen);
   const [search, setSearch] = useState('');
   const [assigneeFilter, setAssigneeFilter] = useState('all');
+  const [members, setMembers] = useState([]);
+
+  useEffect(() => {
+    userService.getUsers().then((data) => setMembers(data)).catch(() => {});
+  }, []);
 
   const filteredTasks = tasks.filter((t) => {
     const matchSearch = t.title.toLowerCase().includes(search.toLowerCase());
@@ -308,20 +288,18 @@ export default function Board() {
 
   const getColumnTasks = (status) => filteredTasks.filter((t) => t.status === status);
 
-  const handleAddTask = (task) => dispatch(addTask(task));
+  const handleAddTask = (taskData) => dispatch(addTaskAsync(taskData));
   const handleOpenTask = (task) => dispatch(openTaskDrawer(task));
-  const handleCloseDrawer = () => dispatch({ type: 'tasks/closeTaskDrawer' });
+  const handleCloseDrawer = () => dispatch(closeTaskDrawer());
 
   return (
     <PageTransition className="flex flex-col h-full">
-      {/* Board Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 bg-white border-b border-surface-100">
         <div>
           <h1 className="text-xl font-bold text-surface-900">Kanban Board</h1>
           <p className="text-sm text-surface-500 mt-0.5">SprintFlow v2.0 · Sprint 7</p>
         </div>
         <div className="flex items-center gap-2">
-          {/* Search */}
           <div className="relative">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-surface-400" />
             <input
@@ -333,9 +311,8 @@ export default function Board() {
             />
           </div>
 
-          {/* Assignee filter */}
           <div className="flex items-center gap-1">
-            {[{ id: 'all', label: 'All' }, ...MEMBERS.slice(0, 4)].map((m) => (
+            {[{ id: 'all', name: 'All' }, ...members.slice(0, 4)].map((m) => (
               <motion.button
                 key={m.id}
                 whileHover={{ scale: 1.1 }}
@@ -358,7 +335,6 @@ export default function Board() {
         </div>
       </div>
 
-      {/* Kanban Columns */}
       <div className="flex-1 overflow-x-auto p-6">
         <div className="flex gap-5 min-w-max pb-6">
           {KANBAN_COLUMNS.map((column) => (
@@ -366,6 +342,7 @@ export default function Board() {
               key={column.id}
               column={column}
               tasks={getColumnTasks(column.status)}
+              members={members}
               onAddTask={handleAddTask}
               onOpenTask={handleOpenTask}
             />
@@ -373,7 +350,6 @@ export default function Board() {
         </div>
       </div>
 
-      {/* Task Detail Drawer */}
       <Drawer
         isOpen={isDrawerOpen}
         onClose={handleCloseDrawer}

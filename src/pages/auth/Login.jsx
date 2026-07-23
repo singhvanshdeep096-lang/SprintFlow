@@ -7,7 +7,6 @@ import { loginAsync } from '../../redux/authSlice';
 import { useToast } from '../../hooks/useToast';
 import { useEffect, useState } from 'react';
 
-// Self-contained premium Input
 function AuthInput({ label, type = 'text', icon: Icon, placeholder, error, required, name, register, validation }) {
   const [focused, setFocused] = useState(false);
   const [showPass, setShowPass] = useState(false);
@@ -74,8 +73,8 @@ function AuthInput({ label, type = 'text', icon: Icon, placeholder, error, requi
 export default function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { success } = useToast();
-  const { loading, isAuthenticated } = useSelector((state) => state.auth);
+  const { success, error: toastError } = useToast();
+  const { loading, isAuthenticated, error: authErr } = useSelector((state) => state.auth);
 
   const { register, handleSubmit, formState: { errors } } = useForm({
     defaultValues: { email: 'alex.morgan@sprintflow.io', password: 'password123' },
@@ -85,12 +84,14 @@ export default function Login() {
     if (isAuthenticated) navigate('/dashboard');
   }, [isAuthenticated, navigate]);
 
-  const onSubmit = () => {
-    dispatch(loginAsync());
-    setTimeout(() => {
+  const onSubmit = async (data) => {
+    try {
+      await dispatch(loginAsync(data)).unwrap();
       success('Welcome back!', 'You have been successfully signed in.');
       navigate('/dashboard');
-    }, 900);
+    } catch (err) {
+      toastError('Login failed', err || 'Invalid credentials');
+    }
   };
 
   return (
@@ -99,7 +100,6 @@ export default function Login() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
     >
-      {/* Header */}
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ fontSize: 26, fontWeight: 800, color: '#0F172A', marginBottom: 6, letterSpacing: '-0.03em' }}>
           Welcome back
@@ -107,7 +107,6 @@ export default function Login() {
         <p style={{ fontSize: 14, color: '#64748B' }}>Sign in to your SprintFlow workspace</p>
       </div>
 
-      {/* Google SSO */}
       <motion.button
         whileHover={{ scale: 1.01, boxShadow: '0 4px 16px rgba(0,0,0,0.1)' }}
         whileTap={{ scale: 0.99 }}
@@ -141,14 +140,12 @@ export default function Login() {
         Continue with Google
       </motion.button>
 
-      {/* Divider */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
         <div style={{ flex: 1, height: 1, background: '#E2E8F0' }} />
         <span style={{ fontSize: 12, color: '#94A3B8', fontWeight: 500, whiteSpace: 'nowrap' }}>or continue with email</span>
         <div style={{ flex: 1, height: 1, background: '#E2E8F0' }} />
       </div>
 
-      {/* Form */}
       <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <AuthInput
           label="Email address"
@@ -184,7 +181,6 @@ export default function Login() {
           </div>
         </div>
 
-        {/* Submit */}
         <motion.button
           type="submit"
           disabled={loading}
@@ -222,7 +218,6 @@ export default function Login() {
         </motion.button>
       </form>
 
-      {/* Footer */}
       <p style={{ textAlign: 'center', fontSize: 14, color: '#64748B', marginTop: 20 }}>
         Don't have an account?{' '}
         <Link to="/register" style={{ color: '#2563EB', fontWeight: 700, textDecoration: 'none' }}>
@@ -230,7 +225,6 @@ export default function Login() {
         </Link>
       </p>
 
-      {/* Demo hint */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -246,7 +240,7 @@ export default function Login() {
           color: '#1D4ED8',
         }}
       >
-        <span style={{ fontWeight: 700 }}>✦ Demo Mode</span> — Credentials are pre-filled. Just click Sign In.
+        <span style={{ fontWeight: 700 }}>✦ Demo Mode</span> — Credentials pre-filled. Click Sign In to connect.
       </motion.div>
     </motion.div>
   );

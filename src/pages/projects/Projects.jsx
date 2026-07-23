@@ -1,29 +1,28 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { useState, useEffect } from 'react';
+import { motion } from 'motion/react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import {
   Plus, Search, FolderKanban, MoreHorizontal, Edit3, Trash2,
-  Kanban, Calendar, Users, CheckSquare, Filter, Grid3X3, List, Tag, ArrowRight, ExternalLink
+  Kanban, Calendar, Grid3X3, List, Tag, ArrowRight
 } from 'lucide-react';
 import PageTransition from '../../components/common/PageTransition';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal/Modal';
 import Input from '../../components/common/Input/Input';
-import Badge from '../../components/common/Badge/Badge';
 import Avatar from '../../components/common/Avatar';
 import Dropdown from '../../components/common/Dropdown/Dropdown';
 import EmptyState from '../../components/common/EmptyState/EmptyState';
-import { addProject, updateProject, deleteProject } from '../../redux/projectSlice';
-import { MEMBERS, LABELS } from '../../constants/data';
+import { addProjectAsync, updateProjectAsync, deleteProjectAsync } from '../../redux/projectSlice';
 import { PROJECT_STATUS_CONFIG, PRIORITY_CONFIG } from '../../constants';
 import { useToast } from '../../hooks/useToast';
 import { useModal } from '../../hooks/useModal';
+import userService from '../../services/user.service';
 
-function ProjectCard({ project, onEdit, onDelete, delay, view }) {
+function ProjectCard({ project, allMembers, onEdit, onDelete, delay, view }) {
   const navigate = useNavigate();
-  const members = MEMBERS.filter((m) => project.members?.includes(m.id));
+  const members = allMembers.filter((m) => project.members?.includes(m.id));
   const statusCfg = PROJECT_STATUS_CONFIG[project.status] || PROJECT_STATUS_CONFIG.active;
   const priorityCfg = PRIORITY_CONFIG[project.priority] || PRIORITY_CONFIG.medium;
 
@@ -36,8 +35,8 @@ function ProjectCard({ project, onEdit, onDelete, delay, view }) {
         className="card-flat p-4 flex items-center gap-4 hover:shadow-card hover:border-surface-300 transition-all cursor-pointer group"
         onClick={() => navigate(`/projects/${project.id}`)}
       >
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0" style={{ backgroundColor: `${project.color}18` }}>
-          {project.icon}
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0" style={{ backgroundColor: `${project.color || '#2563EB'}18` }}>
+          {project.icon || '⚡'}
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-surface-900 truncate">{project.name}</p>
@@ -50,12 +49,12 @@ function ProjectCard({ project, onEdit, onDelete, delay, view }) {
           <div className="w-24">
             <div className="flex justify-between text-xs mb-1">
               <span className="text-surface-500">Progress</span>
-              <span className="font-medium text-surface-700">{project.progress}%</span>
+              <span className="font-medium text-surface-700">{project.progress || 0}%</span>
             </div>
             <div className="progress-bar">
               <motion.div
                 initial={{ width: 0 }}
-                animate={{ width: `${project.progress}%` }}
+                animate={{ width: `${project.progress || 0}%` }}
                 transition={{ delay: delay + 0.2, duration: 0.8 }}
                 className="progress-fill"
               />
@@ -79,14 +78,12 @@ function ProjectCard({ project, onEdit, onDelete, delay, view }) {
       className="card p-5 group cursor-pointer relative overflow-hidden"
       onClick={() => navigate(`/projects/${project.id}`)}
     >
-      {/* Color stripe */}
-      <div className="absolute top-0 left-0 right-0 h-1 rounded-t-2xl" style={{ background: `linear-gradient(90deg, ${project.color}, ${project.color}80)` }} />
+      <div className="absolute top-0 left-0 right-0 h-1 rounded-t-2xl" style={{ background: `linear-gradient(90deg, ${project.color || '#2563EB'}, ${project.color || '#2563EB'}80)` }} />
 
-      {/* Header */}
       <div className="flex items-start justify-between mt-2 mb-4">
         <div className="flex items-center gap-2.5">
-          <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl" style={{ backgroundColor: `${project.color}18` }}>
-            {project.icon}
+          <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl" style={{ backgroundColor: `${project.color || '#2563EB'}18` }}>
+            {project.icon || '⚡'}
           </div>
           <div>
             <h3 className="font-semibold text-surface-900 leading-tight">{project.name}</h3>
@@ -110,7 +107,7 @@ function ProjectCard({ project, onEdit, onDelete, delay, view }) {
               <button className="dropdown-item" onClick={() => { onEdit(project); }}>
                 <Edit3 size={14} className="text-surface-400" />Edit project
               </button>
-              <button className="dropdown-item" onClick={() => navigate(`/projects/${project.id}/board`)}>
+              <button className="dropdown-item" onClick={() => navigate(`/board`)}>
                 <Kanban size={14} className="text-surface-400" />Open board
               </button>
               <div className="my-1 border-t border-surface-100" />
@@ -122,10 +119,8 @@ function ProjectCard({ project, onEdit, onDelete, delay, view }) {
         </div>
       </div>
 
-      {/* Description */}
       <p className="text-sm text-surface-500 mb-4 line-clamp-2 leading-relaxed">{project.description}</p>
 
-      {/* Tags */}
       {project.tags && project.tags.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mb-4">
           {project.tags.slice(0, 3).map((tag) => (
@@ -136,23 +131,21 @@ function ProjectCard({ project, onEdit, onDelete, delay, view }) {
         </div>
       )}
 
-      {/* Progress */}
       <div className="mb-4">
         <div className="flex justify-between text-xs mb-1.5">
-          <span className="text-surface-500">{project.completedTasks}/{project.taskCount} tasks</span>
-          <span className="font-semibold text-surface-700">{project.progress}%</span>
+          <span className="text-surface-500">{project.completedTasks || 0}/{project.taskCount || 0} tasks</span>
+          <span className="font-semibold text-surface-700">{project.progress || 0}%</span>
         </div>
         <div className="progress-bar">
           <motion.div
             initial={{ width: 0 }}
-            animate={{ width: `${project.progress}%` }}
+            animate={{ width: `${project.progress || 0}%` }}
             transition={{ delay: delay + 0.2, duration: 0.8, ease: 'easeOut' }}
             className="progress-fill"
           />
         </div>
       </div>
 
-      {/* Footer */}
       <div className="flex items-center justify-between pt-3 border-t border-surface-100">
         <div className="flex -space-x-2">
           {members.slice(0, 4).map((m) => <Avatar key={m.id} name={m.name} size="xs" color={m.color} />)}
@@ -165,7 +158,7 @@ function ProjectCard({ project, onEdit, onDelete, delay, view }) {
         <div className="flex items-center gap-3 text-xs text-surface-400">
           <div className="flex items-center gap-1">
             <Calendar size={11} />
-            <span>{new Date(project.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+            <span>{project.dueDate || 'No due date'}</span>
           </div>
           <div className="flex items-center gap-1" style={{ color: priorityCfg.color }}>
             <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: priorityCfg.color }} />
@@ -222,16 +215,20 @@ function ProjectForm({ defaultValues, onSubmit, onClose, loading }) {
 
 export default function Projects() {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const { success } = useToast();
   const projects = useSelector((state) => state.projects.list);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [view, setView] = useState('grid');
   const [submitting, setSubmitting] = useState(false);
+  const [members, setMembers] = useState([]);
   const createModal = useModal();
   const editModal = useModal();
   const deleteModal = useModal();
+
+  useEffect(() => {
+    userService.getUsers().then((data) => setMembers(data)).catch(() => {});
+  }, []);
 
   const filtered = projects.filter((p) => {
     const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
@@ -241,47 +238,55 @@ export default function Projects() {
 
   const handleCreate = async (data) => {
     setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 600));
-    dispatch(addProject({
-      id: `proj-${Date.now()}`,
-      ...data,
-      workspaceId: 'ws-1',
-      progress: 0,
-      color: '#2563EB',
-      icon: '📁',
-      members: ['user-1'],
-      taskCount: 0,
-      completedTasks: 0,
-      tags: [],
-    }));
-    success('Project created', `"${data.name}" is ready.`);
-    setSubmitting(false);
-    createModal.close();
+    try {
+      await dispatch(addProjectAsync({
+        ...data,
+        workspaceId: 'ws-1',
+        progress: 0,
+        color: '#2563EB',
+        icon: '📁',
+        members: ['user-1'],
+        tags: ['New'],
+      })).unwrap();
+      success('Project created', `"${data.name}" is ready.`);
+      createModal.close();
+    } catch (e) {
+      // ignore
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleEdit = async (data) => {
     setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 600));
-    dispatch(updateProject({ id: editModal.data.id, ...data }));
-    success('Project updated', 'Changes saved.');
-    setSubmitting(false);
-    editModal.close();
+    try {
+      await dispatch(updateProjectAsync({ id: editModal.data.id, data })).unwrap();
+      success('Project updated', 'Changes saved.');
+      editModal.close();
+    } catch (e) {
+      // ignore
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleDelete = async () => {
     setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 400));
-    dispatch(deleteProject(deleteModal.data.id));
-    success('Project deleted', `"${deleteModal.data.name}" removed.`);
-    setSubmitting(false);
-    deleteModal.close();
+    try {
+      await dispatch(deleteProjectAsync(deleteModal.data.id)).unwrap();
+      success('Project deleted', `"${deleteModal.data.name}" removed.`);
+      deleteModal.close();
+    } catch (e) {
+      // ignore
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const statusOptions = ['all', 'active', 'on_hold', 'completed', 'archived'];
 
   return (
     <PageTransition className="p-6 max-w-[1400px] mx-auto">
-      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-surface-900">Projects</h1>
@@ -290,7 +295,6 @@ export default function Projects() {
         <Button variant="primary" icon={<Plus size={16} />} onClick={createModal.open}>New Project</Button>
       </div>
 
-      {/* Filters */}
       <div className="flex flex-wrap items-center gap-3 mb-6">
         <div className="relative flex-1 max-w-xs">
           <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400" />
@@ -317,7 +321,6 @@ export default function Projects() {
         </div>
       </div>
 
-      {/* Content */}
       {filtered.length === 0 ? (
         <EmptyState
           icon={<FolderKanban size={32} />}
@@ -332,13 +335,12 @@ export default function Projects() {
           : 'flex flex-col gap-3'
         }>
           {filtered.map((project, i) => (
-            <ProjectCard key={project.id} project={project} delay={i * 0.05} view={view}
+            <ProjectCard key={project.id} project={project} allMembers={members} delay={i * 0.05} view={view}
               onEdit={editModal.open} onDelete={deleteModal.open} />
           ))}
         </div>
       )}
 
-      {/* Modals */}
       <Modal isOpen={createModal.isOpen} onClose={createModal.close} title="Create Project" subtitle="Set up a new project for your team" size="md">
         <ProjectForm onSubmit={handleCreate} onClose={createModal.close} loading={submitting} />
       </Modal>

@@ -1,14 +1,17 @@
 from pydantic import BaseModel, EmailStr
+from typing import Optional, List
 
 class LoginRequest(BaseModel):
-    email: EmailStr
+    email: str
     password: str
 
 class RegisterRequest(BaseModel):
-    email: EmailStr
+    name: str
+    email: str
     password: str
-    full_name: str
+    role: Optional[str] = "Developer"
 
 class TokenResponse(BaseModel):
     access_token: str
-    token_type: str
+    token_type: str = "bearer"
+    user: dict

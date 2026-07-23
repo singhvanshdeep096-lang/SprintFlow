@@ -1,16 +1,18 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, JSON, Boolean, DateTime
 from sqlalchemy.sql import func
-from sqlalchemy.orm import relationship
 from app.core.database import Base
 
 class Workspace(Base):
     __tablename__ = "workspaces"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(String, primary_key=True, index=True)
     name = Column(String, nullable=False)
-    description = Column(String)
-    owner_id = Column(Integer, ForeignKey("users.id"))
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-
-    owner = relationship("User", back_populates="owned_workspaces")
+    description = Column(String, nullable=True)
+    icon = Column(String, default="🚀")
+    color = Column(String, default="#2563EB")
+    owner_id = Column(String, nullable=True)
+    members = Column(JSON, default=[])
+    project_count = Column(Integer, default=0)
+    created_at = Column(String, nullable=True)
+    is_owner = Column(Boolean, default=True)
+    plan = Column(String, default="Pro")

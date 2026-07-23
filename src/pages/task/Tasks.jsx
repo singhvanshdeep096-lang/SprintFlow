@@ -1,21 +1,20 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Plus, Filter, Search, CheckSquare, Flag, Calendar, MessageSquare } from 'lucide-react';
+import { Plus, Filter, Search, CheckSquare, Flag, Calendar } from 'lucide-react';
 import PageTransition from '../../components/common/PageTransition';
 import Button from '../../components/common/Button';
 import Avatar from '../../components/common/Avatar';
-import Badge from '../../components/common/Badge/Badge';
 import Tabs from '../../components/common/Tabs/Tabs';
 import Drawer from '../../components/common/Drawer/Drawer';
 import EmptyState from '../../components/common/EmptyState/EmptyState';
 import TaskDetail from './TaskDetail';
 import { openTaskDrawer, closeTaskDrawer } from '../../redux/taskSlice';
-import { MEMBERS } from '../../constants/data';
 import { PRIORITY_CONFIG, STATUS_CONFIG } from '../../constants';
+import userService from '../../services/user.service';
 
-function TaskRow({ task, onOpen, delay }) {
-  const assignee = MEMBERS.find((m) => m.id === task.assigneeId);
+function TaskRow({ task, members, onOpen, delay }) {
+  const assignee = members.find((m) => m.id === task.assigneeId);
   const priorityCfg = PRIORITY_CONFIG[task.priority] || PRIORITY_CONFIG.medium;
   const statusCfg = STATUS_CONFIG[task.status] || STATUS_CONFIG.todo;
   const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'done';
@@ -30,7 +29,7 @@ function TaskRow({ task, onOpen, delay }) {
     >
       <td className="py-3 pl-5 pr-3">
         <div className="flex items-center gap-3">
-          <div className={`w-1 h-8 rounded-full shrink-0`} style={{ backgroundColor: priorityCfg.color }} />
+          <div className="w-1 h-8 rounded-full shrink-0" style={{ backgroundColor: priorityCfg.color }} />
           <div>
             <p className="text-sm font-semibold text-surface-800 group-hover:text-primary-600 transition-colors leading-snug">{task.title}</p>
             <p className="text-xs text-surface-400 mt-0.5">{task.projectId}</p>
@@ -61,7 +60,7 @@ function TaskRow({ task, onOpen, delay }) {
         {task.dueDate && (
           <span className={`flex items-center gap-1 text-xs font-medium ${isOverdue ? 'text-danger-600' : 'text-surface-500'}`}>
             <Calendar size={10} />
-            {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+            {task.dueDate}
           </span>
         )}
       </td>
@@ -85,6 +84,11 @@ export default function Tasks() {
   const isDrawerOpen = useSelector((state) => state.tasks.isDrawerOpen);
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('all');
+  const [members, setMembers] = useState([]);
+
+  useEffect(() => {
+    userService.getUsers().then((data) => setMembers(data)).catch(() => {});
+  }, []);
 
   const tabsData = [
     { id: 'all', label: 'All Tasks', badge: tasks.length },
@@ -111,7 +115,6 @@ export default function Tasks() {
       </div>
 
       <div className="card overflow-hidden">
-        {/* Toolbar */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-surface-100">
           <Tabs tabs={tabsData} activeTab={activeTab} onTabChange={setActiveTab} variant="line" />
           <div className="flex items-center gap-2">
@@ -124,7 +127,6 @@ export default function Tasks() {
           </div>
         </div>
 
-        {/* Table */}
         {filtered.length === 0 ? (
           <EmptyState
             icon={<CheckSquare size={28} />}
@@ -146,7 +148,7 @@ export default function Tasks() {
             </thead>
             <tbody>
               {filtered.map((task, i) => (
-                <TaskRow key={task.id} task={task} delay={i * 0.03} onOpen={(t) => dispatch(openTaskDrawer(t))} />
+                <TaskRow key={task.id} task={task} members={members} delay={i * 0.03} onOpen={(t) => dispatch(openTaskDrawer(t))} />
               ))}
             </tbody>
           </table>

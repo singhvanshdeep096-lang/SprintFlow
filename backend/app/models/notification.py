@@ -1,17 +1,18 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean, Text
+from sqlalchemy import Column, String, Boolean, DateTime
 from sqlalchemy.sql import func
-from sqlalchemy.orm import relationship
 from app.core.database import Base
 
 class Notification(Base):
     __tablename__ = "notifications"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(String, primary_key=True, index=True)
+    type = Column(String, nullable=False)
     title = Column(String, nullable=False)
-    message = Column(Text)
-    type = Column(String, default="info")
+    description = Column(String, nullable=True)
     is_read = Column(Boolean, default=False)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-
-    user = relationship("User", back_populates="notifications")
+    created_at = Column(String, nullable=True)
+    link = Column(String, nullable=True)
+    avatar = Column(String, nullable=True)
+    avatar_color = Column(String, nullable=True)
+    is_system_notif = Column(Boolean, default=False)
+    user_id = Column(String, nullable=True)
