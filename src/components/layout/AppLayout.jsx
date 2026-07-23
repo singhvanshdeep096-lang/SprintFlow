@@ -1,13 +1,28 @@
+import { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { AnimatePresence } from 'motion/react';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import ToastContainer from '../common/Toast';
+import { fetchWorkspaces } from '../../redux/workspaceSlice';
+import { fetchProjects } from '../../redux/projectSlice';
+import { fetchTasks } from '../../redux/taskSlice';
+import { fetchNotifications } from '../../redux/notificationSlice';
+import { checkAuthAsync } from '../../redux/authSlice';
 
 export default function AppLayout() {
+  const dispatch = useDispatch();
   const collapsed = useSelector((state) => state.ui.sidebarCollapsed);
   const sidebarWidth = collapsed ? 70 : 256;
+
+  useEffect(() => {
+    dispatch(checkAuthAsync());
+    dispatch(fetchWorkspaces());
+    dispatch(fetchProjects());
+    dispatch(fetchTasks());
+    dispatch(fetchNotifications());
+  }, [dispatch]);
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#F8FAFC' }}>

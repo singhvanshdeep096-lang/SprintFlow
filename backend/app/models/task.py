@@ -1,21 +1,24 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text
+from sqlalchemy import Column, Integer, String, JSON, Text, DateTime
 from sqlalchemy.sql import func
-from sqlalchemy.orm import relationship
 from app.core.database import Base
 
 class Task(Base):
     __tablename__ = "tasks"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(String, primary_key=True, index=True)
+    project_id = Column(String, index=True)
     title = Column(String, nullable=False)
-    description = Column(Text)
+    description = Column(Text, nullable=True)
     status = Column(String, default="todo")
     priority = Column(String, default="medium")
-    column_id = Column(Integer, ForeignKey("columns.id"))
-    assignee_id = Column(Integer, ForeignKey("users.id"))
-    due_date = Column(DateTime(timezone=True))
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-
-    column = relationship("Column", back_populates="tasks")
-    assignee = relationship("User")
+    assignee_id = Column(String, nullable=True)
+    reporter_id = Column(String, nullable=True)
+    labels = Column(JSON, default=[])
+    due_date = Column(String, nullable=True)
+    created_at = Column(String, nullable=True)
+    updated_at = Column(String, nullable=True)
+    comment_count = Column(Integer, default=0)
+    attachment_count = Column(Integer, default=0)
+    subtasks = Column(JSON, default=[])
+    estimated_hours = Column(Integer, default=0)
+    logged_hours = Column(Integer, default=0)

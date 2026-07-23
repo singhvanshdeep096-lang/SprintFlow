@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   Settings as SettingsIcon, Globe, Bell, Shield, Building2, Palette,
-  Moon, Sun, Monitor, ChevronRight, Toggle
+  Moon, Sun, Monitor, ChevronRight
 } from 'lucide-react';
 import PageTransition from '../../components/common/PageTransition';
 import Tabs from '../../components/common/Tabs/Tabs';

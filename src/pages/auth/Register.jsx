@@ -4,24 +4,32 @@ import { motion } from 'motion/react';
 import { Mail, Lock, User, ArrowRight, Building2 } from 'lucide-react';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input/Input';
-import { useDispatch } from 'react-redux';
-import { loginSuccess } from '../../redux/authSlice';
-import { CURRENT_USER } from '../../constants/data';
+import { useDispatch, useSelector } from 'react-redux';
+import { registerAsync } from '../../redux/authSlice';
 import { useToast } from '../../hooks/useToast';
 
 export default function Register() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { success } = useToast();
+  const { success, error: toastError } = useToast();
+  const { loading } = useSelector((state) => state.auth);
 
-  const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm();
+  const { register, handleSubmit, watch, formState: { errors } } = useForm();
   const password = watch('password');
 
   const onSubmit = async (data) => {
-    await new Promise((r) => setTimeout(r, 1000));
-    dispatch(loginSuccess({ ...CURRENT_USER, name: data.name, email: data.email }));
-    success('Account created!', 'Welcome to SprintFlow.');
-    navigate('/dashboard');
+    try {
+      await dispatch(registerAsync({
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        role: 'Developer'
+      })).unwrap();
+      success('Account created!', 'Welcome to SprintFlow.');
+      navigate('/dashboard');
+    } catch (err) {
+      toastError('Registration failed', err || 'Error creating account');
+    }
   };
 
   return (
@@ -109,7 +117,7 @@ export default function Register() {
         </div>
         {errors.terms && <p className="text-xs text-danger-600">{errors.terms.message}</p>}
 
-        <Button type="submit" fullWidth loading={isSubmitting} size="lg" icon={<ArrowRight size={16} />}>
+        <Button type="submit" fullWidth loading={loading} size="lg" icon={<ArrowRight size={16} />}>
           Create Free Account
         </Button>
       </form>

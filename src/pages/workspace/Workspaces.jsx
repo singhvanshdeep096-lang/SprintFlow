@@ -1,25 +1,24 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import {
   Plus, Search, Building2, Users, FolderKanban, MoreHorizontal,
-  Edit3, Trash2, ExternalLink, Crown, Settings, CheckCircle,
-  Layers, ArrowUpRight, Sparkles, Globe
+  Edit3, Trash2, Crown, Settings, CheckCircle,
+  Layers, ArrowUpRight, Globe
 } from 'lucide-react';
 import PageTransition from '../../components/common/PageTransition';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal/Modal';
 import Input from '../../components/common/Input/Input';
-import Badge from '../../components/common/Badge/Badge';
 import Avatar from '../../components/common/Avatar';
 import Dropdown from '../../components/common/Dropdown/Dropdown';
 import EmptyState from '../../components/common/EmptyState/EmptyState';
-import { addWorkspace, updateWorkspace, deleteWorkspace } from '../../redux/workspaceSlice';
-import { MEMBERS } from '../../constants/data';
+import { addWorkspaceAsync, updateWorkspaceAsync, deleteWorkspaceAsync } from '../../redux/workspaceSlice';
 import { useToast } from '../../hooks/useToast';
 import { useModal } from '../../hooks/useModal';
+import userService from '../../services/user.service';
 
 const WORKSPACE_ICONS = ['🚀', '🎨', '📊', '💡', '🔧', '🌟', '⚡', '🎯', '🔬', '📱', '🤖', '💎'];
 const WORKSPACE_COLORS = ['#2563EB', '#7C3AED', '#059669', '#D97706', '#DC2626', '#0891B2', '#DB2777', '#65A30D'];
@@ -29,10 +28,9 @@ const PLAN_CONFIG = {
   Business:{ color: 'purple',  label: 'BUSINESS'  },
 };
 
-// ─── Workspace Card ───────────────────────────────────────────────────────────
-function WorkspaceCard({ workspace, onEdit, onDelete, delay }) {
+function WorkspaceCard({ workspace, allMembers, onEdit, onDelete, delay }) {
   const navigate = useNavigate();
-  const members = MEMBERS.filter((m) => workspace.members?.includes(m.id));
+  const members = allMembers.filter((m) => workspace.members?.includes(m.id));
   const plan = PLAN_CONFIG[workspace.plan] || PLAN_CONFIG.Starter;
 
   return (
@@ -45,23 +43,20 @@ function WorkspaceCard({ workspace, onEdit, onDelete, delay }) {
       style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04)' }}
       onClick={() => navigate(`/workspaces/${workspace.id}`)}
     >
-      {/* Coloured top bar */}
       <div
         className="h-1.5 w-full transition-all duration-300 group-hover:h-2"
-        style={{ background: `linear-gradient(90deg, ${workspace.color}, ${workspace.color}99)` }}
+        style={{ background: `linear-gradient(90deg, ${workspace.color || '#2563EB'}, ${workspace.color || '#2563EB'}99)` }}
       />
 
       <div className="p-5">
-        {/* Header row */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
-            {/* Icon */}
             <motion.div
               whileHover={{ scale: 1.08, rotate: 4 }}
               className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl shadow-sm flex-shrink-0"
-              style={{ backgroundColor: `${workspace.color}18`, border: `1.5px solid ${workspace.color}35` }}
+              style={{ backgroundColor: `${workspace.color || '#2563EB'}18`, border: `1.5px solid ${workspace.color || '#2563EB'}35` }}
             >
-              {workspace.icon}
+              {workspace.icon || '🚀'}
             </motion.div>
 
             <div>
@@ -75,8 +70,8 @@ function WorkspaceCard({ workspace, onEdit, onDelete, delay }) {
                 <span
                   className="text-[10px] font-bold px-2 py-0.5 rounded-full"
                   style={{
-                    backgroundColor: `${workspace.color}15`,
-                    color: workspace.color,
+                    backgroundColor: `${workspace.color || '#2563EB'}15`,
+                    color: workspace.color || '#2563EB',
                   }}
                 >
                   {plan.label}
@@ -85,7 +80,6 @@ function WorkspaceCard({ workspace, onEdit, onDelete, delay }) {
             </div>
           </div>
 
-          {/* Menu */}
           <div onClick={(e) => e.stopPropagation()}>
             <Dropdown
               trigger={
@@ -116,7 +110,6 @@ function WorkspaceCard({ workspace, onEdit, onDelete, delay }) {
           </div>
         </div>
 
-        {/* Description */}
         <p
           className="text-sm leading-relaxed line-clamp-2 mb-4"
           style={{ color: '#64748B', minHeight: 40 }}
@@ -124,23 +117,20 @@ function WorkspaceCard({ workspace, onEdit, onDelete, delay }) {
           {workspace.description}
         </p>
 
-        {/* Stats row */}
         <div className="flex items-center gap-5 mb-4">
           <div className="flex items-center gap-1.5">
-            <FolderKanban size={13} style={{ color: workspace.color }} />
-            <span className="text-[13px] font-semibold" style={{ color: '#1e293b' }}>{workspace.projectCount}</span>
+            <FolderKanban size={13} style={{ color: workspace.color || '#2563EB' }} />
+            <span className="text-[13px] font-semibold" style={{ color: '#1e293b' }}>{workspace.projectCount || 0}</span>
             <span className="text-[13px]" style={{ color: '#94a3b8' }}>projects</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <Users size={13} style={{ color: workspace.color }} />
+            <Users size={13} style={{ color: workspace.color || '#2563EB' }} />
             <span className="text-[13px] font-semibold" style={{ color: '#1e293b' }}>{members.length}</span>
             <span className="text-[13px]" style={{ color: '#94a3b8' }}>members</span>
           </div>
         </div>
 
-        {/* Footer */}
         <div className="flex items-center justify-between pt-3 border-t border-surface-100">
-          {/* Avatar stack */}
           <div className="flex -space-x-2">
             {members.slice(0, 5).map((m) => (
               <div key={m.id} className="ring-2 ring-white rounded-full">
@@ -154,12 +144,11 @@ function WorkspaceCard({ workspace, onEdit, onDelete, delay }) {
             )}
           </div>
 
-          {/* Open link */}
           <motion.div
             initial={{ opacity: 0, x: -4 }}
             whileHover={{ opacity: 1, x: 0 }}
             className="flex items-center gap-1 text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity"
-            style={{ color: workspace.color }}
+            style={{ color: workspace.color || '#2563EB' }}
           >
             Open <ArrowUpRight size={12} />
           </motion.div>
@@ -169,7 +158,6 @@ function WorkspaceCard({ workspace, onEdit, onDelete, delay }) {
   );
 }
 
-// ─── Workspace Form ───────────────────────────────────────────────────────────
 function WorkspaceForm({ defaultValues, onSubmit, onClose, loading }) {
   const [selectedIcon, setSelectedIcon] = useState(defaultValues?.icon || '🚀');
   const [selectedColor, setSelectedColor] = useState(defaultValues?.color || '#2563EB');
@@ -202,7 +190,6 @@ function WorkspaceForm({ defaultValues, onSubmit, onClose, loading }) {
         />
       </div>
 
-      {/* Icon picker */}
       <div>
         <label className="block text-sm font-medium text-surface-700 mb-2">Icon</label>
         <div className="flex flex-wrap gap-2">
@@ -225,7 +212,6 @@ function WorkspaceForm({ defaultValues, onSubmit, onClose, loading }) {
         </div>
       </div>
 
-      {/* Color picker */}
       <div>
         <label className="block text-sm font-medium text-surface-700 mb-2">Color</label>
         <div className="flex flex-wrap gap-2">
@@ -255,16 +241,20 @@ function WorkspaceForm({ defaultValues, onSubmit, onClose, loading }) {
   );
 }
 
-// ─── Main Page ────────────────────────────────────────────────────────────────
 export default function Workspaces() {
   const dispatch = useDispatch();
-  const { success, error } = useToast();
+  const { success } = useToast();
   const workspaces = useSelector((state) => state.workspaces.list);
   const [search, setSearch] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [members, setMembers] = useState([]);
   const createModal = useModal();
   const editModal = useModal();
   const deleteModal = useModal();
+
+  useEffect(() => {
+    userService.getUsers().then((data) => setMembers(data)).catch(() => {});
+  }, []);
 
   const filtered = workspaces.filter(
     (w) => w.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -272,47 +262,53 @@ export default function Workspaces() {
   );
 
   const totalProjects = workspaces.reduce((sum, w) => sum + (w.projectCount || 0), 0);
-  const totalMembers = new Set(workspaces.flatMap((w) => w.members || [])).size;
+  const totalMembers = members.length;
 
   const handleCreate = async (data) => {
     setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 600));
-    dispatch(addWorkspace({
-      id: `ws-${Date.now()}`,
-      ...data,
-      members: ['user-1'],
-      projectCount: 0,
-      createdAt: new Date().toISOString(),
-      isOwner: true,
-      plan: 'Starter',
-    }));
-    success('Workspace created', `"${data.name}" is ready to use.`);
-    setSubmitting(false);
-    createModal.close();
+    try {
+      await dispatch(addWorkspaceAsync({
+        ...data,
+        members: ['user-1'],
+        plan: 'Starter',
+      })).unwrap();
+      success('Workspace created', `"${data.name}" is ready to use.`);
+      createModal.close();
+    } catch (e) {
+      // ignore
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleEdit = async (data) => {
     setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 600));
-    dispatch(updateWorkspace({ id: editModal.data.id, ...data }));
-    success('Workspace updated', 'Changes saved successfully.');
-    setSubmitting(false);
-    editModal.close();
+    try {
+      await dispatch(updateWorkspaceAsync({ id: editModal.data.id, data })).unwrap();
+      success('Workspace updated', 'Changes saved successfully.');
+      editModal.close();
+    } catch (e) {
+      // ignore
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleDelete = async () => {
     setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 400));
-    dispatch(deleteWorkspace(deleteModal.data.id));
-    success('Workspace deleted', `"${deleteModal.data.name}" has been removed.`);
-    setSubmitting(false);
-    deleteModal.close();
+    try {
+      await dispatch(deleteWorkspaceAsync(deleteModal.data.id)).unwrap();
+      success('Workspace deleted', `"${deleteModal.data.name}" has been removed.`);
+      deleteModal.close();
+    } catch (e) {
+      // ignore
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
     <PageTransition className="p-6 max-w-[1400px] mx-auto">
-
-      {/* ── Hero Header ── */}
       <motion.div
         initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: 1, y: 0 }}
@@ -324,7 +320,6 @@ export default function Workspaces() {
           overflow: 'hidden',
         }}
       >
-        {/* Decorative blobs */}
         <div
           className="absolute top-0 right-0 w-72 h-72 rounded-full pointer-events-none"
           style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%)', transform: 'translate(30%, -40%)' }}
@@ -334,12 +329,11 @@ export default function Workspaces() {
           style={{ background: 'radial-gradient(circle, rgba(167,139,250,0.15) 0%, transparent 70%)', transform: 'translateY(50%)' }}
         />
 
-        {/* Button — absolutely positioned top-right so it never overflows flex */}
         <div className="absolute top-5 right-6" onClick={createModal.open}>
           <motion.button
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.97 }}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm cursor-pointer"
             style={{ background: 'white', color: '#2563eb', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}
           >
             <Plus size={15} />
@@ -347,7 +341,6 @@ export default function Workspaces() {
           </motion.button>
         </div>
 
-        {/* Content */}
         <div className="relative pr-44">
           <div className="flex items-center gap-1.5 mb-1.5">
             <Globe size={13} className="text-blue-300" />
@@ -358,7 +351,6 @@ export default function Workspaces() {
             Manage all your team workspaces in one place
           </p>
 
-          {/* Quick stats */}
           <div className="flex items-center gap-5 mt-4">
             {[
               { label: 'Workspaces', value: workspaces.length, icon: Layers },
@@ -388,7 +380,6 @@ export default function Workspaces() {
         </div>
       </motion.div>
 
-      {/* ── Search bar ── */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
@@ -405,7 +396,6 @@ export default function Workspaces() {
         />
       </motion.div>
 
-      {/* ── Cards grid ── */}
       <AnimatePresence mode="wait">
         {filtered.length === 0 ? (
           <EmptyState
@@ -425,6 +415,7 @@ export default function Workspaces() {
               <WorkspaceCard
                 key={ws.id}
                 workspace={ws}
+                allMembers={members}
                 delay={i * 0.07}
                 onEdit={editModal.open}
                 onDelete={deleteModal.open}
@@ -434,12 +425,10 @@ export default function Workspaces() {
         )}
       </AnimatePresence>
 
-      {/* ── Create Modal ── */}
       <Modal isOpen={createModal.isOpen} onClose={createModal.close} title="Create Workspace" subtitle="Set up a new workspace for your team" size="md">
         <WorkspaceForm onSubmit={handleCreate} onClose={createModal.close} loading={submitting} />
       </Modal>
 
-      {/* ── Edit Modal ── */}
       <Modal isOpen={editModal.isOpen} onClose={editModal.close} title="Edit Workspace" size="md">
         {editModal.data && (
           <WorkspaceForm
@@ -451,7 +440,6 @@ export default function Workspaces() {
         )}
       </Modal>
 
-      {/* ── Delete Confirm Modal ── */}
       <Modal isOpen={deleteModal.isOpen} onClose={deleteModal.close} title="Delete Workspace" size="sm">
         <div className="text-center">
           <div className="w-14 h-14 rounded-full bg-danger-100 flex items-center justify-center mx-auto mb-4">

@@ -1,16 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useDispatch } from 'react-redux';
 import {
-  Flag, Calendar, User, Tag, MessageSquare, Paperclip, CheckSquare,
-  ChevronDown, Send, Edit3, Trash2, Clock, Activity, CheckCircle2
+  Flag, Calendar, User, Tag, MessageSquare, CheckSquare,
+  ChevronDown, Send, Clock, CheckCircle2
 } from 'lucide-react';
 import Avatar from '../../components/common/Avatar';
-import Badge from '../../components/common/Badge/Badge';
-import { updateTask, updateTaskStatus } from '../../redux/taskSlice';
-import { MEMBERS, COMMENTS, ACTIVITY } from '../../constants/data';
+import { updateTaskAsync, updateTaskStatusAsync } from '../../redux/taskSlice';
 import { PRIORITY_CONFIG, STATUS_CONFIG } from '../../constants';
 import { useToast } from '../../hooks/useToast';
+import userService from '../../services/user.service';
+import taskService from '../../services/task.service';
 
 function StatusSelect({ value, onChange }) {
   const [open, setOpen] = useState(false);
@@ -20,7 +20,7 @@ function StatusSelect({ value, onChange }) {
     <div className="relative">
       <button
         onClick={() => setOpen((p) => !p)}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-80"
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-80 cursor-pointer"
         style={{ backgroundColor: statusCfg.bg, color: statusCfg.color }}
       >
         <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: statusCfg.dotColor }} />
@@ -39,7 +39,7 @@ function StatusSelect({ value, onChange }) {
               <button
                 key={key}
                 onClick={() => { onChange(key); setOpen(false); }}
-                className="flex items-center gap-2 w-full px-3 py-2 text-xs font-medium hover:bg-surface-50 transition-colors"
+                className="flex items-center gap-2 w-full px-3 py-2 text-xs font-medium hover:bg-surface-50 transition-colors cursor-pointer"
               >
                 <span className="w-2 h-2 rounded-full" style={{ backgroundColor: cfg.dotColor }} />
                 {cfg.label}
@@ -60,7 +60,7 @@ function PrioritySelect({ value, onChange }) {
     <div className="relative">
       <button
         onClick={() => setOpen((p) => !p)}
-        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold hover:opacity-80 transition-all"
+        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold hover:opacity-80 transition-all cursor-pointer"
         style={{ backgroundColor: cfg.bg, color: cfg.color }}
       >
         <Flag size={11} />
@@ -79,7 +79,7 @@ function PrioritySelect({ value, onChange }) {
               <button
                 key={key}
                 onClick={() => { onChange(key); setOpen(false); }}
-                className="flex items-center gap-2 w-full px-3 py-2 text-xs font-medium hover:bg-surface-50 transition-colors"
+                className="flex items-center gap-2 w-full px-3 py-2 text-xs font-medium hover:bg-surface-50 transition-colors cursor-pointer"
               >
                 <Flag size={11} style={{ color: c.color }} />
                 {c.label}
@@ -102,7 +102,7 @@ function SubtaskItem({ subtask, onToggle }) {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => onToggle(subtask.id)}
-        className={`w-4 h-4 rounded flex items-center justify-center border-2 shrink-0 transition-all ${
+        className={`w-4 h-4 rounded flex items-center justify-center border-2 shrink-0 transition-all cursor-pointer ${
           subtask.done
             ? 'border-success-500 bg-success-500'
             : 'border-surface-300 hover:border-primary-400'
@@ -117,8 +117,8 @@ function SubtaskItem({ subtask, onToggle }) {
   );
 }
 
-function CommentItem({ comment, delay }) {
-  const author = MEMBERS.find((m) => m.id === comment.authorId);
+function CommentItem({ comment, members, delay }) {
+  const author = members.find((m) => m.id === comment.authorId);
 
   return (
     <motion.div
@@ -130,9 +130,9 @@ function CommentItem({ comment, delay }) {
       <Avatar name={author?.name || 'User'} size="sm" color={author?.color} className="mt-0.5 shrink-0" />
       <div className="flex-1">
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-sm font-semibold text-surface-800">{author?.name}</span>
+          <span className="text-sm font-semibold text-surface-800">{author?.name || 'User'}</span>
           <span className="text-xs text-surface-400">
-            {new Date(comment.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+            {comment.createdAt ? new Date(comment.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Just now'}
           </span>
         </div>
         <div className="bg-surface-50 rounded-xl rounded-tl-sm p-3">
@@ -155,35 +155,53 @@ function CommentItem({ comment, delay }) {
 export default function TaskDetail({ task }) {
   const dispatch = useDispatch();
   const { success } = useToast();
-  const [comment, setComment] = useState('');
+  const [commentText, setCommentText] = useState('');
   const [localTask, setLocalTask] = useState(task);
   const [localSubtasks, setLocalSubtasks] = useState(task.subtasks || []);
+  const [members, setMembers] = useState([]);
+  const [taskComments, setTaskComments] = useState([]);
 
-  const taskComments = COMMENTS.filter((c) => c.taskId === task.id);
-  const assignee = MEMBERS.find((m) => m.id === localTask.assigneeId);
-  const reporter = MEMBERS.find((m) => m.id === localTask.reporterId);
+  useEffect(() => {
+    userService.getUsers().then((data) => setMembers(data)).catch(() => {});
+    if (task.id) {
+      taskService.getComments(task.id).then((data) => setTaskComments(data)).catch(() => {});
+    }
+  }, [task.id]);
+
+  const assignee = members.find((m) => m.id === localTask.assigneeId);
+  const reporter = members.find((m) => m.id === localTask.reporterId);
 
   const handleStatusChange = (status) => {
-    dispatch(updateTaskStatus({ taskId: task.id, status }));
+    dispatch(updateTaskStatusAsync({ taskId: task.id, status }));
     setLocalTask((prev) => ({ ...prev, status }));
     success('Status updated', `Task moved to ${STATUS_CONFIG[status]?.label}`);
   };
 
   const handlePriorityChange = (priority) => {
-    dispatch(updateTask({ id: task.id, priority }));
+    dispatch(updateTaskAsync({ id: task.id, data: { priority } }));
     setLocalTask((prev) => ({ ...prev, priority }));
   };
 
   const toggleSubtask = (subtaskId) => {
-    setLocalSubtasks((prev) =>
-      prev.map((s) => s.id === subtaskId ? { ...s, done: !s.done } : s)
-    );
+    const updated = localSubtasks.map((s) => s.id === subtaskId ? { ...s, done: !s.done } : s);
+    setLocalSubtasks(updated);
+    dispatch(updateTaskAsync({ id: task.id, data: { subtasks: updated } }));
   };
 
-  const handleAddComment = () => {
-    if (!comment.trim()) return;
-    success('Comment added', 'Your comment has been posted.');
-    setComment('');
+  const handleAddComment = async () => {
+    if (!commentText.trim()) return;
+    try {
+      const newComment = await taskService.addComment({
+        taskId: task.id,
+        authorId: 'user-1',
+        content: commentText.trim()
+      });
+      setTaskComments((prev) => [...prev, newComment]);
+      success('Comment added', 'Your comment has been posted.');
+      setCommentText('');
+    } catch (e) {
+      // ignore
+    }
   };
 
   const completedSubtasks = localSubtasks.filter((s) => s.done).length;
@@ -191,13 +209,11 @@ export default function TaskDetail({ task }) {
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
-        {/* Status & Priority */}
         <div className="flex items-center gap-2 flex-wrap">
           <StatusSelect value={localTask.status} onChange={handleStatusChange} />
           <PrioritySelect value={localTask.priority} onChange={handlePriorityChange} />
         </div>
 
-        {/* Description */}
         <div>
           <h3 className="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-2">Description</h3>
           <div className="text-sm text-surface-700 leading-relaxed bg-surface-50 rounded-xl p-4 border border-surface-100">
@@ -205,9 +221,7 @@ export default function TaskDetail({ task }) {
           </div>
         </div>
 
-        {/* Details Grid */}
         <div className="grid grid-cols-2 gap-4">
-          {/* Assignee */}
           <div>
             <p className="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-2 flex items-center gap-1">
               <User size={11} />Assignee
@@ -227,7 +241,6 @@ export default function TaskDetail({ task }) {
             )}
           </div>
 
-          {/* Reporter */}
           <div>
             <p className="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-2 flex items-center gap-1">
               <User size={11} />Reporter
@@ -243,7 +256,6 @@ export default function TaskDetail({ task }) {
             ) : null}
           </div>
 
-          {/* Due Date */}
           {localTask.dueDate && (
             <div>
               <p className="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-2 flex items-center gap-1">
@@ -251,12 +263,11 @@ export default function TaskDetail({ task }) {
               </p>
               <div className="flex items-center gap-2 p-2.5 rounded-xl bg-surface-50 border border-surface-100 text-xs font-medium text-surface-700">
                 <Calendar size={12} className="text-surface-400" />
-                {new Date(localTask.dueDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                {localTask.dueDate}
               </div>
             </div>
           )}
 
-          {/* Hours */}
           {localTask.estimatedHours && (
             <div>
               <p className="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-2 flex items-center gap-1">
@@ -264,13 +275,13 @@ export default function TaskDetail({ task }) {
               </p>
               <div className="p-2.5 rounded-xl bg-surface-50 border border-surface-100">
                 <div className="flex justify-between text-xs mb-1">
-                  <span className="text-surface-500">{localTask.loggedHours}h logged</span>
+                  <span className="text-surface-500">{localTask.loggedHours || 0}h logged</span>
                   <span className="text-surface-500">/{localTask.estimatedHours}h est.</span>
                 </div>
                 <div className="h-1.5 bg-surface-200 rounded-full overflow-hidden">
                   <div
                     className="h-full rounded-full bg-primary-500"
-                    style={{ width: `${Math.min((localTask.loggedHours / localTask.estimatedHours) * 100, 100)}%` }}
+                    style={{ width: `${Math.min(((localTask.loggedHours || 0) / localTask.estimatedHours) * 100, 100)}%` }}
                   />
                 </div>
               </div>
@@ -278,7 +289,6 @@ export default function TaskDetail({ task }) {
           )}
         </div>
 
-        {/* Labels */}
         {localTask.labels?.length > 0 && (
           <div>
             <p className="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-2 flex items-center gap-1">
@@ -294,7 +304,6 @@ export default function TaskDetail({ task }) {
           </div>
         )}
 
-        {/* Subtasks */}
         {localSubtasks.length > 0 && (
           <div>
             <div className="flex items-center justify-between mb-2">
@@ -320,14 +329,13 @@ export default function TaskDetail({ task }) {
           </div>
         )}
 
-        {/* Comments */}
         <div>
           <p className="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-3 flex items-center gap-1">
             <MessageSquare size={11} />Comments ({taskComments.length})
           </p>
           <div className="space-y-4">
             {taskComments.map((c, i) => (
-              <CommentItem key={c.id} comment={c} delay={i * 0.05} />
+              <CommentItem key={c.id} comment={c} members={members} delay={i * 0.05} />
             ))}
             {taskComments.length === 0 && (
               <p className="text-sm text-surface-400 italic text-center py-4">No comments yet. Be the first to comment!</p>
@@ -336,14 +344,13 @@ export default function TaskDetail({ task }) {
         </div>
       </div>
 
-      {/* Comment Input */}
       <div className="border-t border-surface-100 p-4">
         <div className="flex gap-3">
           <Avatar name="Alex Morgan" size="sm" />
           <div className="flex-1 flex items-end gap-2 bg-surface-50 border border-surface-200 rounded-xl p-3 focus-within:border-primary-400 focus-within:shadow-[0_0_0_3px_rgba(37,99,235,0.08)] transition-all">
             <textarea
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
               placeholder="Add a comment..."
               rows={2}
               className="flex-1 bg-transparent outline-none text-sm text-surface-800 placeholder:text-surface-400 resize-none"
@@ -353,8 +360,8 @@ export default function TaskDetail({ task }) {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={handleAddComment}
-              disabled={!comment.trim()}
-              className="p-1.5 rounded-lg bg-primary-600 text-white disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
+              disabled={!commentText.trim()}
+              className="p-1.5 rounded-lg bg-primary-600 text-white disabled:opacity-40 disabled:cursor-not-allowed transition-opacity cursor-pointer"
             >
               <Send size={14} />
             </motion.button>

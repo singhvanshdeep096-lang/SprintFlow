@@ -1,5 +1,45 @@
-import { createSlice } from '@reduxjs/toolkit';
-import { CURRENT_USER } from '../constants/data';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import authService from '../services/auth.service';
+
+export const loginAsync = createAsyncThunk(
+  'auth/login',
+  async (credentials, { rejectWithValue }) => {
+    try {
+      const response = await authService.login(credentials);
+      return response.user;
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+export const registerAsync = createAsyncThunk(
+  'auth/register',
+  async (userData, { rejectWithValue }) => {
+    try {
+      const response = await authService.register(userData);
+      return response.user;
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+export const checkAuthAsync = createAsyncThunk(
+  'auth/checkAuth',
+  async (_, { rejectWithValue }) => {
+    try {
+      const user = await authService.getCurrentUser();
+      return user;
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+export const logoutAsync = () => (dispatch) => {
+  dispatch(logout());
+};
 
 const initialState = {
   isAuthenticated: false,
@@ -12,21 +52,8 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    loginStart: (state) => {
-      state.loading = true;
-      state.error = null;
-    },
-    loginSuccess: (state, action) => {
-      state.isAuthenticated = true;
-      state.user = action.payload;
-      state.loading = false;
-      state.error = null;
-    },
-    loginFailure: (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    },
     logout: (state) => {
+      authService.logout();
       state.isAuthenticated = false;
       state.user = null;
       state.loading = false;
@@ -39,21 +66,40 @@ const authSlice = createSlice({
       state.error = null;
     },
   },
+  extraReducers: (builder) => {
+    builder
+      .addCase(loginAsync.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(loginAsync.fulfilled, (state, action) => {
+        state.loading = false;
+        state.isAuthenticated = true;
+        state.user = action.payload;
+      })
+      .addCase(loginAsync.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(registerAsync.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(registerAsync.fulfilled, (state, action) => {
+        state.loading = false;
+        state.isAuthenticated = true;
+        state.user = action.payload;
+      })
+      .addCase(registerAsync.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(checkAuthAsync.fulfilled, (state, action) => {
+        state.isAuthenticated = true;
+        state.user = action.payload;
+      });
+  },
 });
 
-export const { loginStart, loginSuccess, loginFailure, logout, updateUser, clearError } = authSlice.actions;
-
-// Thunk for simulated login
-export const loginAsync = (credentials) => (dispatch) => {
-  dispatch(loginStart());
-  // Simulate API call
-  setTimeout(() => {
-    dispatch(loginSuccess(CURRENT_USER));
-  }, 800);
-};
-
-export const logoutAsync = () => (dispatch) => {
-  dispatch(logout());
-};
-
+export const { logout, updateUser, clearError } = authSlice.actions;
 export default authSlice.reducer;

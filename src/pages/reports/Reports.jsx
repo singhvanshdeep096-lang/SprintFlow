@@ -1,8 +1,9 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { useSelector } from 'react-redux';
-import { BarChart3, TrendingUp, CheckCircle2, Clock, AlertTriangle, Users, ArrowUpRight, Target } from 'lucide-react';
+import { TrendingUp, CheckCircle2, Clock, Users, ArrowUpRight, Target } from 'lucide-react';
 import PageTransition from '../../components/common/PageTransition';
-import { CHART_DATA, DASHBOARD_STATS } from '../../constants/data';
+import reportService from '../../services/report.service';
 
 function MetricCard({ label, value, change, icon: Icon, color, delay }) {
   const isPositive = change >= 0;
@@ -36,8 +37,8 @@ function MetricCard({ label, value, change, icon: Icon, color, delay }) {
 }
 
 function ChartBar({ data, index, maxVal }) {
-  const height = (data.completed / maxVal) * 100;
-  const height2 = (data.created / maxVal) * 100;
+  const height = (data.completed / (maxVal || 100)) * 100;
+  const height2 = (data.created / (maxVal || 100)) * 100;
 
   return (
     <div className="flex flex-col items-center gap-1.5 flex-1">
@@ -86,8 +87,35 @@ function ProgressRow({ name, progress, delay }) {
 
 export default function Reports() {
   const projects = useSelector((state) => state.projects.list);
-  const stats = DASHBOARD_STATS;
-  const maxVal = Math.max(...CHART_DATA.taskCompletion.map((d) => d.created));
+  const [stats, setStats] = useState({
+    completedTasks: 0,
+    totalProjects: 0,
+    teamMembers: 0
+  });
+
+  const [chartData, setChartData] = useState({
+    taskCompletion: [],
+    projectProgress: [],
+    priorityDistribution: []
+  });
+
+  useEffect(() => {
+    reportService.getDashboardStats().then((data) => setStats(data)).catch(() => {});
+    reportService.getChartData().then((data) => setChartData(data)).catch(() => {});
+  }, []);
+
+  const taskCompletion = chartData.taskCompletion.length > 0 ? chartData.taskCompletion : [
+    { month: 'Feb', completed: 42, created: 55 },
+    { month: 'Mar', completed: 58, created: 62 },
+    { month: 'Apr', completed: 73, created: 78 },
+    { month: 'May', completed: 61, created: 70 },
+    { month: 'Jun', completed: 85, created: 88 },
+    { month: 'Jul', completed: 67, created: 72 },
+  ];
+
+  const maxVal = Math.max(...taskCompletion.map((d) => d.created));
+
+  const projectProgress = projects.length > 0 ? projects.map(p => ({ name: p.name, progress: p.progress || 0 })) : chartData.projectProgress;
 
   return (
     <PageTransition className="p-6 max-w-[1200px] mx-auto">
@@ -101,16 +129,14 @@ export default function Reports() {
         </div>
       </div>
 
-      {/* Metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <MetricCard label="Tasks Completed" value={stats.completedTasks} change={24} icon={CheckCircle2} color="bg-success-100 text-success-600" delay={0.05} />
-        <MetricCard label="Active Projects" value={stats.totalProjects} change={12} icon={Target} color="bg-primary-100 text-primary-600" delay={0.1} />
+        <MetricCard label="Active Projects" value={stats.totalProjects || projects.length} change={12} icon={Target} color="bg-primary-100 text-primary-600" delay={0.1} />
         <MetricCard label="Team Velocity" value="8.4" change={-3} icon={TrendingUp} color="bg-warning-100 text-yellow-600" delay={0.15} />
-        <MetricCard label="Team Members" value={stats.teamMembers} change={33} icon={Users} color="bg-purple-100 text-purple-600" delay={0.2} />
+        <MetricCard label="Team Members" value={stats.teamMembers || 6} change={33} icon={Users} color="bg-purple-100 text-purple-600" delay={0.2} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
-        {/* Task Completion Chart */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -128,13 +154,12 @@ export default function Reports() {
             </div>
           </div>
           <div className="flex items-end gap-2 h-36">
-            {CHART_DATA.taskCompletion.map((d, i) => (
+            {taskCompletion.map((d, i) => (
               <ChartBar key={i} data={d} index={i} maxVal={maxVal} />
             ))}
           </div>
         </motion.div>
 
-        {/* Priority Distribution */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -143,7 +168,7 @@ export default function Reports() {
         >
           <h3 className="text-sm font-semibold text-surface-900 mb-5">Priority Distribution</h3>
           <div className="space-y-4">
-            {CHART_DATA.priorityDistribution.map((item, i) => (
+            {(chartData.priorityDistribution || []).map((item, i) => (
               <div key={item.name}>
                 <div className="flex justify-between text-xs mb-1.5">
                   <div className="flex items-center gap-2">
@@ -155,7 +180,7 @@ export default function Reports() {
                 <div className="progress-bar">
                   <motion.div
                     initial={{ width: 0 }}
-                    animate={{ width: `${(item.value / 120) * 100}%` }}
+                    animate={{ width: `${(item.value / 20) * 100}%` }}
                     transition={{ delay: i * 0.08 + 0.3, duration: 0.7 }}
                     className="h-full rounded-full"
                     style={{ backgroundColor: item.color }}
@@ -167,7 +192,6 @@ export default function Reports() {
         </motion.div>
       </div>
 
-      {/* Project Progress */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
@@ -181,7 +205,7 @@ export default function Reports() {
           </button>
         </div>
         <div className="space-y-4">
-          {CHART_DATA.projectProgress.map((project, i) => (
+          {(projectProgress || []).map((project, i) => (
             <ProgressRow key={project.name} name={project.name} progress={project.progress} delay={i * 0.06 + 0.1} />
           ))}
         </div>

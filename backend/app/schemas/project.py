@@ -1,22 +1,27 @@
 from pydantic import BaseModel
-from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 class ProjectBase(BaseModel):
+    workspaceId: Optional[str] = None
     name: str
     description: Optional[str] = None
+    status: Optional[str] = "active"
+    priority: Optional[str] = "medium"
+    startDate: Optional[str] = None
+    dueDate: Optional[str] = None
+    progress: Optional[int] = 0
+    color: Optional[str] = "#2563EB"
+    icon: Optional[str] = "⚡"
+    members: Optional[List[str]] = []
+    tags: Optional[List[str]] = []
 
 class ProjectCreate(ProjectBase):
-    workspace_id: int
-
-class ProjectUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
+    pass
 
 class ProjectResponse(ProjectBase):
-    id: int
-    workspace_id: int
-    created_at: datetime
+    id: str
+    taskCount: Optional[int] = 0
+    completedTasks: Optional[int] = 0
 
     class Config:
         from_attributes = True
