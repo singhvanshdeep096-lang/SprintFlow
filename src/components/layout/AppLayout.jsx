@@ -14,7 +14,17 @@ import { checkAuthAsync } from '../../redux/authSlice';
 export default function AppLayout() {
   const dispatch = useDispatch();
   const collapsed = useSelector((state) => state.ui.sidebarCollapsed);
+  const theme = useSelector((state) => state.ui.theme);
   const sidebarWidth = collapsed ? 70 : 256;
+
+  // Sync theme class to <html> so all CSS dark overrides activate
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
 
   useEffect(() => {
     dispatch(checkAuthAsync());
