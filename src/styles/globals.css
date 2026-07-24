@@ -1,5 +1,15 @@
 @import "tailwindcss";
 
+/* ===== View Transitions — disable default cross-fade so our clip-path runs cleanly ===== */
+::view-transition-old(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
 /* ===== Tailwind v4 Theme Tokens ===== */
 @theme {
   /* Primary (Blue) */
