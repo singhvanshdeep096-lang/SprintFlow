@@ -92,6 +92,42 @@ export default function Navbar() {
     navigate('/login');
   };
 
+  const handleThemeToggle = (e) => {
+    const btn = e.currentTarget;
+    const rect = btn.getBoundingClientRect();
+    const x = Math.round(rect.left + rect.width / 2);
+    const y = Math.round(rect.top + rect.height / 2);
+
+    // View Transitions API: browser snapshots old + new states as bitmaps,
+    // so all text and content remain visible throughout the animation.
+    if (!document.startViewTransition) {
+      // Fallback for browsers without View Transitions support
+      dispatch(toggleTheme());
+      return;
+    }
+
+    const transition = document.startViewTransition(() => {
+      dispatch(toggleTheme());
+    });
+
+    // Once both snapshots are ready, drive the clip-path on the NEW state
+    transition.ready.then(() => {
+      document.documentElement.animate(
+        {
+          clipPath: [
+            `circle(0px at ${x}px ${y}px)`,
+            `circle(200vmax at ${x}px ${y}px)`,
+          ],
+        },
+        {
+          duration: 1100,
+          easing: 'cubic-bezier(0.45, 0, 0.35, 1)',
+          pseudoElement: '::view-transition-new(root)',
+        },
+      );
+    });
+  };
+
   return (
     <motion.header
       initial={{ y: -60 }}
@@ -168,7 +204,7 @@ export default function Navbar() {
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          onClick={() => dispatch(toggleTheme())}
+          onClick={handleThemeToggle}
           className="p-2 rounded-lg text-surface-500 hover:bg-surface-100 hover:text-surface-700 transition-colors"
         >
           {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
