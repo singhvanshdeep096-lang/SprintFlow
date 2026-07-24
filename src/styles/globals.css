@@ -82,7 +82,8 @@ body {
   background-color: #F8FAFC;
   color: #0F172A;
   min-height: 100vh;
-  line-height: 1.6;
+  line-height: 1.7;
+  font-size: 15px;
 }
 
 #root {
@@ -109,7 +110,7 @@ body {
 }
 
 /* ===== Typography ===== */
-h1,h2,h3,h4,h5,h6 { font-weight: 600; line-height: 1.2; letter-spacing: -0.025em; }
+h1,h2,h3,h4,h5,h6 { font-weight: 600; line-height: 1.25; letter-spacing: -0.02em; }
 a { color: inherit; text-decoration: none; }
 
 /* ===== Glass Effect ===== */
@@ -209,10 +210,10 @@ a { color: inherit; text-decoration: none; }
 .sidebar-link {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
+  gap: 12px;
+  padding: 10px 14px;
   border-radius: 8px;
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 500;
   color: #64748B;
   transition: all 0.15s cubic-bezier(0.4,0,0.2,1);
@@ -220,6 +221,7 @@ a { color: inherit; text-decoration: none; }
   white-space: nowrap;
   overflow: hidden;
   text-decoration: none;
+  letter-spacing: 0.01em;
 }
 .sidebar-link:hover { background-color: #F1F5F9; color: #0F172A; }
 .sidebar-link.active { background-color: #EFF6FF; color: #2563EB; }
@@ -292,3 +294,184 @@ a { color: inherit; text-decoration: none; }
 /* ===== Scrollbar hidden ===== */
 .scrollbar-none::-webkit-scrollbar { display: none; }
 .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ================================================================
+   DARK MODE — applied when <html class="dark"> is set
+   ================================================================ */
+
+html.dark {
+  color-scheme: dark;
+}
+
+/* --- Base --- */
+html.dark body {
+  background-color: #0D1117;
+  color: #E2E8F0;
+}
+
+/* --- Scrollbar --- */
+html.dark ::-webkit-scrollbar-track { background: #1E293B; }
+html.dark ::-webkit-scrollbar-thumb { background: #334155; }
+html.dark ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+/* --- Focus ring --- */
+html.dark :focus-visible {
+  outline-color: #60A5FA;
+}
+
+/* --- Selection --- */
+html.dark ::selection {
+  background-color: rgba(96,165,250,0.2);
+  color: #93C5FD;
+}
+
+/* --- Glass --- */
+html.dark .glass {
+  background: rgba(15,23,42,0.72);
+  border-color: rgba(255,255,255,0.08);
+}
+
+/* --- Card system --- */
+html.dark .card {
+  background: #161B22;
+  border-color: #21262D;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.3);
+}
+html.dark .card:hover {
+  border-color: #30363D;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+}
+html.dark .card-flat {
+  background: #161B22;
+  border-color: #21262D;
+}
+
+/* --- Input system --- */
+html.dark .input-base {
+  background: #0D1117;
+  border-color: #30363D;
+  color: #E2E8F0;
+}
+html.dark .input-base:hover { border-color: #3D444D; }
+html.dark .input-base:focus {
+  border-color: #60A5FA;
+  box-shadow: 0 0 0 3px rgba(96,165,250,0.15);
+}
+html.dark .input-base::placeholder { color: #4B5563; }
+html.dark .input-base:disabled {
+  background: #161B22;
+  color: #4B5563;
+}
+
+/* --- Dropdown --- */
+html.dark .dropdown-content {
+  background: #161B22;
+  border-color: #30363D;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3);
+}
+html.dark .dropdown-item { color: #C9D1D9; }
+html.dark .dropdown-item:hover { background-color: #21262D; color: #E6EDF3; }
+html.dark .dropdown-item.danger:hover { background-color: rgba(239,68,68,0.1); color: #F87171; }
+
+/* --- Sidebar --- */
+html.dark .sidebar-link { color: #64748B; }
+html.dark .sidebar-link:hover { background-color: #161B22; color: #C9D1D9; }
+html.dark .sidebar-link.active { background-color: rgba(37,99,235,0.15); color: #60A5FA; }
+
+/* --- Kanban --- */
+html.dark .task-card {
+  background: #161B22;
+  border-color: #21262D;
+}
+html.dark .task-card:hover {
+  border-color: #1D4ED8;
+  box-shadow: 0 4px 16px rgba(37,99,235,0.2);
+}
+
+/* --- Progress bar --- */
+html.dark .progress-bar { background: #21262D; }
+
+/* --- Badge --- */
+html.dark .badge { opacity: 0.9; }
+
+/* --- Shimmer skeleton --- */
+html.dark .shimmer {
+  background: linear-gradient(90deg, #161B22 25%, #21262D 50%, #161B22 75%);
+  background-size: 200% 100%;
+}
+
+/* --- Notification dot border --- */
+html.dark .notification-dot { border-color: #161B22; }
+
+/* --- Stat card backgrounds (dark tinted) --- */
+html.dark .stat-card-blue   { background: linear-gradient(135deg,rgba(30,58,138,0.3) 0%,rgba(30,64,175,0.2) 100%); }
+html.dark .stat-card-green  { background: linear-gradient(135deg,rgba(5,46,22,0.4) 0%,rgba(21,128,61,0.2) 100%); }
+html.dark .stat-card-yellow { background: linear-gradient(135deg,rgba(92,45,0,0.4) 0%,rgba(180,83,9,0.2) 100%); }
+html.dark .stat-card-red    { background: linear-gradient(135deg,rgba(127,29,29,0.4) 0%,rgba(185,28,28,0.2) 100%); }
+html.dark .stat-card-purple { background: linear-gradient(135deg,rgba(46,16,101,0.4) 0%,rgba(91,33,182,0.2) 100%); }
+
+/* --- Navbar --- */
+html.dark header {
+  background: rgba(13,17,23,0.95) !important;
+  border-bottom-color: #21262D !important;
+}
+
+/* --- Sidebar (aside element) --- */
+html.dark aside {
+  background: #0D1117!important;
+  border-right-color: #21262D !important;
+}
+
+/* --- AppLayout root wrapper --- */
+html.dark #root > div,
+html.dark [style*="background: #F8FAFC"] {
+  background: #0D1117!important;
+}
+
+/* --- Main content area --- */
+html.dark main {
+  background: #0D1117;
+}
+
+/* --- Tailwind surface colour overrides via CSS custom properties --- */
+html.dark {
+  --color-surface-50:  #0D1117;
+  --color-surface-100: #161B22;
+  --color-surface-200: #21262D;
+  --color-surface-300: #30363D;
+  --color-surface-400: #484F58;
+  --color-surface-500: #6E7681;
+  --color-surface-600: #8B949E;
+  --color-surface-700: #C9D1D9;
+  --color-surface-800: #E6EDF3;
+  --color-surface-900: #F0F6FC;
+}
+
+/* --- Collapse toggle button in Sidebar --- */
+html.dark aside button[class*="bg-white"] {
+  background: #161B22 !important;
+  border-color: #30363D !important;
+  color: #8B949E !important;
+}
+
+/* --- Generic white backgrounds (modal overlays, dropdown panels) --- */
+html.dark [class*="bg-white"] {
+  --tw-bg-opacity: 1;
+  background-color: #161B22 !important;
+}
+
+/* Allow primary and gradient elements to keep their colors */
+html.dark [class*="gradient-primary"],
+html.dark [class*="bg-primary-"],
+html.dark [class*="bg-success-"],
+html.dark [class*="bg-warning-"],
+html.dark [class*="bg-danger-"] {
+  background-color: unset !important;
+}
+
+/* Transition for smooth theme switching */
+html, body, aside, header, main, .card, .card-flat,
+.sidebar-link, .dropdown-content, .input-base, .task-card {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.2s ease;
+}
+

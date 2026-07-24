@@ -154,7 +154,7 @@ export default function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto px-3 pb-3 space-y-5 scrollbar-none">
+      <nav className="flex-1 overflow-y-auto px-3 pb-3 space-y-6 scrollbar-none">
         {NAV_SECTIONS.map((section) => (
           <div key={section.title}>
             <AnimatePresence mode="wait">
@@ -170,7 +170,7 @@ export default function Sidebar() {
                 </motion.p>
               )}
             </AnimatePresence>
-            <div className="space-y-0.5">
+            <div className="space-y-1">
               {section.items.map((item) => (
                 <NavItem key={item.path} item={item} collapsed={collapsed} unreadCount={unreadCount} />
               ))}

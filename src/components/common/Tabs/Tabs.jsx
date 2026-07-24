@@ -5,19 +5,19 @@ export default function Tabs({ tabs, activeTab, onTabChange, variant = 'line', c
   const variants = {
     line: {
       container: 'border-b border-surface-200',
-      tab: 'px-4 py-3 text-sm font-medium border-b-2 transition-all duration-150',
+      tab: 'px-5 py-3.5 text-[14px] font-semibold border-b-2 transition-all duration-150 tracking-wide',
       active: 'border-primary-600 text-primary-600',
       inactive: 'border-transparent text-surface-500 hover:text-surface-800 hover:border-surface-300',
     },
     pill: {
-      container: 'flex gap-1 bg-surface-100 p-1 rounded-xl',
-      tab: 'px-4 py-2 text-sm font-medium rounded-lg transition-all duration-150',
+      container: 'flex gap-1.5 bg-surface-100 p-1.5 rounded-xl',
+      tab: 'px-5 py-2.5 text-[14px] font-semibold rounded-lg transition-all duration-150 tracking-wide',
       active: 'bg-white text-surface-900 shadow-sm',
       inactive: 'text-surface-500 hover:text-surface-700',
     },
     button: {
-      container: 'flex gap-2',
-      tab: 'px-4 py-2 text-sm font-medium rounded-lg border transition-all duration-150',
+      container: 'flex gap-2.5',
+      tab: 'px-5 py-2.5 text-[14px] font-semibold rounded-lg border transition-all duration-150 tracking-wide',
       active: 'bg-primary-600 text-white border-primary-600',
       inactive: 'bg-white text-surface-600 border-surface-200 hover:border-surface-300',
     },
@@ -40,7 +40,7 @@ export default function Tabs({ tabs, activeTab, onTabChange, variant = 'line', c
             type="button"
             onClick={() => onTabChange(id)}
             whileTap={{ scale: 0.97 }}
-            className={`${v.tab} ${isActive ? v.active : v.inactive} flex items-center gap-2 whitespace-nowrap`}
+            className={`${v.tab} ${isActive ? v.active : v.inactive} flex items-center gap-2.5 whitespace-nowrap`}
           >
             {icon && <span>{icon}</span>}
             {label}
