@@ -38,7 +38,7 @@ export default function Dropdown({
 
   return (
     <div ref={containerRef} className={`relative inline-block ${className}`}>
-      <div onClick={() => setOpen((prev) => !prev)}>
+      <div onClick={() => setOpen((prev) => !prev)} className="flex items-center">
         {typeof trigger === 'function' ? trigger(open) : trigger}
       </div>
 

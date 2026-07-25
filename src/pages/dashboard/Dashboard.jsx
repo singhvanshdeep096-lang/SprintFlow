@@ -15,11 +15,11 @@ import userService from '../../services/user.service';
 // ===== Stat Card =====
 function StatCard({ label, value, icon: Icon, color, trend, delay = 0 }) {
   const colorMap = {
-    blue:   { bg: 'stat-card-blue',   iconBg: 'bg-primary-100',  iconColor: 'text-primary-600'  },
-    green:  { bg: 'stat-card-green',  iconBg: 'bg-success-100',  iconColor: 'text-success-600'  },
-    yellow: { bg: 'stat-card-yellow', iconBg: 'bg-yellow-100',   iconColor: 'text-yellow-600'   },
-    red:    { bg: 'stat-card-red',    iconBg: 'bg-red-100',      iconColor: 'text-red-600'      },
-    purple: { bg: 'stat-card-purple', iconBg: 'bg-purple-100',   iconColor: 'text-purple-600'   },
+    blue: { bg: 'stat-card-blue', iconBg: 'bg-primary-100', iconColor: 'text-primary-600' },
+    green: { bg: 'stat-card-green', iconBg: 'bg-success-100', iconColor: 'text-success-600' },
+    yellow: { bg: 'stat-card-yellow', iconBg: 'bg-yellow-100', iconColor: 'text-yellow-600' },
+    red: { bg: 'stat-card-red', iconBg: 'bg-red-100', iconColor: 'text-red-600' },
+    purple: { bg: 'stat-card-purple', iconBg: 'bg-purple-100', iconColor: 'text-purple-600' },
   };
 
   const c = colorMap[color] || colorMap.blue;
@@ -39,9 +39,8 @@ function StatCard({ label, value, icon: Icon, color, trend, delay = 0 }) {
         </div>
         {trend !== undefined && (
           <span
-            className={`flex items-center gap-0.5 text-[11px] font-semibold px-1.5 py-0.5 rounded-full flex-shrink-0 ${
-              trend >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'
-            }`}
+            className={`flex items-center gap-0.5 text-[11px] font-semibold px-1.5 py-0.5 rounded-full flex-shrink-0 ${trend >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'
+              }`}
           >
             <TrendingUp size={10} className={trend < 0 ? 'rotate-180' : ''} />
             {Math.abs(trend)}%
@@ -221,9 +220,9 @@ export default function Dashboard() {
   const [members, setMembers] = useState([]);
 
   useEffect(() => {
-    reportService.getDashboardStats().then((data) => setStats(data)).catch(() => {});
-    reportService.getChartData().then((data) => setChartData(data)).catch(() => {});
-    userService.getUsers().then((data) => setMembers(data)).catch(() => {});
+    reportService.getDashboardStats().then((data) => setStats(data)).catch(() => { });
+    reportService.getChartData().then((data) => setChartData(data)).catch(() => { });
+    userService.getUsers().then((data) => setMembers(data)).catch(() => { });
   }, []);
 
   const recentProjects = projects.slice(0, 4);

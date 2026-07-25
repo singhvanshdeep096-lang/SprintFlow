@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
+import { useSelector } from 'react-redux';
 
 const widthMap = {
   sm: 'max-w-sm',
@@ -24,6 +25,9 @@ export default function Drawer({
   showCloseButton = true,
   className = '',
 }) {
+  const sidebarCollapsed = useSelector((state) => state.ui?.sidebarCollapsed ?? false);
+  const sidebarWidth = sidebarCollapsed ? 70 : 256;
+
   useEffect(() => {
     if (isOpen) document.body.style.overflow = 'hidden';
     else document.body.style.overflow = '';
@@ -49,15 +53,22 @@ export default function Drawer({
     <AnimatePresence>
       {isOpen && (
         <>
+          {/* Overlay — starts after the sidebar so it doesn't cover it */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={closeOnOverlay ? onClose : undefined}
-            className="fixed inset-0 z-40"
-            style={{ background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(3px)' }}
+            className="fixed top-0 bottom-0 z-40"
+            style={{
+              left: sidebarWidth,
+              right: 0,
+              background: 'rgba(15, 23, 42, 0.4)',
+              backdropFilter: 'blur(3px)',
+            }}
           />
+          {/* Drawer panel */}
           <motion.div
             initial={variant.initial}
             animate={variant.animate}
