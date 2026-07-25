@@ -107,7 +107,7 @@ export default function Sidebar() {
       initial={false}
       animate={{ width: collapsed ? 70 : 256 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className="fixed left-0 top-0 h-full bg-white border-r border-surface-100 z-30 flex flex-col overflow-hidden shadow-sm"
+      className="fixed left-0 top-0 h-full bg-white border-r border-surface-100 z-30 flex flex-col shadow-sm"
     >
       {/* Logo */}
       <div className={`flex items-center h-[60px] border-b border-surface-100 shrink-0 ${collapsed ? 'justify-center px-4' : 'px-5'}`}>
