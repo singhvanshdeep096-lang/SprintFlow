@@ -315,18 +315,20 @@ export default function Workspaces() {
         transition={{ duration: 0.45 }}
         className="relative rounded-2xl mb-7"
         style={{
-          background: 'linear-gradient(135deg, #1e3a8a 0%, #2563eb 45%, #7c3aed 100%)',
+          background: 'linear-gradient(135deg, #1e3560 0%, #2d5096 50%, #3b5fbf 100%)',
           padding: '20px 24px',
           overflow: 'hidden',
         }}
       >
+        {/* Soft ambient glow — top right */}
         <div
-          className="absolute top-0 right-0 w-72 h-72 rounded-full pointer-events-none"
-          style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%)', transform: 'translate(30%, -40%)' }}
+          className="absolute top-0 right-0 w-80 h-80 rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.07) 0%, transparent 65%)', transform: 'translate(35%, -45%)' }}
         />
+        {/* Subtle bottom-left warmth */}
         <div
-          className="absolute bottom-0 left-1/3 w-48 h-48 rounded-full pointer-events-none"
-          style={{ background: 'radial-gradient(circle, rgba(167,139,250,0.15) 0%, transparent 70%)', transform: 'translateY(50%)' }}
+          className="absolute bottom-0 left-1/4 w-56 h-56 rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(147,197,253,0.08) 0%, transparent 65%)', transform: 'translateY(55%)' }}
         />
 
         <div className="absolute top-5 right-6" onClick={createModal.open}>
@@ -334,7 +336,11 @@ export default function Workspaces() {
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.97 }}
             className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm cursor-pointer"
-            style={{ background: 'white', color: '#2563eb', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}
+            style={{
+              background: 'rgba(255,255,255,0.95)',
+              color: '#2d5096',
+              boxShadow: '0 2px 12px rgba(0,0,0,0.12)',
+            }}
           >
             <Plus size={15} />
             New Workspace
@@ -343,11 +349,11 @@ export default function Workspaces() {
 
         <div className="relative pr-44">
           <div className="flex items-center gap-1.5 mb-1.5">
-            <Globe size={13} className="text-blue-300" />
-            <span style={{ color: '#93c5fd', fontSize: 12, fontWeight: 500 }}>Organization</span>
+            <Globe size={13} style={{ color: '#93c5fd', opacity: 0.85 }} />
+            <span style={{ color: '#bfdbfe', fontSize: 12, fontWeight: 500, opacity: 0.9 }}>Organization</span>
           </div>
-          <h1 className="text-2xl font-bold text-white mb-0.5">Workspaces</h1>
-          <p style={{ color: '#93c5fd', fontSize: 13 }}>
+          <h1 className="text-2xl font-bold text-white mb-0.5" style={{ letterSpacing: '-0.01em' }}>Workspaces</h1>
+          <p style={{ color: '#bfdbfe', fontSize: 13, opacity: 0.85 }}>
             Manage all your team workspaces in one place
           </p>
 
@@ -366,13 +372,13 @@ export default function Workspaces() {
               >
                 <div
                   className="rounded-lg flex items-center justify-center"
-                  style={{ width: 28, height: 28, background: 'rgba(255,255,255,0.15)' }}
+                  style={{ width: 28, height: 28, background: 'rgba(255,255,255,0.12)' }}
                 >
                   <Icon size={13} color="white" />
                 </div>
                 <div>
                   <p className="font-bold text-white leading-none" style={{ fontSize: 16 }}>{value}</p>
-                  <p style={{ color: '#93c5fd', fontSize: 11, marginTop: 2 }}>{label}</p>
+                  <p style={{ color: '#bfdbfe', fontSize: 11, marginTop: 2, opacity: 0.85 }}>{label}</p>
                 </div>
               </motion.div>
             ))}

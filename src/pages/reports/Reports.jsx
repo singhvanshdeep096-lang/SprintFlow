@@ -100,8 +100,8 @@ export default function Reports() {
   });
 
   useEffect(() => {
-    reportService.getDashboardStats().then((data) => setStats(data)).catch(() => {});
-    reportService.getChartData().then((data) => setChartData(data)).catch(() => {});
+    reportService.getDashboardStats().then((data) => setStats(data)).catch(() => { });
+    reportService.getChartData().then((data) => setChartData(data)).catch(() => { });
   }, []);
 
   const taskCompletion = chartData.taskCompletion.length > 0 ? chartData.taskCompletion : [
