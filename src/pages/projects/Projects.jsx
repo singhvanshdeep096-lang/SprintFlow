@@ -286,7 +286,7 @@ export default function Projects() {
   const statusOptions = ['all', 'active', 'on_hold', 'completed', 'archived'];
 
   return (
-    <PageTransition className="p-6 max-w-[1400px] mx-auto">
+    <PageTransition className="p-6 w-full max-w-[1700px] mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-surface-900">Projects</h1>

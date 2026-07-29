@@ -308,7 +308,7 @@ export default function Workspaces() {
   };
 
   return (
-    <PageTransition className="p-6 max-w-[1400px] mx-auto">
+    <PageTransition className="p-6 w-full max-w-[1700px] mx-auto">
       <motion.div
         initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: 1, y: 0 }}

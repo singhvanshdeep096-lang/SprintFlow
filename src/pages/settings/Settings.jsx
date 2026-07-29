@@ -107,11 +107,10 @@ function AppearanceSettings() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => dispatch(toggleTheme())}
-              className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
-                theme === id
+              className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${theme === id
                   ? 'border-primary-500 bg-primary-50'
                   : 'border-surface-200 hover:border-surface-300'
-              }`}
+                }`}
             >
               <Icon size={20} className={theme === id ? 'text-primary-600' : 'text-surface-500'} />
               <span className={`text-xs font-medium ${theme === id ? 'text-primary-700' : 'text-surface-600'}`}>{label}</span>
@@ -128,9 +127,8 @@ function AppearanceSettings() {
             <motion.button
               key={d}
               whileHover={{ scale: 1.02 }}
-              className={`py-3 rounded-xl border-2 text-xs font-medium transition-all ${
-                i === 1 ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-surface-200 text-surface-600 hover:border-surface-300'
-              }`}
+              className={`py-3 rounded-xl border-2 text-xs font-medium transition-all ${i === 1 ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-surface-200 text-surface-600 hover:border-surface-300'
+                }`}
             >
               {d}
             </motion.button>
@@ -207,7 +205,7 @@ function SecuritySettings() {
           <ToggleSwitch checked={twoFA} onChange={(v) => { setTwoFA(v); success(v ? '2FA Enabled' : '2FA Disabled', ''); }} />
         </SettingRow>
         <SettingRow label="SMS Authentication" description="Receive codes via text message">
-          <ToggleSwitch checked={false} onChange={() => {}} />
+          <ToggleSwitch checked={false} onChange={() => { }} />
         </SettingRow>
       </div>
 

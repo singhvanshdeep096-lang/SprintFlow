@@ -29,36 +29,34 @@ function StatCard({ label, value, icon: Icon, color, trend, delay = 0 }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.4, ease: 'easeOut' }}
-      whileHover={{ y: -3, transition: { duration: 0.2 } }}
-      className={`${c.bg} rounded-2xl border border-white/60 flex flex-col justify-between overflow-hidden`}
-      style={{ padding: '14px 16px', minHeight: '110px' }}
+      whileHover={{ y: -4, transition: { duration: 0.2 } }}
+      className={`${c.bg} rounded-[16px] border border-white/60 dark:border-surface-700/50 p-6 flex flex-col justify-between h-full shadow-card hover:shadow-panel transition-all`}
     >
       <div className="flex items-center justify-between">
-        <div className={`${c.iconBg} rounded-xl flex items-center justify-center flex-shrink-0`} style={{ width: 34, height: 34 }}>
-          <Icon size={16} className={c.iconColor} />
+        <div className={`${c.iconBg} w-10 h-10 rounded-xl flex items-center justify-center shrink-0`}>
+          <Icon size={20} className={c.iconColor} />
         </div>
         {trend !== undefined && (
           <span
-            className={`flex items-center gap-0.5 text-[11px] font-semibold px-1.5 py-0.5 rounded-full flex-shrink-0 ${trend >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'
+            className={`flex items-center gap-1 text-[13px] font-semibold px-2.5 py-1 rounded-full shrink-0 ${trend >= 0 ? 'bg-green-100 text-green-700 dark:bg-green-950/60 dark:text-green-400' : 'bg-red-100 text-red-600 dark:bg-red-950/60 dark:text-red-400'
               }`}
           >
-            <TrendingUp size={10} className={trend < 0 ? 'rotate-180' : ''} />
+            <TrendingUp size={12} className={trend < 0 ? 'rotate-180' : ''} />
             {Math.abs(trend)}%
           </span>
         )}
       </div>
 
-      <div style={{ marginTop: 10 }}>
+      <div className="mt-6">
         <motion.p
           initial={{ scale: 0.7, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: delay + 0.1, type: 'spring', stiffness: 260 }}
-          className="font-bold text-surface-900 leading-none"
-          style={{ fontSize: 26 }}
+          className="text-[36px] font-bold text-surface-900 leading-tight tracking-tight"
         >
           {(value || 0).toLocaleString()}
         </motion.p>
-        <p className="text-surface-500 font-medium" style={{ fontSize: 12, marginTop: 4 }}>{label}</p>
+        <p className="text-[15px] font-medium text-surface-500 mt-2">{label}</p>
       </div>
     </motion.div>
   );
@@ -69,12 +67,12 @@ function ActivityItem({ activity, members, delay }) {
   const member = members.find((m) => m.id === activity.userId);
 
   const actionColors = {
-    moved: 'text-primary-600',
-    completed: 'text-success-600',
-    created: 'text-purple-600',
-    commented: 'text-yellow-600',
-    started: 'text-blue-600',
-    'created project': 'text-indigo-600',
+    moved: 'text-primary-600 font-semibold',
+    completed: 'text-success-600 font-semibold',
+    created: 'text-purple-600 font-semibold',
+    commented: 'text-yellow-600 font-semibold',
+    started: 'text-blue-600 font-semibold',
+    'created project': 'text-indigo-600 font-semibold',
   };
 
   const formatTime = (dateStr) => {
@@ -91,26 +89,26 @@ function ActivityItem({ activity, members, delay }) {
       initial={{ opacity: 0, x: -12 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay, duration: 0.3 }}
-      className="flex gap-3 py-3 border-b border-surface-50 last:border-0"
+      className="flex items-start gap-4 p-4 rounded-xl hover:bg-surface-50/80 transition-colors"
     >
-      <Avatar name={member?.name || 'User'} size="sm" color={member?.color} />
+      <Avatar name={member?.name || 'User'} size="md" color={member?.color} className="mt-0.5 shrink-0" />
       <div className="flex-1 min-w-0">
-        <p className="text-sm text-surface-700 leading-snug">
-          <span className="font-semibold text-surface-900">{member?.name || 'User'}</span>{' '}
+        <p className="text-[14px] text-surface-700 leading-relaxed">
+          <span className="font-bold text-surface-900">{member?.name || 'User'}</span>{' '}
           <span className={actionColors[activity.action] || 'text-surface-600'}>{activity.action}</span>{' '}
-          <span className="font-medium text-surface-800">{activity.target}</span>
+          <span className="font-semibold text-surface-800">{activity.target}</span>
           {activity.from && activity.to && (
-            <span className="text-surface-500"> from <span className="font-medium">{activity.from}</span> to <span className="font-medium">{activity.to}</span></span>
+            <span className="text-surface-500"> from <span className="font-semibold">{activity.from}</span> to <span className="font-semibold">{activity.to}</span></span>
           )}
         </p>
-        <p className="text-xs text-surface-400 mt-0.5">{formatTime(activity.createdAt)}</p>
+        <p className="text-[13px] text-surface-400 mt-1">{formatTime(activity.createdAt)}</p>
       </div>
     </motion.div>
   );
 }
 
 // ===== Chart Placeholder =====
-function ChartPlaceholder({ title, subtitle, chartData, height = 160 }) {
+function ChartPlaceholder({ title, subtitle, chartData, height = 220 }) {
   const completion = chartData?.taskCompletion || [
     { month: 'Feb', completed: 42, created: 55 },
     { month: 'Mar', completed: 58, created: 62 },
@@ -121,34 +119,37 @@ function ChartPlaceholder({ title, subtitle, chartData, height = 160 }) {
   ];
 
   return (
-    <div className="card p-5 h-full">
-      <div className="flex items-center justify-between mb-4">
+    <div className="card p-6 rounded-[16px] h-full flex flex-col justify-between shadow-card">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-sm font-semibold text-surface-900">{title}</h3>
-          {subtitle && <p className="text-xs text-surface-400 mt-0.5">{subtitle}</p>}
+          <h3 className="text-[20px] font-bold text-surface-900">{title}</h3>
+          {subtitle && <p className="text-[14px] text-surface-500 mt-1 font-medium">{subtitle}</p>}
         </div>
-        <button className="text-xs text-primary-600 font-medium hover:text-primary-700 transition-colors">View All</button>
+        <button className="text-[14px] text-primary-600 font-semibold hover:text-primary-700 transition-colors cursor-pointer">
+          View All
+        </button>
       </div>
-      <div className="chart-area rounded-xl flex items-end justify-around gap-1.5 px-2" style={{ height }}>
+
+      <div className="chart-area rounded-xl flex items-end justify-around gap-3 px-6 py-4 bg-surface-50/50" style={{ height }}>
         {completion.map((d, i) => (
-          <div key={i} className="flex flex-col items-center gap-1 flex-1">
-            <div className="w-full flex flex-col gap-0.5 justify-end" style={{ height: height - 24 }}>
+          <div key={i} className="flex flex-col items-center gap-2 flex-1">
+            <div className="w-full flex flex-col gap-1 justify-end" style={{ height: height - 40 }}>
               <motion.div
                 initial={{ height: 0 }}
                 animate={{ height: `${(d.created / 100) * 70}%` }}
                 transition={{ delay: i * 0.06 + 0.2, duration: 0.5, ease: 'easeOut' }}
-                className="w-full rounded-t-sm"
-                style={{ background: 'rgba(37, 99, 235, 0.15)', minHeight: 4 }}
+                className="w-full rounded-t-md"
+                style={{ background: 'rgba(37, 99, 235, 0.2)', minHeight: 6 }}
               />
               <motion.div
                 initial={{ height: 0 }}
                 animate={{ height: `${(d.completed / 100) * 70}%` }}
                 transition={{ delay: i * 0.06 + 0.3, duration: 0.5, ease: 'easeOut' }}
-                className="w-full rounded-t-sm"
-                style={{ background: 'linear-gradient(180deg, #2563EB, #7C3AED)', minHeight: 4 }}
+                className="w-full rounded-t-md shadow-xs"
+                style={{ background: 'linear-gradient(180deg, #2563EB, #7C3AED)', minHeight: 6 }}
               />
             </div>
-            <span className="text-[9px] text-surface-400 font-medium">{d.month}</span>
+            <span className="text-[13px] text-surface-500 font-semibold">{d.month}</span>
           </div>
         ))}
       </div>
@@ -167,34 +168,34 @@ function ProjectMiniCard({ project, delay }) {
       transition={{ delay }}
       whileHover={{ x: 4 }}
       onClick={() => navigate(`/projects/${project.id}`)}
-      className="flex items-center gap-3 p-3 rounded-xl hover:bg-surface-50 cursor-pointer group transition-colors"
+      className="flex items-center gap-4 p-3.5 rounded-xl hover:bg-surface-50 cursor-pointer group transition-all"
     >
       <div
-        className="w-9 h-9 rounded-xl flex items-center justify-center text-base shrink-0"
-        style={{ backgroundColor: `${project.color || '#2563EB'}15` }}
+        className="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 shadow-xs"
+        style={{ backgroundColor: `${project.color || '#2563EB'}18` }}
       >
         {project.icon || '⚡'}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-surface-800 truncate">{project.name}</p>
-        <div className="flex items-center gap-2 mt-1">
-          <div className="progress-bar flex-1">
+        <p className="text-[14px] font-bold text-surface-900 truncate">{project.name}</p>
+        <div className="flex items-center gap-3 mt-1.5">
+          <div className="progress-bar flex-1 h-2 rounded-full overflow-hidden bg-surface-100">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${project.progress || 0}%` }}
               transition={{ delay: delay + 0.2, duration: 0.8, ease: 'easeOut' }}
-              className="progress-fill"
+              className="progress-fill h-full rounded-full bg-primary-600"
             />
           </div>
-          <span className="text-xs text-surface-500 shrink-0">{project.progress || 0}%</span>
+          <span className="text-[13px] font-semibold text-surface-500 shrink-0">{project.progress || 0}%</span>
         </div>
       </div>
-      <ArrowUpRight size={14} className="text-surface-300 group-hover:text-primary-500 transition-colors shrink-0" />
+      <ArrowUpRight size={16} className="text-surface-400 group-hover:text-primary-600 transition-colors shrink-0" />
     </motion.div>
   );
 }
 
-// ===== Main Dashboard =====
+// ===== Main Dashboard Component =====
 export default function Dashboard() {
   const navigate = useNavigate();
   const user = useSelector((state) => state.auth.user);
@@ -234,14 +235,15 @@ export default function Dashboard() {
   ];
 
   return (
-    <PageTransition className="p-6 max-w-[1400px] mx-auto">
-      {/* Header */}
-      <div className="flex items-start justify-between mb-8">
+    <PageTransition className="px-8 pt-8 pb-12 w-full max-w-[1600px] mx-auto space-y-8">
+
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <motion.h1
             initial={{ opacity: 0, x: -16 }}
             animate={{ opacity: 1, x: 0 }}
-            className="text-2xl font-bold text-surface-900"
+            className="text-[36px] font-bold text-surface-900 leading-tight tracking-tight"
           >
             Good morning, {user?.name?.split(' ')[0] || 'User'} 👋
           </motion.h1>
@@ -249,35 +251,29 @@ export default function Dashboard() {
             initial={{ opacity: 0, x: -12 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-surface-500 mt-1 text-sm"
+            className="text-[15px] font-medium text-surface-500 mt-2"
           >
             Here's what's happening across your workspaces today.
           </motion.p>
         </div>
+
         <motion.div
           initial={{ opacity: 0, x: 12 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.15 }}
-          className="flex gap-2"
+          className="flex items-center gap-4 shrink-0"
         >
-          <Button variant="secondary" icon={<Calendar size={15} />} size="sm">
+          <Button variant="secondary" icon={<Calendar size={16} />} size="md">
             This Week
           </Button>
-          <Button variant="primary" icon={<Plus size={15} />} size="sm" onClick={() => navigate('/projects')}>
+          <Button variant="primary" icon={<Plus size={16} />} size="md" onClick={() => navigate('/projects')}>
             New Project
           </Button>
         </motion.div>
       </div>
 
-      {/* Stats Grid */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(6, 1fr)',
-          gap: 12,
-          marginBottom: 32,
-        }}
-      >
+      {/* Stat Cards Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-6">
         <StatCard label="Total Projects" value={stats.totalProjects || projects.length} icon={FolderKanban} color="blue" trend={12} delay={0.05} />
         <StatCard label="Total Tasks" value={stats.totalTasks || tasks.length} icon={CheckSquare} color="purple" trend={8} delay={0.1} />
         <StatCard label="Completed" value={stats.completedTasks} icon={CheckCircle2} color="green" trend={24} delay={0.15} />
@@ -286,102 +282,122 @@ export default function Dashboard() {
         <StatCard label="Team Members" value={stats.teamMembers || members.length} icon={Users} color="blue" trend={2} delay={0.3} />
       </div>
 
-      {/* Main Content */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
-        <div className="xl:col-span-2">
+      {/* Main Charts & Priority Grid (70% / 30% Desktop Grid) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-10 gap-6">
+
+        {/* Main Content Column (70%) */}
+        <div className="lg:col-span-7">
           <ChartPlaceholder
             title="Task Completion"
             subtitle="Tasks completed vs created over time"
             chartData={chartData}
-            height={180}
+            height={220}
           />
         </div>
 
-        <div className="card p-5">
-          <h3 className="text-sm font-semibold text-surface-900 mb-4">Priority Distribution</h3>
-          <div className="space-y-3">
-            {(chartData.priorityDistribution || []).map((item, i) => (
-              <motion.div
-                key={item.name}
-                initial={{ opacity: 0, x: 12 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 * i + 0.2 }}
-              >
-                <div className="flex items-center justify-between mb-1.5">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                    <span className="text-sm text-surface-700">{item.name}</span>
+        {/* Priority Distribution Widget (30%) */}
+        <div className="lg:col-span-3 card p-6 rounded-[16px] flex flex-col justify-between shadow-card">
+          <div>
+            <h3 className="text-[20px] font-bold text-surface-900 mb-1">Priority Distribution</h3>
+            <p className="text-[13px] text-surface-500 mb-6">Task workload breakdown</p>
+
+            <div className="space-y-4">
+              {(chartData.priorityDistribution || []).map((item, i) => (
+                <motion.div
+                  key={item.name}
+                  initial={{ opacity: 0, x: 12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1 * i + 0.2 }}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                      <span className="text-[14px] font-semibold text-surface-800">{item.name}</span>
+                    </div>
+                    <span className="text-[14px] font-bold text-surface-900">{item.value}</span>
                   </div>
-                  <span className="text-sm font-semibold text-surface-800">{item.value}</span>
-                </div>
-                <div className="progress-bar">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${Math.min(100, (item.value / 20) * 100)}%` }}
-                    transition={{ delay: i * 0.08 + 0.3, duration: 0.6, ease: 'easeOut' }}
-                    className="h-full rounded-full"
-                    style={{ backgroundColor: item.color }}
-                  />
-                </div>
-              </motion.div>
-            ))}
+                  <div className="progress-bar h-2 rounded-full overflow-hidden bg-surface-100">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.min(100, (item.value / 20) * 100)}%` }}
+                      transition={{ delay: i * 0.08 + 0.3, duration: 0.6, ease: 'easeOut' }}
+                      className="h-full rounded-full"
+                      style={{ backgroundColor: item.color }}
+                    />
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
 
-          <div className="mt-5 pt-4 border-t border-surface-100">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-surface-500">This week's completion</span>
-              <span className="font-semibold text-success-600">{stats.thisWeekCompleted || 18} tasks</span>
+          <div className="mt-6 pt-4 border-t border-surface-100">
+            <div className="flex items-center justify-between text-[13px]">
+              <span className="text-surface-500 font-medium">This week's completion</span>
+              <span className="font-bold text-success-600">{stats.thisWeekCompleted || 18} tasks</span>
             </div>
           </div>
         </div>
+
       </div>
 
-      {/* Bottom Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 card p-5">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Activity size={16} className="text-surface-400" />
-              <h3 className="text-sm font-semibold text-surface-900">Recent Activity</h3>
+      {/* Activity & Sidebar Section (70% / 30% Desktop Grid) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-10 gap-6">
+
+        {/* Activity Feed Column (70%) */}
+        <div className="lg:col-span-7 card p-6 rounded-[16px] shadow-card">
+          <div className="flex items-center justify-between mb-6 pb-4 border-b border-surface-100">
+            <div className="flex items-center gap-2.5">
+              <Activity size={20} className="text-primary-600" />
+              <h3 className="text-[20px] font-bold text-surface-900">Recent Activity</h3>
             </div>
-            <button className="text-xs text-primary-600 hover:text-primary-700 font-medium transition-colors">
+            <button className="text-[14px] font-semibold text-primary-600 hover:text-primary-700 transition-colors cursor-pointer">
               View all
             </button>
           </div>
-          <div className="divide-y divide-surface-50">
+
+          <div className="space-y-3">
             {mockActivities.map((activity, i) => (
               <ActivityItem key={activity.id} activity={activity} members={members} delay={i * 0.05} />
             ))}
           </div>
         </div>
 
-        <div className="space-y-5">
-          <div className="card p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-surface-900">Active Projects</h3>
-              <button onClick={() => navigate('/projects')} className="text-xs text-primary-600 hover:text-primary-700 font-medium transition-colors">
+        {/* Sidebar Widgets Column (30%) */}
+        <div className="lg:col-span-3 space-y-6">
+
+          {/* Active Projects Widget */}
+          <div className="card p-6 rounded-[16px] shadow-card">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-[16px] font-bold text-surface-900">Active Projects</h3>
+              <button
+                onClick={() => navigate('/projects')}
+                className="text-[13px] font-semibold text-primary-600 hover:text-primary-700 transition-colors cursor-pointer"
+              >
                 All projects
               </button>
             </div>
-            <div className="space-y-1">
+            <div className="space-y-2">
               {recentProjects.map((project, i) => (
                 <ProjectMiniCard key={project.id} project={project} delay={i * 0.06} />
               ))}
             </div>
           </div>
 
-          <div className="card p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-surface-900">Team</h3>
-              <span className="text-xs text-surface-400">{members.length} members</span>
+          {/* Team Widget */}
+          <div className="card p-6 rounded-[16px] shadow-card">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-[16px] font-bold text-surface-900">Team Members</h3>
+              <span className="text-[13px] font-semibold text-surface-500">{members.length} members</span>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-3">
               {members.map((member, i) => (
                 <motion.div
                   key={member.id}
                   initial={{ scale: 0, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ delay: i * 0.05 + 0.1, type: 'spring', stiffness: 300 }}
+                  whileHover={{ scale: 1.1 }}
+                  className="cursor-pointer"
                 >
                   <Avatar name={member.name} size="md" color={member.color} badge badgeColor="#22C55E" />
                 </motion.div>
@@ -389,9 +405,10 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="card p-5">
-            <h3 className="text-sm font-semibold text-surface-900 mb-3">Quick Actions</h3>
-            <div className="space-y-2">
+          {/* Quick Actions Widget */}
+          <div className="card p-6 rounded-[16px] shadow-card">
+            <h3 className="text-[16px] font-bold text-surface-900 mb-4">Quick Actions</h3>
+            <div className="space-y-3">
               {[
                 { label: 'Create a task', icon: CheckSquare, path: '/tasks', color: 'text-primary-600' },
                 { label: 'New project', icon: FolderKanban, path: '/projects', color: 'text-purple-600' },
@@ -404,17 +421,24 @@ export default function Dashboard() {
                   transition={{ delay: i * 0.06 }}
                   whileHover={{ x: 4 }}
                   onClick={() => navigate(path)}
-                  className="w-full flex items-center gap-2.5 p-2.5 rounded-lg hover:bg-surface-50 transition-colors text-left group"
+                  className="w-full flex items-center gap-3.5 p-3 rounded-xl hover:bg-surface-50 transition-all text-left group border border-surface-100 hover:border-surface-200 cursor-pointer"
                 >
-                  <Icon size={15} className={color} />
-                  <span className="text-sm text-surface-700 group-hover:text-surface-900 transition-colors">{label}</span>
-                  <ArrowUpRight size={12} className="ml-auto text-surface-300 group-hover:text-surface-500 transition-colors" />
+                  <div className="w-8 h-8 rounded-lg bg-surface-100 flex items-center justify-center shrink-0">
+                    <Icon size={16} className={color} />
+                  </div>
+                  <span className="text-[14px] font-semibold text-surface-800 group-hover:text-surface-900 transition-colors">
+                    {label}
+                  </span>
+                  <ArrowUpRight size={14} className="ml-auto text-surface-400 group-hover:text-primary-600 transition-colors" />
                 </motion.button>
               ))}
             </div>
           </div>
+
         </div>
+
       </div>
+
     </PageTransition>
   );
 }

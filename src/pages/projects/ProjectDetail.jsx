@@ -46,7 +46,7 @@ export default function ProjectDetail() {
   };
 
   return (
-    <PageTransition className="p-6 max-w-[1200px] mx-auto">
+    <PageTransition className="p-6 w-full max-w-[1700px] mx-auto">
       <motion.button
         initial={{ opacity: 0, x: -8 }}
         animate={{ opacity: 1, x: 0 }}
