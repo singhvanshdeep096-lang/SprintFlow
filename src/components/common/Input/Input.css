@@ -1,0 +1,97 @@
+/* =====================================================
+   Input Component — plain CSS
+   ===================================================== */
+
+.input-wrap        { }
+.input-wrap--full  { width: 100%; }
+
+/* Label */
+.input-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-surface-700, #334155);
+  margin-bottom: 6px;
+}
+
+.input-required {
+  color: #EF4444;
+  margin-left: 3px;
+}
+
+/* Input container (for icon positioning) */
+.input-field-wrap {
+  position: relative;
+}
+
+/* Icon slots */
+.input-icon-left {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-surface-400, #94A3B8);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon-right {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-surface-400, #94A3B8);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+
+/* Password toggle */
+.input-pw-toggle {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-surface-400, #94A3B8);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s ease;
+}
+.input-pw-toggle:hover { color: var(--color-surface-600, #475569); }
+
+/* Size modifiers applied to .input-base */
+.input--sm { padding: 6px 12px;    font-size: 0.8125rem; }
+.input--md { padding: 10px 14px;   font-size: 0.875rem;  }
+.input--lg { padding: 12px 16px;   font-size: 0.9375rem; }
+
+/* Padding overrides when icons present */
+.input--has-left  { padding-left:  40px; }
+.input--has-right { padding-right: 40px; }
+
+/* Error state */
+.input--error {
+  border-color: #EF4444 !important;
+}
+.input--error:focus {
+  box-shadow: 0 0 0 3px rgba(239,68,68,0.1) !important;
+}
+
+/* Hint / error messages */
+.input-error-msg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 0.75rem;
+  color: #DC2626;
+}
+
+.input-hint {
+  margin-top: 6px;
+  font-size: 0.75rem;
+  color: var(--color-surface-500, #64748B);
+}

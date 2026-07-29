@@ -1,0 +1,106 @@
+/* =====================================================
+   Profile Page — plain CSS
+   ===================================================== */
+
+.profile-page { padding: 24px; }
+.profile-title { font-size: 1.5rem; font-weight: 700; color: var(--color-surface-900); letter-spacing: -0.02em; margin-bottom: 24px; }
+
+/* Avatar card header */
+.profile-avatar-card { display: flex; align-items: center; gap: 20px; }
+.profile-avatar-wrap { position: relative; }
+.profile-avatar-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.profile-avatar-wrap:hover .profile-avatar-overlay { opacity: 1; }
+
+.profile-avatar-info h2 { font-size: 1.25rem; font-weight: 700; color: var(--color-surface-900); }
+.profile-avatar-role  { font-size: 0.875rem; color: var(--color-surface-500); margin-top: 2px; }
+.profile-avatar-email { font-size: 0.75rem;  color: var(--color-surface-400); margin-top: 2px; }
+.profile-avatar-tz    { font-size: 0.75rem;  color: var(--color-surface-400); margin-top: 2px; display: flex; align-items: center; gap: 4px; }
+
+.profile-avatar-joined { margin-left: auto; text-align: right; }
+.profile-avatar-joined-label { font-size: 0.75rem; color: var(--color-surface-400); }
+.profile-avatar-joined-date  { font-size: 0.875rem; font-weight: 600; color: var(--color-surface-700); margin-top: 2px; }
+@media (max-width: 639px) { .profile-avatar-joined { display: none; } }
+
+/* Card header */
+.profile-card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.profile-card-title { font-size: 1rem; font-weight: 600; color: var(--color-surface-900); }
+.profile-card-actions { display: flex; gap: 8px; }
+
+/* Personal info form grid */
+.profile-form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+@media (min-width: 768px) {
+  .profile-form-grid { grid-template-columns: repeat(2, 1fr); }
+}
+.profile-form-full { }
+@media (min-width: 768px) {
+  .profile-form-full { grid-column: 1 / -1; }
+}
+
+/* Bio label */
+.profile-bio-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-surface-700);
+  margin-bottom: 6px;
+}
+
+/* Section stack */
+.profile-section-stack { display: flex; flex-direction: column; gap: 20px; }
+
+/* Session item */
+.profile-session-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--color-surface-100);
+  transition: background-color 0.15s ease;
+}
+.profile-session-row:hover { background: var(--color-surface-50); }
+
+.profile-session-left { display: flex; align-items: center; gap: 12px; }
+.profile-session-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: var(--color-surface-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-session-device { font-size: 0.875rem; font-weight: 600; color: var(--color-surface-800); display: flex; align-items: center; gap: 8px; }
+.profile-session-meta   { font-size: 0.75rem; color: var(--color-surface-400); margin-top: 2px; }
+
+.profile-current-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #15803D;
+  background: #DCFCE7;
+  padding: 2px 6px;
+  border-radius: 9999px;
+}
+
+.profile-session-stack { display: flex; flex-direction: column; gap: 12px; }

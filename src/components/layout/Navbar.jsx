@@ -2,34 +2,34 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Bell, Search, Plus, Sun, Moon, ChevronDown, User, Settings, LogOut, Menu, X, Zap } from 'lucide-react';
+import { Bell, Search, Plus, Sun, Moon, ChevronDown, User, Settings, LogOut, Menu, X } from 'lucide-react';
 import Avatar from '../common/Avatar';
 import Dropdown from '../common/Dropdown';
 import { toggleTheme, toggleMobileSidebar } from '../../redux/uiSlice';
 import { logoutAsync } from '../../redux/authSlice';
 import { useToast } from '../../hooks/useToast';
+import './Layout.css';
 
 function ProfileMenu({ user, onLogout }) {
+  const navigate = useNavigate();
   return (
-    <div className="py-2 w-56">
-      {/* User Info */}
-      <div className="px-4 pb-3 mb-1 border-b border-surface-100">
-        <p className="text-sm font-semibold text-surface-900">{user?.name}</p>
-        <p className="text-xs text-surface-500 truncate">{user?.email}</p>
+    <div className="profile-menu">
+      <div className="profile-menu-info">
+        <p className="profile-menu-name">{user?.name}</p>
+        <p className="profile-menu-email">{user?.email}</p>
       </div>
-      {/* Menu Items */}
       {[
         { icon: User, label: 'View Profile', path: '/profile' },
         { icon: Settings, label: 'Settings', path: '/settings' },
       ].map(({ icon: Icon, label, path }) => (
         <a key={label} href={path} className="dropdown-item">
-          <Icon size={15} className="text-surface-400" />
+          <Icon size={15} style={{ color: 'var(--color-surface-400)' }} />
           {label}
         </a>
       ))}
-      <div className="my-1 border-t border-surface-100" />
-      <button onClick={onLogout} className="dropdown-item danger w-full text-left">
-        <LogOut size={15} className="text-danger-400" />
+      <hr className="profile-menu-divider" />
+      <button onClick={onLogout} className="dropdown-item danger">
+        <LogOut size={15} style={{ color: '#F87171' }} />
         Sign Out
       </button>
     </div>
@@ -38,35 +38,31 @@ function ProfileMenu({ user, onLogout }) {
 
 function NotificationPreview({ notifications, onViewAll }) {
   return (
-    <div className="w-80">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-surface-100">
-        <h3 className="text-sm font-semibold text-surface-900">Notifications</h3>
-        <button onClick={onViewAll} className="text-xs text-primary-600 hover:text-primary-700 font-medium transition-colors">
-          View all
-        </button>
+    <div className="notif-panel dropdown-content">
+      <div className="notif-panel-header">
+        <h3 className="notif-panel-title">Notifications</h3>
+        <button onClick={onViewAll} className="notif-panel-link">View all</button>
       </div>
-      <div className="max-h-80 overflow-y-auto">
+      <div className="notif-panel-list">
         {notifications.slice(0, 4).map((n, i) => (
           <motion.div
             key={n.id}
             initial={{ opacity: 0, x: -8 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: i * 0.04 }}
-            className={`flex gap-3 px-4 py-3 hover:bg-surface-50 cursor-pointer border-b border-surface-50 transition-colors ${!n.isRead ? 'bg-primary-50/40' : ''}`}
+            className={`notif-item${!n.isRead ? ' notif-item--unread' : ''}`}
           >
             <div
-              className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
+              className="notif-avatar"
               style={{ backgroundColor: n.avatarColor || '#64748B' }}
             >
               {n.avatar}
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-surface-800 leading-snug">{n.title}</p>
-              <p className="text-xs text-surface-500 mt-0.5 truncate">{n.description}</p>
+            <div className="notif-content">
+              <p className="notif-title">{n.title}</p>
+              <p className="notif-desc">{n.description}</p>
             </div>
-            {!n.isRead && (
-              <div className="w-2 h-2 rounded-full bg-primary-500 mt-1.5 shrink-0" />
-            )}
+            {!n.isRead && <div className="notif-dot" />}
           </motion.div>
         ))}
       </div>
@@ -80,10 +76,10 @@ export default function Navbar() {
   const { success } = useToast();
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
-  const user = useSelector((state) => state.auth.user);
-  const theme = useSelector((state) => state.ui.theme);
-  const collapsed = useSelector((state) => state.ui.sidebarCollapsed);
-  const unreadCount = useSelector((state) => state.notifications.unreadCount);
+  const user          = useSelector((state) => state.auth.user);
+  const theme         = useSelector((state) => state.ui.theme);
+  const collapsed     = useSelector((state) => state.ui.sidebarCollapsed);
+  const unreadCount   = useSelector((state) => state.notifications.unreadCount);
   const notifications = useSelector((state) => state.notifications.list);
 
   const handleLogout = () => {
@@ -93,37 +89,16 @@ export default function Navbar() {
   };
 
   const handleThemeToggle = (e) => {
-    const btn = e.currentTarget;
+    if (!document.startViewTransition) { dispatch(toggleTheme()); return; }
+    const btn  = e.currentTarget;
     const rect = btn.getBoundingClientRect();
-    const x = Math.round(rect.left + rect.width / 2);
-    const y = Math.round(rect.top + rect.height / 2);
-
-    // View Transitions API: browser snapshots old + new states as bitmaps,
-    // so all text and content remain visible throughout the animation.
-    if (!document.startViewTransition) {
-      // Fallback for browsers without View Transitions support
-      dispatch(toggleTheme());
-      return;
-    }
-
-    const transition = document.startViewTransition(() => {
-      dispatch(toggleTheme());
-    });
-
-    // Once both snapshots are ready, drive the clip-path on the NEW state
+    const x = Math.round(rect.left + rect.width  / 2);
+    const y = Math.round(rect.top  + rect.height / 2);
+    const transition = document.startViewTransition(() => dispatch(toggleTheme()));
     transition.ready.then(() => {
       document.documentElement.animate(
-        {
-          clipPath: [
-            `circle(0px at ${x}px ${y}px)`,
-            `circle(200vmax at ${x}px ${y}px)`,
-          ],
-        },
-        {
-          duration: 1100,
-          easing: 'cubic-bezier(0.45, 0, 0.35, 1)',
-          pseudoElement: '::view-transition-new(root)',
-        },
+        { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(200vmax at ${x}px ${y}px)`] },
+        { duration: 1100, easing: 'cubic-bezier(0.45, 0, 0.35, 1)', pseudoElement: '::view-transition-new(root)' }
       );
     });
   };
@@ -133,19 +108,19 @@ export default function Navbar() {
       initial={{ y: -60 }}
       animate={{ y: 0 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className="fixed top-0 right-0 z-20 bg-white/95 backdrop-blur-sm border-b border-surface-100 h-[60px] flex items-center px-5 gap-3"
-      style={{ left: collapsed ? '70px' : '256px', transition: 'left 0.4s cubic-bezier(0.4, 0, 0.2, 1)' }}
+      className="navbar"
+      style={{ left: collapsed ? '70px' : '256px' }}
     >
-      {/* Mobile Menu */}
+      {/* Mobile menu */}
       <button
         onClick={() => dispatch(toggleMobileSidebar())}
-        className="md:hidden p-2 rounded-lg text-surface-500 hover:bg-surface-100 transition-colors"
+        className="navbar-mobile-menu"
       >
         <Menu size={20} />
       </button>
 
-      {/* Page Title / Breadcrumb placeholder */}
-      <div className="flex-1">
+      {/* Search area */}
+      <div className="navbar-search-area">
         <AnimatePresence mode="wait">
           {searchOpen ? (
             <motion.div
@@ -154,19 +129,18 @@ export default function Navbar() {
               animate={{ opacity: 1, width: '100%' }}
               exit={{ opacity: 0, width: 0 }}
               transition={{ duration: 0.2 }}
-              className="flex items-center gap-2 max-w-md"
+              className="navbar-search-open"
             >
-              <Search size={16} className="text-surface-400 shrink-0" />
+              <Search size={16} style={{ color: 'var(--color-surface-400)', flexShrink: 0 }} />
               <input
                 type="text"
                 autoFocus
                 value={searchValue}
                 onChange={(e) => setSearchValue(e.target.value)}
                 placeholder="Search tasks, projects, workspaces..."
-                className="flex-1 bg-transparent outline-none text-sm text-surface-900 placeholder:text-surface-400"
               />
               <button onClick={() => { setSearchOpen(false); setSearchValue(''); }}>
-                <X size={16} className="text-surface-400 hover:text-surface-600" />
+                <X size={16} style={{ color: 'var(--color-surface-400)' }} />
               </button>
             </motion.div>
           ) : (
@@ -175,82 +149,70 @@ export default function Navbar() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               onClick={() => setSearchOpen(true)}
-              className="flex items-center gap-2 text-surface-400 hover:text-surface-600 transition-colors"
+              className="navbar-search-trigger"
             >
               <Search size={16} />
-              <span className="text-sm hidden sm:block">Search...</span>
-              <kbd className="hidden md:inline-flex items-center gap-1 text-[10px] text-surface-400 bg-surface-100 border border-surface-200 rounded px-1.5 py-0.5 font-mono">
-                ⌘K
-              </kbd>
+              <span className="navbar-search-text">Search...</span>
+              <kbd className="navbar-kbd">⌘K</kbd>
             </motion.button>
           )}
         </AnimatePresence>
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-1.5">
-        {/* Create Button */}
+      <div className="navbar-actions">
         <motion.button
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
           onClick={() => navigate('/projects')}
-          className="hidden sm:flex items-center gap-1.5 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition-colors shadow-sm"
+          className="navbar-create-btn"
         >
           <Plus size={15} />
-          <span className="hidden md:inline">Create</span>
+          <span className="navbar-create-label">Create</span>
         </motion.button>
 
-        {/* Theme Toggle */}
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           onClick={handleThemeToggle}
-          className="p-2 rounded-lg text-surface-500 hover:bg-surface-100 hover:text-surface-700 transition-colors"
+          className="navbar-icon-btn"
         >
           {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
         </motion.button>
 
         {/* Notifications */}
-        <Dropdown
-          trigger={
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              className="relative p-2 rounded-lg text-surface-500 hover:bg-surface-100 hover:text-surface-700 transition-colors"
-            >
-              <Bell size={18} />
-              {unreadCount > 0 && (
-                <motion.span
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="absolute top-1 right-1 w-4 h-4 bg-danger-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center"
-                >
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </motion.span>
-              )}
-            </motion.button>
-          }
-          align="right"
-          width="auto"
-        >
+        <Dropdown trigger={
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            className="navbar-icon-btn navbar-notif-wrap"
+          >
+            <Bell size={18} />
+            {unreadCount > 0 && (
+              <motion.span
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="navbar-notif-badge"
+              >
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </motion.span>
+            )}
+          </motion.button>
+        } align="right" width="auto">
           <NotificationPreview notifications={notifications} onViewAll={() => navigate('/notifications')} />
         </Dropdown>
 
         {/* Profile */}
-        <Dropdown
-          trigger={
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              className="flex items-center gap-1.5 p-1 rounded-xl hover:bg-surface-100 transition-colors"
-            >
-              <Avatar name={user?.name || 'User'} size="sm" />
-              <ChevronDown size={14} className="text-surface-400 hidden sm:block" />
-            </motion.button>
-          }
-          align="right"
-          width="auto"
-        >
+        <Dropdown trigger={
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            className="navbar-profile-btn"
+          >
+            <Avatar name={user?.name || 'User'} size="sm" />
+            <ChevronDown size={14} className="navbar-chevron" />
+          </motion.button>
+        } align="right" width="auto">
           <ProfileMenu user={user} onLogout={handleLogout} />
         </Dropdown>
       </div>

@@ -1,0 +1,89 @@
+/* =====================================================
+   Drawer Component — plain CSS
+   ===================================================== */
+
+/* Overlay */
+.drawer-overlay {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  z-index: 40;
+}
+
+/* Panel */
+.drawer-panel {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.2);
+  width: 100%;
+}
+
+.drawer-panel--right { right: 0; }
+.drawer-panel--left  { left: 0; }
+
+/* Width variants */
+.drawer--sm  { max-width: 384px; }
+.drawer--md  { max-width: 448px; }
+.drawer--lg  { max-width: 512px; }
+.drawer--xl  { max-width: 576px; }
+.drawer--2xl { max-width: 672px; }
+
+/* Header */
+.drawer-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--color-surface-100, #F1F5F9);
+  flex-shrink: 0;
+}
+
+.drawer-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-surface-900, #0F172A);
+  letter-spacing: -0.02em;
+}
+
+.drawer-subtitle {
+  font-size: 0.875rem;
+  color: var(--color-surface-500, #64748B);
+  margin-top: 2px;
+}
+
+.drawer-close-btn {
+  padding: 6px;
+  border-radius: 8px;
+  color: var(--color-surface-400, #94A3B8);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-left: 16px;
+  transition: color 0.15s ease, background-color 0.15s ease;
+  display: flex;
+  align-items: center;
+}
+.drawer-close-btn:hover {
+  color: var(--color-surface-600, #475569);
+  background-color: var(--color-surface-100, #F1F5F9);
+}
+
+/* Body */
+.drawer-body {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Footer */
+.drawer-footer {
+  border-top: 1px solid var(--color-surface-100, #F1F5F9);
+  padding: 16px 24px;
+  flex-shrink: 0;
+  background-color: var(--color-surface-50, #F8FAFC);
+}

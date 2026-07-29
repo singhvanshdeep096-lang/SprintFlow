@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 import { TrendingUp, CheckCircle2, Clock, Users, ArrowUpRight, Target } from 'lucide-react';
 import PageTransition from '../../components/common/PageTransition';
 import reportService from '../../services/report.service';
+import './Reports.css';
 
 function MetricCard({ label, value, change, icon: Icon, color, delay }) {
   const isPositive = change >= 0;
@@ -14,11 +15,11 @@ function MetricCard({ label, value, change, icon: Icon, color, delay }) {
       transition={{ delay }}
       className="card p-5"
     >
-      <div className="flex items-center justify-between mb-3">
-        <div className={`p-2.5 rounded-xl ${color}`}>
-          <Icon size={18} className="text-current" />
+      <div className="metric-card-top">
+        <div className={`metric-card-icon-box ${color}`}>
+          <Icon size={18} style={{ color: 'currentColor' }} />
         </div>
-        <span className={`flex items-center gap-1 text-xs font-bold ${isPositive ? 'text-success-600' : 'text-danger-600'}`}>
+        <span className={`metric-card-change ${isPositive ? 'metric-card-change--up' : 'metric-card-change--down'}`}>
           <TrendingUp size={11} className={!isPositive ? 'rotate-180' : ''} />
           {Math.abs(change)}%
         </span>
@@ -27,38 +28,36 @@ function MetricCard({ label, value, change, icon: Icon, color, delay }) {
         initial={{ scale: 0.5 }}
         animate={{ scale: 1 }}
         transition={{ type: 'spring', stiffness: 300, delay: delay + 0.1 }}
-        className="text-2xl font-bold text-surface-900 mb-0.5"
+        className="metric-card-val"
       >
         {value}
       </motion.p>
-      <p className="text-xs font-medium text-surface-500">{label}</p>
+      <p className="metric-card-lbl">{label}</p>
     </motion.div>
   );
 }
 
 function ChartBar({ data, index, maxVal }) {
-  const height = (data.completed / (maxVal || 100)) * 100;
-  const height2 = (data.created / (maxVal || 100)) * 100;
+  const height  = (data.completed / (maxVal || 100)) * 100;
+  const height2 = (data.created   / (maxVal || 100)) * 100;
 
   return (
-    <div className="flex flex-col items-center gap-1.5 flex-1">
-      <div className="flex items-end gap-0.5 flex-1 w-full" style={{ height: 120 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flex: 1 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, flex: 1, width: '100%', height: 120 }}>
         <motion.div
           initial={{ height: 0 }}
           animate={{ height: `${height2}%` }}
           transition={{ delay: index * 0.07 + 0.2, duration: 0.5, ease: 'easeOut' }}
-          className="flex-1 rounded-t-md opacity-30"
-          style={{ background: '#2563EB', alignSelf: 'flex-end', minHeight: 4 }}
+          style={{ flex: 1, borderRadius: '6px 6px 0 0', opacity: 0.3, background: '#2563EB', alignSelf: 'flex-end', minHeight: 4 }}
         />
         <motion.div
           initial={{ height: 0 }}
           animate={{ height: `${height}%` }}
           transition={{ delay: index * 0.07 + 0.3, duration: 0.5, ease: 'easeOut' }}
-          className="flex-1 rounded-t-md"
-          style={{ background: 'linear-gradient(180deg, #2563EB, #7C3AED)', alignSelf: 'flex-end', minHeight: 4 }}
+          style={{ flex: 1, borderRadius: '6px 6px 0 0', background: 'linear-gradient(180deg, #2563EB, #7C3AED)', alignSelf: 'flex-end', minHeight: 4 }}
         />
       </div>
-      <span className="text-[10px] text-surface-400 font-medium">{data.month}</span>
+      <span style={{ fontSize: 10, color: 'var(--color-surface-400)', fontWeight: 500 }}>{data.month}</span>
     </div>
   );
 }
@@ -69,10 +68,10 @@ function ProgressRow({ name, progress, delay }) {
       initial={{ opacity: 0, x: -12 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay }}
-      className="flex items-center gap-3"
+      className="reports-progress-row"
     >
-      <p className="text-sm text-surface-700 w-40 shrink-0 truncate">{name}</p>
-      <div className="flex-1 progress-bar">
+      <p className="reports-progress-name">{name}</p>
+      <div className="progress-bar" style={{ flex: 1 }}>
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${progress}%` }}
@@ -80,7 +79,7 @@ function ProgressRow({ name, progress, delay }) {
           className="progress-fill"
         />
       </div>
-      <span className="text-sm font-semibold text-surface-700 w-10 text-right shrink-0">{progress}%</span>
+      <span className="reports-progress-val">{progress}%</span>
     </motion.div>
   );
 }
@@ -114,46 +113,51 @@ export default function Reports() {
   ];
 
   const maxVal = Math.max(...taskCompletion.map((d) => d.created));
-
   const projectProgress = projects.length > 0 ? projects.map(p => ({ name: p.name, progress: p.progress || 0 })) : chartData.projectProgress;
 
   return (
-    <PageTransition className="p-6 w-full max-w-[1700px] mx-auto">
-      <div className="flex items-center justify-between mb-6">
+    <PageTransition className="reports-page">
+      <div className="reports-header">
         <div>
-          <h1 className="text-2xl font-bold text-surface-900">Reports & Analytics</h1>
-          <p className="text-surface-500 text-sm mt-1">Insights for the last 6 months</p>
+          <h1 className="reports-title">Reports & Analytics</h1>
+          <p className="reports-subtitle">Insights for the last 6 months</p>
         </div>
-        <div className="flex items-center gap-2 text-xs text-surface-500 bg-surface-100 px-3 py-1.5 rounded-lg">
+        <div className="reports-updated-badge">
           <Clock size={12} />Last updated just now
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <MetricCard label="Tasks Completed" value={stats.completedTasks} change={24} icon={CheckCircle2} color="bg-success-100 text-success-600" delay={0.05} />
-        <MetricCard label="Active Projects" value={stats.totalProjects || projects.length} change={12} icon={Target} color="bg-primary-100 text-primary-600" delay={0.1} />
-        <MetricCard label="Team Velocity" value="8.4" change={-3} icon={TrendingUp} color="bg-warning-100 text-yellow-600" delay={0.15} />
-        <MetricCard label="Team Members" value={stats.teamMembers || 6} change={33} icon={Users} color="bg-purple-100 text-purple-600" delay={0.2} />
+      <div className="reports-metrics-grid">
+        <MetricCard label="Tasks Completed" value={stats.completedTasks} change={24} icon={CheckCircle2} color="icon-green-bg icon-green-fg" delay={0.05} />
+        <MetricCard label="Active Projects" value={stats.totalProjects || projects.length} change={12} icon={Target} color="icon-blue-bg icon-blue-fg" delay={0.1} />
+        <MetricCard label="Team Velocity" value="8.4" change={-3} icon={TrendingUp} color="icon-yellow-bg icon-yellow-fg" delay={0.15} />
+        <MetricCard label="Team Members" value={stats.teamMembers || 6} change={33} icon={Users} color="icon-purple-bg icon-purple-fg" delay={0.2} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+      <div className="reports-charts-row">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
           className="card p-5"
         >
-          <div className="flex items-center justify-between mb-5">
+          <div className="reports-chart-header">
             <div>
-              <h3 className="text-sm font-semibold text-surface-900">Task Completion</h3>
-              <p className="text-xs text-surface-400 mt-0.5">Completed vs Created</p>
+              <h3 className="setting-row-label">Task Completion</h3>
+              <p className="setting-row-desc">Completed vs Created</p>
             </div>
-            <div className="flex items-center gap-3 text-xs text-surface-500">
-              <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-sm opacity-30" style={{ background: '#2563EB' }} />Created</div>
-              <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-sm" style={{ background: 'linear-gradient(180deg, #2563EB, #7C3AED)' }} />Completed</div>
+            <div className="reports-chart-legend">
+              <div className="reports-legend-item">
+                <div className="reports-legend-box" style={{ background: '#2563EB', opacity: 0.3 }} />
+                Created
+              </div>
+              <div className="reports-legend-item">
+                <div className="reports-legend-box" style={{ background: 'linear-gradient(180deg, #2563EB, #7C3AED)' }} />
+                Completed
+              </div>
             </div>
           </div>
-          <div className="flex items-end gap-2 h-36">
+          <div className="reports-chart-bars">
             {taskCompletion.map((d, i) => (
               <ChartBar key={i} data={d} index={i} maxVal={maxVal} />
             ))}
@@ -166,23 +170,23 @@ export default function Reports() {
           transition={{ delay: 0.25 }}
           className="card p-5"
         >
-          <h3 className="text-sm font-semibold text-surface-900 mb-5">Priority Distribution</h3>
-          <div className="space-y-4">
+          <h3 className="setting-row-label" style={{ marginBottom: 20 }}>Priority Distribution</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {(chartData.priorityDistribution || []).map((item, i) => (
               <div key={item.name}>
-                <div className="flex justify-between text-xs mb-1.5">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                    <span className="font-medium text-surface-700">{item.name}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 6 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ width: 10, height: 10, borderRadius: 9999, backgroundColor: item.color }} />
+                    <span style={{ fontWeight: 500, color: 'var(--color-surface-700)' }}>{item.name}</span>
                   </div>
-                  <span className="font-bold text-surface-800">{item.value} tasks</span>
+                  <span style={{ fontWeight: 700, color: 'var(--color-surface-800)' }}>{item.value} tasks</span>
                 </div>
                 <div className="progress-bar">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${(item.value / 20) * 100}%` }}
                     transition={{ delay: i * 0.08 + 0.3, duration: 0.7 }}
-                    className="h-full rounded-full"
+                    className="progress-fill"
                     style={{ backgroundColor: item.color }}
                   />
                 </div>
@@ -198,13 +202,13 @@ export default function Reports() {
         transition={{ delay: 0.3 }}
         className="card p-5"
       >
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="text-sm font-semibold text-surface-900">Project Progress</h3>
-          <button className="text-xs text-primary-600 font-medium hover:text-primary-700 transition-colors flex items-center gap-1">
+        <div className="reports-chart-header">
+          <h3 className="setting-row-label">Project Progress</h3>
+          <button className="dash-chart-link" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}>
             View all <ArrowUpRight size={11} />
           </button>
         </div>
-        <div className="space-y-4">
+        <div className="reports-progress-stack">
           {(projectProgress || []).map((project, i) => (
             <ProgressRow key={project.name} name={project.name} progress={project.progress} delay={i * 0.06 + 0.1} />
           ))}

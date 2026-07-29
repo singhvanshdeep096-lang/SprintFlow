@@ -1,0 +1,95 @@
+/* =====================================================
+   Settings Page — plain CSS
+   ===================================================== */
+
+.settings-page { padding: 24px; }
+.settings-title { font-size: 1.5rem; font-weight: 700; color: var(--color-surface-900); letter-spacing: -0.02em; margin-bottom: 24px; }
+
+/* ToggleSwitch */
+.toggle-switch {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.toggle-switch--on  { background: #2563EB; }
+.toggle-switch--off { background: var(--color-surface-300, #CBD5E1); }
+.toggle-knob {
+  position: absolute;
+  top: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+/* Setting row */
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-block: 16px;
+  border-bottom: 1px solid var(--color-surface-100, #F1F5F9);
+}
+.setting-row:last-child { border-bottom: none; }
+.setting-row-label { font-size: 0.875rem; font-weight: 500; color: var(--color-surface-800, #1E293B); }
+.setting-row-desc  { font-size: 0.75rem; color: var(--color-surface-400, #94A3B8); margin-top: 2px; }
+.setting-row-control { margin-left: 16px; flex-shrink: 0; }
+
+/* Section stack */
+.settings-section-stack { display: flex; flex-direction: column; gap: 20px; }
+
+/* Card subsection header */
+.settings-card-title  { font-size: 0.875rem; font-weight: 600; color: var(--color-surface-900); margin-bottom: 4px; }
+.settings-card-subtitle { font-size: 0.75rem; color: var(--color-surface-400); margin-bottom: 16px; }
+
+/* Small select */
+.settings-select { padding: 6px 10px; font-size: 0.875rem; }
+
+/* Theme picker */
+.settings-theme-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.settings-theme-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  border-radius: 12px;
+  border: 2px solid;
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+.settings-theme-btn--active   { border-color: #3B82F6; background: #EFF6FF; }
+.settings-theme-btn--inactive { border-color: var(--color-surface-200, #E2E8F0); }
+.settings-theme-btn--inactive:hover { border-color: var(--color-surface-300, #CBD5E1); }
+.settings-theme-label--active   { font-size: 0.75rem; font-weight: 500; color: #1D4ED8; }
+.settings-theme-label--inactive { font-size: 0.75rem; font-weight: 500; color: var(--color-surface-600); }
+
+/* Login history item */
+.settings-login-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-block: 12px;
+  border-bottom: 1px solid var(--color-surface-100, #F1F5F9);
+}
+.settings-login-row:last-child { border-bottom: none; }
+.settings-login-dot { width: 8px; height: 8px; border-radius: 9999px; flex-shrink: 0; }
+.settings-login-dot--ok  { background: #22C55E; }
+.settings-login-dot--bad { background: #EF4444; }
+.settings-login-info { flex: 1; }
+.settings-login-action { font-size: 0.875rem; font-weight: 500; color: var(--color-surface-800); }
+.settings-login-meta { font-size: 0.75rem; color: var(--color-surface-400); }
+
+/* Save button row */
+.settings-save-row { padding-top: 16px; }

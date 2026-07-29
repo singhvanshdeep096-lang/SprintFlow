@@ -1,0 +1,82 @@
+/* =====================================================
+   Loader & Skeleton — plain CSS
+   ===================================================== */
+
+/* ---- Loader ---- */
+.loader-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.loader--primary { color: #2563EB; }
+.loader--white   { color: #ffffff; }
+.loader--gray    { color: var(--color-surface-400, #94A3B8); }
+
+.loader-text {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-surface-500, #64748B);
+}
+.loader-text--white { color: rgba(255,255,255,0.8); }
+
+/* Full-page overlay */
+.loader-fullpage {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(4px);
+  z-index: 50;
+}
+
+/* ---- Skeleton ---- */
+.skeleton {
+  border-radius: 8px;
+}
+.skeleton--rounded {
+  border-radius: 9999px !important;
+}
+
+/* Skeleton card */
+.skeleton-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.skeleton-card-header-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.skeleton-card-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Skeleton table */
+.skeleton-table { display: flex; flex-direction: column; gap: 12px; }
+.skeleton-table-row { display: flex; gap: 16px; }
+
+/* Skeleton list */
+.skeleton-list { display: flex; flex-direction: column; gap: 12px; }
+.skeleton-list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--color-surface-100, #F1F5F9);
+}
+.skeleton-list-item-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

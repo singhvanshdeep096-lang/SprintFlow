@@ -1,5 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import './Dropdown.css';
+
+const ALIGNS = ['left', 'right', 'center'];
+const WIDTHS  = ['auto', 'sm', 'md', 'lg', 'xl'];
 
 export default function Dropdown({
   trigger,
@@ -22,23 +26,12 @@ export default function Dropdown({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const alignClasses = {
-    left: 'left-0',
-    right: 'right-0',
-    center: 'left-1/2 -translate-x-1/2',
-  };
-
-  const widthClasses = {
-    auto: 'min-w-[160px]',
-    sm: 'w-40',
-    md: 'w-52',
-    lg: 'w-64',
-    xl: 'w-80',
-  };
+  const safeAlign = ALIGNS.includes(align) ? align : 'left';
+  const safeWidth = WIDTHS.includes(width)  ? width : 'auto';
 
   return (
-    <div ref={containerRef} className={`relative inline-block ${className}`}>
-      <div onClick={() => setOpen((prev) => !prev)} className="flex items-center">
+    <div ref={containerRef} className={`dropdown-wrap ${className}`}>
+      <div onClick={() => setOpen((prev) => !prev)} className="dropdown-trigger">
         {typeof trigger === 'function' ? trigger(open) : trigger}
       </div>
 
@@ -51,9 +44,10 @@ export default function Dropdown({
             transition={{ type: 'spring', stiffness: 350, damping: 28 }}
             onClick={closeOnSelect ? () => setOpen(false) : undefined}
             className={[
-              'absolute top-full mt-2 z-50 dropdown-content',
-              alignClasses[align] || alignClasses.left,
-              widthClasses[width] || widthClasses.auto,
+              'dropdown-panel',
+              'dropdown-content',
+              `dropdown-panel--${safeAlign}`,
+              `dropdown-panel--${safeWidth}`,
             ].join(' ')}
           >
             {children}

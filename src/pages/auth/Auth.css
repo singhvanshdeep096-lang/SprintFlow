@@ -1,0 +1,162 @@
+/* =====================================================
+   Auth Pages — plain CSS (Login, Register, ForgotPassword)
+   ===================================================== */
+
+/* Page heading */
+.auth-page-title {
+  font-size: 1.625rem;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.03em;
+  margin-bottom: 6px;
+}
+.auth-page-subtitle {
+  font-size: 0.875rem;
+  color: #64748B;
+}
+.auth-page-heading { margin-bottom: 28px; }
+
+/* Google sign-in button */
+.auth-google-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 11px 16px;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #374151;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.auth-google-btn:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+
+/* Divider "or continue with email" */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.auth-divider-line { flex: 1; height: 1px; background: #E2E8F0; }
+.auth-divider-text { font-size: 0.75rem; color: #94A3B8; font-weight: 500; white-space: nowrap; }
+
+/* Form stack */
+.auth-form { display: flex; flex-direction: column; gap: 16px; }
+
+/* Form two-col */
+.auth-form-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* Submit button */
+.auth-submit-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 20px;
+  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(37,99,235,0.3);
+  transition: all 0.2s ease;
+  margin-top: 4px;
+}
+.auth-submit-btn:hover { box-shadow: 0 8px 24px rgba(37,99,235,0.35); }
+.auth-submit-btn:disabled { background: #93C5FD; cursor: not-allowed; }
+
+/* Spinner inside submit */
+.auth-submit-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: auth-spin 0.8s linear infinite;
+}
+@keyframes auth-spin { to { transform: rotate(360deg); } }
+
+/* Forgot password link row */
+.auth-forgot-row { display: flex; justify-content: flex-end; margin-top: 8px; }
+.auth-forgot-link { font-size: 0.75rem; color: #2563EB; font-weight: 600; text-decoration: none; }
+
+/* Sign up / sign in switch */
+.auth-switch { text-align: center; font-size: 0.875rem; color: #64748B; margin-top: 20px; }
+.auth-switch a { color: #2563EB; font-weight: 700; text-decoration: none; }
+
+/* Demo banner */
+.auth-demo-banner {
+  margin-top: 20px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+  border: 1px solid #BFDBFE;
+  border-radius: 10px;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: #1D4ED8;
+}
+
+/* Terms checkbox row */
+.auth-terms-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding-top: 4px;
+}
+.auth-terms-row input[type="checkbox"] {
+  margin-top: 2px;
+  width: 16px;
+  height: 16px;
+  accent-color: #2563EB;
+  flex-shrink: 0;
+}
+.auth-terms-label { font-size: 0.75rem; color: #64748B; line-height: 1.6; }
+.auth-terms-link { color: #2563EB; cursor: pointer; }
+.auth-terms-link:hover { text-decoration: underline; }
+
+.auth-terms-error { font-size: 0.75rem; color: #DC2626; margin-top: 2px; }
+
+/* Back to sign in link */
+.auth-back-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 24px;
+  font-size: 0.875rem;
+  color: #64748B;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+.auth-back-link:hover { color: #374151; }
+
+/* Success state (forgot password) */
+.auth-success { text-align: center; }
+.auth-success-icon-wrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 9999px;
+  background: #DCFCE7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+}
+.auth-success-title { font-size: 1.25rem; font-weight: 700; color: #0F172A; margin-bottom: 8px; }
+.auth-success-body { font-size: 0.875rem; color: #64748B; margin-bottom: 24px; }
+.auth-success-email { font-weight: 600; color: #334155; }
+.auth-success-resend { font-size: 0.75rem; color: #94A3B8; margin-bottom: 24px; }
+.auth-success-resend button { color: #2563EB; font-weight: 500; background: none; border: none; cursor: pointer; }
+.auth-success-resend button:hover { text-decoration: underline; }

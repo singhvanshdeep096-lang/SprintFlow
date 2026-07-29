@@ -1,0 +1,150 @@
+/* =====================================================
+   ProjectDetail Page — plain CSS
+   ===================================================== */
+
+.pd-page { padding: 24px; width: 100%; max-width: 1700px; margin-inline: auto; }
+
+.pd-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-surface-500);
+  font-size: 0.875rem;
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: color 0.15s ease;
+  font-family: inherit;
+}
+.pd-back-btn:hover { color: var(--color-surface-700); }
+
+/* Header card */
+.pd-header-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.pd-header-left { display: flex; align-items: center; gap: 16px; }
+.pd-header-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+.pd-name { font-size: 1.5rem; font-weight: 700; color: var(--color-surface-900); letter-spacing: -0.02em; }
+.pd-desc { font-size: 0.875rem; color: var(--color-surface-500); margin-top: 4px; max-width: 512px; }
+
+.pd-badge-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.pd-status-badge {
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.pd-priority-badge {
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+.pd-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: var(--color-surface-100);
+  color: var(--color-surface-600);
+  border-radius: 9999px;
+  font-size: 0.75rem;
+}
+
+.pd-header-actions { display: flex; gap: 8px; }
+
+/* Progress section */
+.pd-progress-wrap { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--color-surface-100); }
+.pd-progress-label-row { display: flex; justify-content: space-between; font-size: 0.875rem; margin-bottom: 8px; }
+.pd-progress-label-left  { color: var(--color-surface-600); font-weight: 500; }
+.pd-progress-label-right { font-weight: 700; color: var(--color-surface-900); }
+
+/* Stats grid */
+.pd-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+@media (min-width: 768px) {
+  .pd-stats-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+.pd-stat-card { padding: 16px; text-align: center; }
+.pd-stat-dot { width: 10px; height: 10px; border-radius: 9999px; margin: 0 auto 8px; }
+.pd-stat-value { font-size: 1.5rem; font-weight: 700; color: var(--color-surface-900); }
+.pd-stat-label { font-size: 0.75rem; color: var(--color-surface-500); font-weight: 500; margin-top: 2px; }
+
+/* Bottom two-col grid */
+.pd-bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  margin-top: 32px;
+}
+@media (min-width: 1024px) {
+  .pd-bottom-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Card section header */
+.pd-section-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-surface-900);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Member row */
+.pd-member-stack { display: flex; flex-direction: column; gap: 4px; }
+.pd-member-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 12px;
+  transition: background-color 0.15s ease;
+}
+.pd-member-row:hover { background: var(--color-surface-50); }
+.pd-member-name { font-size: 0.875rem; font-weight: 500; color: var(--color-surface-800); }
+.pd-member-role { font-size: 0.75rem; color: var(--color-surface-400); }
+
+/* Timeline rows */
+.pd-timeline-stack { display: flex; flex-direction: column; gap: 4px; }
+.pd-timeline-row {
+  display: flex;
+  justify-content: space-between;
+  padding-block: 8px;
+  border-bottom: 1px solid var(--color-surface-50);
+}
+.pd-timeline-row:last-child { border-bottom: none; }
+.pd-timeline-label { font-size: 0.875rem; color: var(--color-surface-500); }
+.pd-timeline-value { font-size: 0.875rem; font-weight: 600; color: var(--color-surface-800); }
+
+/* Not found state */
+.pd-not-found {
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+.pd-not-found-inner { text-align: center; }
+.pd-not-found-text { color: var(--color-surface-500); margin-bottom: 16px; }
