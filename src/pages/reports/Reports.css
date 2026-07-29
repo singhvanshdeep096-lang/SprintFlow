@@ -73,3 +73,12 @@
 .reports-progress-row   { display: flex; align-items: center; gap: 12px; }
 .reports-progress-name  { font-size: 0.875rem; color: var(--color-surface-700); width: 160px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .reports-progress-val   { font-size: 0.875rem; font-weight: 600; color: var(--color-surface-700); width: 40px; text-align: right; flex-shrink: 0; }
+
+/* Dark mode overrides */
+html.dark .reports-progress-name,
+html.dark .reports-progress-val {
+  color: #F0F6FC !important;
+}
+html.dark .reports-chart-legend {
+  color: #9CA3AF !important;
+}

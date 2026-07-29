@@ -9,12 +9,12 @@ import { useToast } from '../../hooks/useToast';
 import './Notifications.css';
 
 const TYPE_CONFIG = {
-  mention:       { icon: AtSign,         color: '#3B82F6', bg: '#EFF6FF', label: 'Mention'    },
-  assignment:    { icon: GitPullRequest,  color: '#8B5CF6', bg: '#F5F3FF', label: 'Assignment' },
-  comment:       { icon: MessageSquare,   color: '#F59E0B', bg: '#FFFBEB', label: 'Comment'    },
-  status_change: { icon: GitPullRequest,  color: '#10B981', bg: '#F0FDF4', label: 'Status'     },
-  due_date:      { icon: Clock,           color: '#EF4444', bg: '#FEF2F2', label: 'Due Date'   },
-  project:       { icon: FolderKanban,    color: '#06B6D4', bg: '#ECFEFF', label: 'Project'    },
+  mention:       { icon: AtSign,         color: '#3B82F6', bgLight: 'rgba(59, 130, 246, 0.12)',  label: 'Mention'    },
+  assignment:    { icon: GitPullRequest,  color: '#8B5CF6', bgLight: 'rgba(139, 92, 246, 0.12)', label: 'Assignment' },
+  comment:       { icon: MessageSquare,   color: '#F59E0B', bgLight: 'rgba(245, 158, 11, 0.12)', label: 'Comment'    },
+  status_change: { icon: GitPullRequest,  color: '#10B981', bgLight: 'rgba(16, 185, 129, 0.12)', label: 'Status'     },
+  due_date:      { icon: Clock,           color: '#EF4444', bgLight: 'rgba(239, 68, 68, 0.12)',  label: 'Due Date'   },
+  project:       { icon: FolderKanban,    color: '#06B6D4', bgLight: 'rgba(6, 182, 212, 0.12)',  label: 'Project'    },
 };
 
 const TABS = [
@@ -46,32 +46,25 @@ function NotificationItem({ notification, onMarkRead, onDelete, delay }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: 40, scale: 0.96 }}
       transition={{ delay, duration: 0.25 }}
-      className="notif-row"
-      style={{
-        background:  !notification.isRead ? '#F0F7FF' : '#FFFFFF',
-        borderColor: !notification.isRead ? '#BFDBFE' : '#E2E8F0',
-      }}
+      className={`notif-row ${!notification.isRead ? 'notif-row--unread' : ''}`}
       onClick={() => !notification.isRead && onMarkRead(notification.id)}
     >
       {!notification.isRead && (
-        <div className="notif-row-stripe" style={{ background: cfg.color }} />
+        <div className="notif-row-stripe" style={{ backgroundColor: cfg.color }} />
       )}
 
-      <div className="notif-type-icon" style={{ background: cfg.bg }}>
+      <div className="notif-type-icon" style={{ backgroundColor: cfg.bgLight }}>
         <Icon size={16} style={{ color: cfg.color }} />
       </div>
 
       <div className="notif-row-body">
         <div className="notif-row-top">
           <div className="notif-row-title-wrap">
-            <p
-              className="notif-row-title"
-              style={{ fontWeight: notification.isRead ? 500 : 700, color: '#0F172A' }}
-            >
+            <p className="notif-row-title">
               {notification.title}
             </p>
             {!notification.isRead && (
-              <span className="notif-row-unread-dot" style={{ background: cfg.color }} />
+              <span className="notif-row-unread-dot" style={{ backgroundColor: cfg.color }} />
             )}
           </div>
           <span className="notif-row-time">{formatTime(notification.createdAt)}</span>
@@ -79,7 +72,7 @@ function NotificationItem({ notification, onMarkRead, onDelete, delay }) {
         <p className="notif-row-desc">{notification.description}</p>
         <span
           className="notif-type-badge"
-          style={{ background: cfg.bg, color: cfg.color }}
+          style={{ backgroundColor: cfg.bgLight, color: cfg.color }}
         >
           {cfg.label}
         </span>
@@ -161,13 +154,7 @@ export default function Notifications() {
               >
                 {tab.label}
                 {count > 0 && (
-                  <span
-                    className="notif-filter-count"
-                    style={{
-                      background: isActive ? '#EFF6FF' : '#E2E8F0',
-                      color:      isActive ? '#3B82F6' : '#94A3B8',
-                    }}
-                  >
+                  <span className="notif-filter-count">
                     {count}
                   </span>
                 )}
@@ -184,7 +171,7 @@ export default function Notifications() {
           animate={{ opacity: 1, scale: 1 }}
           className="notif-empty"
         >
-          <div className="notif-empty-icon" style={{ background: '#EFF6FF' }}>
+          <div className="notif-empty-icon" style={{ backgroundColor: 'rgba(59, 130, 246, 0.15)' }}>
             <Inbox size={26} style={{ color: '#3B82F6' }} />
           </div>
           <p className="notif-empty-title">

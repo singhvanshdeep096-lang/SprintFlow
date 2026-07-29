@@ -1,5 +1,5 @@
 /* =====================================================
-   Modal Component — plain CSS
+   Modal Component — plain CSS (Light & Dark Mode)
    ===================================================== */
 
 /* Overlay */
@@ -89,4 +89,37 @@
   border-top: 1px solid var(--color-surface-100, #F1F5F9);
   padding: 24px;
   flex-shrink: 0;
+}
+
+/* ================================================================
+   DARK MODE OVERRIDES FOR MODAL
+   ================================================================ */
+html.dark .modal-panel {
+  background: #161B22 !important;
+  border: 1px solid #21262D !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6) !important;
+}
+
+html.dark .modal-header {
+  border-bottom-color: #21262D !important;
+}
+
+html.dark .modal-title {
+  color: #F0F6FC !important;
+}
+
+html.dark .modal-subtitle {
+  color: #8B949E !important;
+}
+
+html.dark .modal-close-btn {
+  color: #8B949E !important;
+}
+html.dark .modal-close-btn:hover {
+  background-color: #21262D !important;
+  color: #F0F6FC !important;
+}
+
+html.dark .modal-footer {
+  border-top-color: #21262D !important;
 }

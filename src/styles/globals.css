@@ -433,6 +433,30 @@ html.dark aside button[class*="bg-white"] {
 
 /* Transition for smooth theme switching */
 html, body, aside, header, main, .card, .card-flat,
-.sidebar-link, .dropdown-content, .input-base, .task-card {
+.sidebar-link, .dropdown-content, .input-base, .task-card,
+.drawer-panel, .modal-panel, .kc-card {
   transition: background-color 0.25s ease, border-color 0.25s ease, color 0.2s ease;
+}
+
+/* Global Dark Mode Overrides for Drawers, Modals & Cards */
+html.dark .drawer-panel,
+html.dark .modal-panel {
+  background: #161B22 !important;
+  border-color: #21262D !important;
+  color: #F0F6FC !important;
+}
+
+html.dark .drawer-header,
+html.dark .modal-header {
+  border-bottom-color: #21262D !important;
+}
+
+html.dark .drawer-title,
+html.dark .modal-title {
+  color: #F0F6FC !important;
+}
+
+html.dark .drawer-subtitle,
+html.dark .modal-subtitle {
+  color: #8B949E !important;
 }

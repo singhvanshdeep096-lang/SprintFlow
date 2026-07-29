@@ -1,5 +1,5 @@
 /* =====================================================
-   Drawer Component — plain CSS
+   Drawer Component — plain CSS (Light & Dark Mode)
    ===================================================== */
 
 /* Overlay */
@@ -19,7 +19,7 @@
   display: flex;
   flex-direction: column;
   background: #ffffff;
-  box-shadow: 0 25px 60px rgba(0,0,0,0.2);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
   width: 100%;
 }
 
@@ -86,4 +86,37 @@
   padding: 16px 24px;
   flex-shrink: 0;
   background-color: var(--color-surface-50, #F8FAFC);
+}
+
+/* ================================================================
+   DARK MODE OVERRIDES
+   ================================================================ */
+html.dark .drawer-panel {
+  background: #161B22 !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6) !important;
+}
+
+html.dark .drawer-header {
+  border-bottom-color: #21262D !important;
+}
+
+html.dark .drawer-title {
+  color: #F0F6FC !important;
+}
+
+html.dark .drawer-subtitle {
+  color: #8B949E !important;
+}
+
+html.dark .drawer-close-btn {
+  color: #8B949E !important;
+}
+html.dark .drawer-close-btn:hover {
+  background-color: #21262D !important;
+  color: #F0F6FC !important;
+}
+
+html.dark .drawer-footer {
+  background-color: #0D1117 !important;
+  border-top-color: #21262D !important;
 }

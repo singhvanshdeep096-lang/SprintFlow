@@ -1,6 +1,14 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import notificationService from '../services/notification.service';
 
+const saveToStorage = (list) => {
+  try {
+    localStorage.setItem('sprintflow_notifications', JSON.stringify(list));
+  } catch (e) {
+    // ignore
+  }
+};
+
 export const fetchNotifications = createAsyncThunk('notifications/fetchNotifications', async () => {
   return await notificationService.getNotifications();
 });
@@ -10,7 +18,7 @@ export const markAsReadAsync = createAsyncThunk('notifications/markAsRead', asyn
 });
 
 export const markAllAsReadAsync = createAsyncThunk('notifications/markAllAsRead', async () => {
-  await notificationService.markAllAsRead();
+  return await notificationService.markAllAsRead();
 });
 
 export const deleteNotificationAsync = createAsyncThunk('notifications/deleteNotification', async (id) => {
@@ -34,19 +42,23 @@ const notificationSlice = createSlice({
         notif.isRead = true;
         state.unreadCount = Math.max(0, state.unreadCount - 1);
       }
+      saveToStorage(state.list);
     },
     markAllAsRead: (state) => {
       state.list.forEach((n) => (n.isRead = true));
       state.unreadCount = 0;
+      saveToStorage(state.list);
     },
     addNotification: (state, action) => {
       state.list.unshift(action.payload);
       if (!action.payload.isRead) state.unreadCount += 1;
+      saveToStorage(state.list);
     },
     deleteNotification: (state, action) => {
       const notif = state.list.find((n) => n.id === action.payload);
       if (notif && !notif.isRead) state.unreadCount = Math.max(0, state.unreadCount - 1);
       state.list = state.list.filter((n) => n.id !== action.payload);
+      saveToStorage(state.list);
     },
   },
   extraReducers: (builder) => {
@@ -61,15 +73,18 @@ const notificationSlice = createSlice({
           state.list[idx].isRead = true;
           state.unreadCount = Math.max(0, state.unreadCount - 1);
         }
+        saveToStorage(state.list);
       })
       .addCase(markAllAsReadAsync.fulfilled, (state) => {
         state.list.forEach((n) => (n.isRead = true));
         state.unreadCount = 0;
+        saveToStorage(state.list);
       })
       .addCase(deleteNotificationAsync.fulfilled, (state, action) => {
         const notif = state.list.find((n) => n.id === action.payload);
         if (notif && !notif.isRead) state.unreadCount = Math.max(0, state.unreadCount - 1);
         state.list = state.list.filter((n) => n.id !== action.payload);
+        saveToStorage(state.list);
       });
   },
 });
