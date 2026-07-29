@@ -136,7 +136,7 @@ export default function Notifications() {
   };
 
   return (
-    <PageTransition className="p-6 max-w-[1400px] mx-auto">
+    <PageTransition className="p-6 w-full max-w-[1700px] mx-auto">
 
       {/* Header — mirrors Projects page */}
       <div className="flex items-center justify-between mb-6">

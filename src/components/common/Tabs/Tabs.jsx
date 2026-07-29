@@ -26,7 +26,7 @@ export default function Tabs({ tabs, activeTab, onTabChange, variant = 'line', c
   const v = variants[variant] || variants.line;
 
   return (
-    <div className={`flex ${v.container} ${className}`}>
+    <div className={`flex overflow-x-auto scrollbar-none ${v.container} ${className}`}>
       {tabs.map((tab) => {
         const isActive = (typeof tab === 'string' ? tab : tab.id) === activeTab;
         const label = typeof tab === 'string' ? tab : tab.label;
@@ -40,7 +40,7 @@ export default function Tabs({ tabs, activeTab, onTabChange, variant = 'line', c
             type="button"
             onClick={() => onTabChange(id)}
             whileTap={{ scale: 0.97 }}
-            className={`${v.tab} ${isActive ? v.active : v.inactive} flex items-center gap-2.5 whitespace-nowrap`}
+            className={`${v.tab} ${isActive ? v.active : v.inactive} flex items-center gap-2.5 whitespace-nowrap shrink-0`}
           >
             {icon && <span>{icon}</span>}
             {label}
