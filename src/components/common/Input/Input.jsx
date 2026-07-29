@@ -1,6 +1,6 @@
-import { forwardRef } from 'react';
+import { forwardRef, useState } from 'react';
 import { AlertCircle, Eye, EyeOff } from 'lucide-react';
-import { useState } from 'react';
+import './Input.css';
 
 const Input = forwardRef(function Input(
   {
@@ -22,67 +22,69 @@ const Input = forwardRef(function Input(
 ) {
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = type === 'password';
-  const inputType = isPassword ? (showPassword ? 'text' : 'password') : type;
+  const inputType  = isPassword ? (showPassword ? 'text' : 'password') : type;
 
-  const sizeClasses = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-3.5 py-2.5 text-sm',
-    lg: 'px-4 py-3 text-base',
-  };
+  const sizeClass = { sm: 'input--sm', md: 'input--md', lg: 'input--lg' }[size] || 'input--md';
 
   return (
-    <div className={`${fullWidth ? 'w-full' : ''} ${containerClassName}`}>
+    <div
+      className={[
+        'input-wrap',
+        fullWidth ? 'input-wrap--full' : '',
+        containerClassName,
+      ].filter(Boolean).join(' ')}
+    >
       {label && (
-        <label className="block text-sm font-medium text-surface-700 mb-1.5">
+        <label className="input-label">
           {label}
-          {required && <span className="text-danger-500 ml-1">*</span>}
+          {required && <span className="input-required">*</span>}
         </label>
       )}
-      <div className="relative">
+
+      <div className="input-field-wrap">
         {icon && (
-          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400 pointer-events-none">
-            {icon}
-          </div>
+          <div className="input-icon-left">{icon}</div>
         )}
+
         <input
           ref={ref}
           type={inputType}
           disabled={disabled}
           className={[
             'input-base',
-            sizeClasses[size],
-            icon ? 'pl-10' : '',
-            isPassword || rightIcon ? 'pr-10' : '',
-            error ? 'border-danger-500 focus:border-danger-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.1)]' : '',
-            disabled ? 'bg-surface-50 cursor-not-allowed opacity-60' : '',
-            fullWidth ? 'w-full' : '',
+            sizeClass,
+            icon                     ? 'input--has-left'  : '',
+            isPassword || rightIcon  ? 'input--has-right' : '',
+            error                    ? 'input--error'     : '',
+            fullWidth                ? 'input-wrap--full' : '',
             className,
           ].filter(Boolean).join(' ')}
           {...props}
         />
+
         {isPassword && (
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-surface-400 hover:text-surface-600 transition-colors"
+            className="input-pw-toggle"
           >
             {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>
         )}
+
         {rightIcon && !isPassword && (
-          <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-surface-400 pointer-events-none">
-            {rightIcon}
-          </div>
+          <div className="input-icon-right">{rightIcon}</div>
         )}
       </div>
+
       {error && (
-        <p className="flex items-center gap-1.5 mt-1.5 text-xs text-danger-600">
+        <p className="input-error-msg">
           <AlertCircle size={12} />
           {error}
         </p>
       )}
       {hint && !error && (
-        <p className="mt-1.5 text-xs text-surface-500">{hint}</p>
+        <p className="input-hint">{hint}</p>
       )}
     </div>
   );

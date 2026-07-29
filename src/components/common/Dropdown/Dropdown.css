@@ -1,0 +1,34 @@
+/* =====================================================
+   Dropdown Component — plain CSS
+   ===================================================== */
+
+.dropdown-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-trigger {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+/* Panel — colours come from globals .dropdown-content */
+.dropdown-panel {
+  position: absolute;
+  top: 100%;
+  margin-top: 8px;
+  z-index: 50;
+}
+
+/* Alignment */
+.dropdown-panel--left   { left: 0; }
+.dropdown-panel--right  { right: 0; }
+.dropdown-panel--center { left: 50%; transform: translateX(-50%); }
+
+/* Width */
+.dropdown-panel--auto { min-width: 160px; }
+.dropdown-panel--sm   { width: 160px; }
+.dropdown-panel--md   { width: 208px; }
+.dropdown-panel--lg   { width: 256px; }
+.dropdown-panel--xl   { width: 320px; }

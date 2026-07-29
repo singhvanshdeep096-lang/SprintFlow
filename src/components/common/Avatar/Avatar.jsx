@@ -1,11 +1,6 @@
-const sizeMap = {
-  xs: { container: 'w-6 h-6', text: 'text-[10px]' },
-  sm: { container: 'w-7 h-7', text: 'text-xs' },
-  md: { container: 'w-8 h-8', text: 'text-sm' },
-  lg: { container: 'w-10 h-10', text: 'text-sm' },
-  xl: { container: 'w-12 h-12', text: 'text-base' },
-  '2xl': { container: 'w-16 h-16', text: 'text-xl' },
-};
+import './Avatar.css';
+
+const SIZE_KEYS = ['xs', 'sm', 'md', 'lg', 'xl', '2xl'];
 
 export default function Avatar({
   name = '',
@@ -29,34 +24,37 @@ export default function Avatar({
     '#0891B2', '#DB2777', '#65A30D', '#9333EA', '#1D4ED8',
   ];
 
-  const colorIndex = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % defaultColors.length;
+  const colorIndex =
+    name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) %
+    defaultColors.length;
   const bgColor = color || defaultColors[colorIndex];
 
-  const sizes = sizeMap[size] || sizeMap.md;
+  const safeSize = SIZE_KEYS.includes(size) ? size : 'md';
 
   return (
     <div
-      className={`relative inline-flex shrink-0 ${onClick ? 'cursor-pointer' : ''} ${className}`}
+      className={[
+        'avatar-wrap',
+        onClick ? 'avatar-wrap--clickable' : '',
+        `avatar--${safeSize}`,
+        className,
+      ].filter(Boolean).join(' ')}
       onClick={onClick}
       style={style}
     >
       {src ? (
-        <img
-          src={src}
-          alt={name}
-          className={`${sizes.container} rounded-full object-cover ring-2 ring-white`}
-        />
+        <img src={src} alt={name} className="avatar-img" />
       ) : (
         <div
-          className={`${sizes.container} rounded-full flex items-center justify-center ring-2 ring-white font-semibold text-white select-none`}
+          className="avatar-initials"
           style={{ backgroundColor: bgColor }}
         >
-          <span className={sizes.text}>{initials || '?'}</span>
+          <span className={`avatar-text--${safeSize}`}>{initials || '?'}</span>
         </div>
       )}
       {badge && (
         <span
-          className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white"
+          className="avatar-badge"
           style={{ backgroundColor: badgeColor }}
         />
       )}

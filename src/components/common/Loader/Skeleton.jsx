@@ -1,7 +1,9 @@
+import './Loader.css';
+
 export function Skeleton({ className = '', width, height, rounded = false }) {
   return (
     <div
-      className={`shimmer ${rounded ? 'rounded-full' : 'rounded-lg'} ${className}`}
+      className={['shimmer', 'skeleton', rounded ? 'skeleton--rounded' : '', className].filter(Boolean).join(' ')}
       style={{ width, height }}
     />
   );
@@ -10,17 +12,17 @@ export function Skeleton({ className = '', width, height, rounded = false }) {
 export function SkeletonCard({ className = '' }) {
   return (
     <div className={`card p-5 ${className}`}>
-      <div className="flex items-center gap-3 mb-4">
+      <div className="skeleton-card-header">
         <Skeleton width={40} height={40} rounded />
-        <div className="flex-1 space-y-2">
-          <Skeleton height={14} className="w-3/4" />
-          <Skeleton height={12} className="w-1/2" />
+        <div className="skeleton-card-header-text">
+          <Skeleton height={14} style={{ width: '75%' }} />
+          <Skeleton height={12} style={{ width: '50%' }} />
         </div>
       </div>
-      <div className="space-y-2">
-        <Skeleton height={12} className="w-full" />
-        <Skeleton height={12} className="w-5/6" />
-        <Skeleton height={12} className="w-4/6" />
+      <div className="skeleton-card-lines">
+        <Skeleton height={12} style={{ width: '100%' }} />
+        <Skeleton height={12} style={{ width: '83%' }} />
+        <Skeleton height={12} style={{ width: '66%' }} />
       </div>
     </div>
   );
@@ -28,11 +30,11 @@ export function SkeletonCard({ className = '' }) {
 
 export function SkeletonTable({ rows = 5, cols = 4 }) {
   return (
-    <div className="space-y-3">
+    <div className="skeleton-table">
       {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} className="flex gap-4">
+        <div key={i} className="skeleton-table-row">
           {Array.from({ length: cols }).map((_, j) => (
-            <Skeleton key={j} height={36} className="flex-1" />
+            <Skeleton key={j} height={36} style={{ flex: 1 }} />
           ))}
         </div>
       ))}
@@ -42,15 +44,15 @@ export function SkeletonTable({ rows = 5, cols = 4 }) {
 
 export function SkeletonList({ count = 4 }) {
   return (
-    <div className="space-y-3">
+    <div className="skeleton-list">
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="flex items-center gap-3 p-3 rounded-xl border border-surface-100">
+        <div key={i} className="skeleton-list-item">
           <Skeleton width={36} height={36} rounded />
-          <div className="flex-1 space-y-2">
-            <Skeleton height={13} className="w-2/3" />
-            <Skeleton height={11} className="w-1/3" />
+          <div className="skeleton-list-item-text">
+            <Skeleton height={13} style={{ width: '66%' }} />
+            <Skeleton height={11} style={{ width: '33%' }} />
           </div>
-          <Skeleton width={60} height={24} className="rounded-full" />
+          <Skeleton width={60} height={24} rounded />
         </div>
       ))}
     </div>

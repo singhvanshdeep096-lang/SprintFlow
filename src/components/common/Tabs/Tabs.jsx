@@ -1,38 +1,25 @@
-import { useState } from 'react';
 import { motion } from 'motion/react';
+import './Tabs.css';
+
+const VARIANTS  = ['line', 'pill', 'button'];
+const PLACEMENTS = {
+  line:   { wrap: 'tabs-line',   btn: 'tab-line-btn'   },
+  pill:   { wrap: 'tabs-pill',   btn: 'tab-pill-btn'   },
+  button: { wrap: 'tabs-button', btn: 'tab-button-btn' },
+};
 
 export default function Tabs({ tabs, activeTab, onTabChange, variant = 'line', className = '' }) {
-  const variants = {
-    line: {
-      container: 'border-b border-surface-200',
-      tab: 'px-5 py-3.5 text-[14px] font-semibold border-b-2 transition-all duration-150 tracking-wide',
-      active: 'border-primary-600 text-primary-600',
-      inactive: 'border-transparent text-surface-500 hover:text-surface-800 hover:border-surface-300',
-    },
-    pill: {
-      container: 'flex gap-1.5 bg-surface-100 p-1.5 rounded-xl',
-      tab: 'px-5 py-2.5 text-[14px] font-semibold rounded-lg transition-all duration-150 tracking-wide',
-      active: 'bg-white text-surface-900 shadow-sm',
-      inactive: 'text-surface-500 hover:text-surface-700',
-    },
-    button: {
-      container: 'flex gap-2.5',
-      tab: 'px-5 py-2.5 text-[14px] font-semibold rounded-lg border transition-all duration-150 tracking-wide',
-      active: 'bg-primary-600 text-white border-primary-600',
-      inactive: 'bg-white text-surface-600 border-surface-200 hover:border-surface-300',
-    },
-  };
-
-  const v = variants[variant] || variants.line;
+  const safeVariant = VARIANTS.includes(variant) ? variant : 'line';
+  const v = PLACEMENTS[safeVariant];
 
   return (
-    <div className={`flex overflow-x-auto scrollbar-none ${v.container} ${className}`}>
+    <div className={[v.wrap, className].filter(Boolean).join(' ')}>
       {tabs.map((tab) => {
-        const isActive = (typeof tab === 'string' ? tab : tab.id) === activeTab;
-        const label = typeof tab === 'string' ? tab : tab.label;
-        const id = typeof tab === 'string' ? tab : tab.id;
-        const icon = typeof tab === 'object' ? tab.icon : null;
-        const badge = typeof tab === 'object' ? tab.badge : null;
+        const id      = typeof tab === 'string' ? tab : tab.id;
+        const label   = typeof tab === 'string' ? tab : tab.label;
+        const icon    = typeof tab === 'object' ? tab.icon  : null;
+        const badge   = typeof tab === 'object' ? tab.badge : null;
+        const isActive = id === activeTab;
 
         return (
           <motion.button
@@ -40,12 +27,12 @@ export default function Tabs({ tabs, activeTab, onTabChange, variant = 'line', c
             type="button"
             onClick={() => onTabChange(id)}
             whileTap={{ scale: 0.97 }}
-            className={`${v.tab} ${isActive ? v.active : v.inactive} flex items-center gap-2.5 whitespace-nowrap shrink-0`}
+            className={[v.btn, isActive ? 'active' : ''].filter(Boolean).join(' ')}
           >
-            {icon && <span>{icon}</span>}
+            {icon  && <span>{icon}</span>}
             {label}
             {badge !== undefined && badge !== null && (
-              <span className={`inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full text-[10px] font-bold px-1 ${isActive ? 'bg-primary-100 text-primary-700' : 'bg-surface-200 text-surface-600'}`}>
+              <span className={`tab-badge ${isActive ? 'tab-badge--active' : 'tab-badge--inactive'}`}>
                 {badge}
               </span>
             )}

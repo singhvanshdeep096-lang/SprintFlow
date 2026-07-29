@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   Plus, MessageSquare, Paperclip, Flag, Calendar,
-  CheckSquare, User, Search
+  CheckSquare, User, Search, AlertTriangle, ShieldAlert,
+  SlidersHorizontal, CheckCircle2, Zap
 } from 'lucide-react';
 import PageTransition from '../../components/common/PageTransition';
 import Avatar from '../../components/common/Avatar';
@@ -14,23 +15,40 @@ import { KANBAN_COLUMNS, PRIORITY_CONFIG } from '../../constants';
 import { useToast } from '../../hooks/useToast';
 import TaskDetail from '../task/TaskDetail';
 import userService from '../../services/user.service';
+import './Board.css';
 
-function PriorityIcon({ priority }) {
-  const config = PRIORITY_CONFIG[priority];
-  if (!config) return null;
+/* ---- Task Priority Flag & Badge ---- */
+function PriorityBadge({ priority }) {
+  const cfg = PRIORITY_CONFIG[priority] || PRIORITY_CONFIG.medium;
   return (
-    <div className="flex items-center gap-1">
-      <Flag size={11} style={{ color: config.color }} />
-    </div>
+    <span
+      className="kc-priority-flag"
+      style={{ backgroundColor: cfg.bg, color: cfg.color }}
+    >
+      <Flag size={10} style={{ color: cfg.color }} />
+      {cfg.label}
+    </span>
   );
 }
 
+/* ---- Individual Task Card Component ---- */
 function TaskCard({ task, members, onOpen, delay }) {
-  const assignee = members.find((m) => m.id === task.assigneeId);
+  const assignee  = members.find((m) => m.id === task.assigneeId);
   const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'done';
 
   const completedSubtasks = task.subtasks?.filter((s) => s.done).length || 0;
-  const totalSubtasks = task.subtasks?.length || 0;
+  const totalSubtasks     = task.subtasks?.length || 0;
+
+  // Format issue key e.g. SF-101
+  const issueKey = `SF-${task.id?.split('-').pop()?.padStart(3, '0') || '100'}`;
+
+  const statusStripeColors = {
+    todo:        '#94A3B8',
+    in_progress: '#3B82F6',
+    review:      '#F59E0B',
+    qa:          '#8B5CF6',
+    done:        '#22C55E',
+  };
 
   return (
     <motion.div
@@ -38,80 +56,82 @@ function TaskCard({ task, members, onOpen, delay }) {
       initial={{ opacity: 0, y: 16, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95, y: -8 }}
-      transition={{ delay: Math.min(delay, 0.3), duration: 0.25 }}
-      whileHover={{ y: -2, boxShadow: '0 8px 24px rgba(37, 99, 235, 0.1)' }}
+      transition={{ delay: Math.min(delay, 0.3), duration: 0.22 }}
       onClick={() => onOpen(task)}
-      className="task-card bg-white cursor-pointer"
+      className="kc-card"
     >
-      <div className="flex items-start gap-2 mb-3">
-        <PriorityIcon priority={task.priority} />
-        <h4 className="text-sm font-semibold text-surface-800 leading-snug flex-1">{task.title}</h4>
-      </div>
+      {/* Accent left stripe */}
+      <div
+        className="kc-stripe"
+        style={{ backgroundColor: statusStripeColors[task.status] || '#3B82F6' }}
+      />
 
-      {task.labels && task.labels.length > 0 && (
-        <div className="flex flex-wrap gap-1 mb-3">
-          {task.labels.slice(0, 2).map((label) => (
-            <span
-              key={label}
-              className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-primary-50 text-primary-600"
-            >
-              {label}
-            </span>
-          ))}
-          {task.labels.length > 2 && (
-            <span className="text-[10px] text-surface-400 px-1">+{task.labels.length - 2}</span>
+      {/* Top row: Issue Key + Tag + Priority */}
+      <div className="kc-top-row">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span className="kc-key-badge">{issueKey}</span>
+          {task.labels && task.labels.length > 0 && (
+            <span className="kc-label-tag">{task.labels[0]}</span>
           )}
         </div>
-      )}
+        <PriorityBadge priority={task.priority} />
+      </div>
 
+      {/* Title */}
+      <h4 className="kc-title">{task.title}</h4>
+
+      {/* Subtasks Progress */}
       {totalSubtasks > 0 && (
-        <div className="mb-3">
-          <div className="flex items-center justify-between text-[10px] text-surface-400 mb-1">
-            <div className="flex items-center gap-1">
-              <CheckSquare size={9} />
-              <span>{completedSubtasks}/{totalSubtasks}</span>
+        <div className="kc-subtasks-wrap">
+          <div className="kc-subtasks-info">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+              <CheckSquare size={10} />
+              <span>{completedSubtasks}/{totalSubtasks} subtasks</span>
             </div>
             <span>{Math.round((completedSubtasks / totalSubtasks) * 100)}%</span>
           </div>
-          <div className="h-1 bg-surface-100 rounded-full overflow-hidden">
+          <div className="kc-progress-track">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${(completedSubtasks / totalSubtasks) * 100}%` }}
               transition={{ duration: 0.5, ease: 'easeOut' }}
-              className="h-full rounded-full bg-primary-500"
+              className="kc-progress-fill-bar"
             />
           </div>
         </div>
       )}
 
-      <div className="flex items-center justify-between mt-2">
-        <div className="flex items-center gap-2">
-          {assignee ? (
-            <Avatar name={assignee.name} size="xs" color={assignee.color} />
-          ) : (
-            <div className="w-5 h-5 rounded-full bg-surface-200 flex items-center justify-center">
-              <User size={9} className="text-surface-400" />
-            </div>
-          )}
+      {/* Footer Meta Row */}
+      <div className="kc-footer">
+        <div className="kc-footer-left">
           {task.dueDate && (
-            <span className={`flex items-center gap-0.5 text-[10px] font-medium ${isOverdue ? 'text-danger-600' : 'text-surface-400'}`}>
-              <Calendar size={9} />
+            <span className={`kc-due-badge ${isOverdue ? 'kc-due-badge--overdue' : 'kc-due-badge--normal'}`}>
+              <Calendar size={10} />
               {task.dueDate}
             </span>
           )}
-        </div>
-        <div className="flex items-center gap-2 text-[10px] text-surface-400">
           {task.commentCount > 0 && (
-            <span className="flex items-center gap-0.5">
-              <MessageSquare size={9} />
+            <span className="kc-counter-item">
+              <MessageSquare size={10} />
               {task.commentCount}
             </span>
           )}
           {task.attachmentCount > 0 && (
-            <span className="flex items-center gap-0.5">
-              <Paperclip size={9} />
+            <span className="kc-counter-item">
+              <Paperclip size={10} />
               {task.attachmentCount}
             </span>
+          )}
+        </div>
+
+        {/* Assignee Avatar at bottom-right */}
+        <div>
+          {assignee ? (
+            <Avatar name={assignee.name} size="xs" color={assignee.color} />
+          ) : (
+            <div style={{ width: 20, height: 20, borderRadius: 9999, background: 'var(--color-surface-200)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <User size={10} style={{ color: 'var(--color-surface-400)' }} />
+            </div>
           )}
         </div>
       </div>
@@ -119,9 +139,10 @@ function TaskCard({ task, members, onOpen, delay }) {
   );
 }
 
+/* ---- Inline Quick Add Task Form ---- */
 function AddTaskInline({ columnStatus, onAdd, onCancel }) {
   const [title, setTitle] = useState('');
-  const { success } = useToast();
+  const { success }       = useToast();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -146,32 +167,33 @@ function AddTaskInline({ columnStatus, onAdd, onCancel }) {
       animate={{ opacity: 1, height: 'auto' }}
       exit={{ opacity: 0, height: 0 }}
       onSubmit={handleSubmit}
-      className="bg-white rounded-xl border border-primary-300 shadow-sm p-3"
+      className="kanban-inline-add-card"
     >
       <input
         autoFocus
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder="Task title..."
-        className="w-full text-sm outline-none text-surface-800 placeholder:text-surface-400 mb-2"
+        placeholder="What needs to be done?"
+        className="kanban-inline-add-input"
         onKeyDown={(e) => e.key === 'Escape' && onCancel()}
       />
-      <div className="flex gap-2">
-        <Button type="submit" size="xs" disabled={!title.trim()}>Add</Button>
+      <div className="kanban-inline-add-btns">
+        <Button type="submit" size="xs" disabled={!title.trim()}>Add Issue</Button>
         <Button type="button" size="xs" variant="ghost" onClick={onCancel}>Cancel</Button>
       </div>
     </motion.form>
   );
 }
 
+/* ---- Kanban Column Component ---- */
 function KanbanColumn({ column, tasks, members, onAddTask, onOpenTask }) {
   const [addingTask, setAddingTask] = useState(false);
   const dispatch = useDispatch();
-  const [dragOver, setDragOver] = useState(false);
+  const [dragOver, setDragOver]     = useState(false);
 
-  const handleDragOver = (e) => { e.preventDefault(); setDragOver(true); };
+  const handleDragOver  = (e) => { e.preventDefault(); setDragOver(true); };
   const handleDragLeave = () => setDragOver(false);
-  const handleDrop = (e) => {
+  const handleDrop      = (e) => {
     e.preventDefault();
     setDragOver(false);
     const taskId = e.dataTransfer.getData('taskId');
@@ -184,40 +206,39 @@ function KanbanColumn({ column, tasks, members, onAddTask, onOpenTask }) {
     e.dataTransfer.setData('taskId', task.id);
   };
 
+  // Sum estimated story points
+  const points = tasks.reduce((sum, t) => sum + (t.estimatedHours || 3), 0);
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35 }}
-      className="kanban-column"
-    >
-      <div className="flex items-center justify-between mb-3 px-1">
-        <div className="flex items-center gap-2">
-          <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: column.color }} />
-          <h3 className="text-sm font-semibold text-surface-700">{column.title}</h3>
-          <span className="min-w-[20px] h-5 rounded-full bg-surface-200 text-surface-500 text-[11px] font-bold flex items-center justify-center px-1.5">
-            {tasks.length}
-          </span>
+    <div className="kanban-col">
+
+      {/* Header */}
+      <div className="kanban-col-header">
+        <div className="kanban-col-title-left">
+          <div className="kanban-col-status-dot" style={{ backgroundColor: column.color }} />
+          <span className="kanban-col-title-name">{column.title}</span>
+          <span className="kanban-col-count-pill">{tasks.length}</span>
         </div>
-        <div className="flex items-center gap-1">
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
+        <div className="kanban-col-header-right">
+          <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-surface-400)', marginRight: 4 }}>
+            {points} pts
+          </span>
+          <button
             onClick={() => setAddingTask(true)}
-            className="p-1 rounded-lg text-surface-400 hover:text-surface-600 hover:bg-surface-100 transition-all"
+            className="kanban-col-add-icon-btn"
+            title="Add issue"
           >
             <Plus size={15} />
-          </motion.button>
+          </button>
         </div>
       </div>
 
+      {/* Cards Dropzone Area */}
       <div
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        className={`flex flex-col gap-2.5 min-h-[200px] rounded-2xl p-2 transition-all ${
-          dragOver ? 'bg-primary-50 border-2 border-dashed border-primary-300' : 'bg-surface-50/50'
-        }`}
+        className={`kanban-col-dropzone ${dragOver ? 'kanban-col-dropzone--active' : ''}`}
       >
         <AnimatePresence mode="popLayout">
           {tasks.map((task, i) => (
@@ -226,7 +247,7 @@ function KanbanColumn({ column, tasks, members, onAddTask, onOpenTask }) {
               draggable
               onDragStart={(e) => handleDragStart(e, task)}
             >
-              <TaskCard task={task} members={members} onOpen={onOpenTask} delay={i * 0.04} />
+              <TaskCard task={task} members={members} onOpen={onOpenTask} delay={i * 0.03} />
             </div>
           ))}
         </AnimatePresence>
@@ -242,115 +263,164 @@ function KanbanColumn({ column, tasks, members, onAddTask, onOpenTask }) {
         </AnimatePresence>
 
         {tasks.length === 0 && !addingTask && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex flex-col items-center justify-center py-8 gap-2 text-surface-300"
-          >
-            <CheckSquare size={22} className="opacity-40" />
-            <p className="text-xs font-medium">Drop tasks here</p>
-          </motion.div>
+          <div className="kanban-empty-drop-msg">
+            <CheckSquare size={20} style={{ opacity: 0.4 }} />
+            <p className="kanban-empty-drop-text">No issues in {column.title}</p>
+          </div>
         )}
       </div>
 
+      {/* Bottom Add Task Button */}
       {!addingTask && (
-        <motion.button
-          whileHover={{ scale: 1.01 }}
-          whileTap={{ scale: 0.98 }}
+        <button
           onClick={() => setAddingTask(true)}
-          className="mt-2 w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm text-surface-400 hover:text-surface-600 hover:bg-surface-100 transition-all"
+          className="kanban-col-add-bottom-btn"
         >
-          <Plus size={14} />Add task
-        </motion.button>
+          <Plus size={14} /> Create issue
+        </button>
       )}
-    </motion.div>
+    </div>
   );
 }
 
+/* ---- Main Board Page Component ---- */
 export default function Board() {
   const dispatch = useDispatch();
-  const tasks = useSelector((state) => state.tasks.list);
+  const tasks    = useSelector((state) => state.tasks.list);
   const selectedTask = useSelector((state) => state.tasks.selected);
   const isDrawerOpen = useSelector((state) => state.tasks.isDrawerOpen);
-  const [search, setSearch] = useState('');
+
+  const [search, setSearch]                 = useState('');
   const [assigneeFilter, setAssigneeFilter] = useState('all');
-  const [members, setMembers] = useState([]);
+  const [activeTab, setActiveTab]           = useState('all');
+  const [members, setMembers]               = useState([]);
 
   useEffect(() => {
     userService.getUsers().then((data) => setMembers(data)).catch(() => {});
   }, []);
 
+  // Filtering
   const filteredTasks = tasks.filter((t) => {
-    const matchSearch = t.title.toLowerCase().includes(search.toLowerCase());
+    const matchSearch   = t.title.toLowerCase().includes(search.toLowerCase()) ||
+                          t.id?.toLowerCase().includes(search.toLowerCase());
     const matchAssignee = assigneeFilter === 'all' || t.assigneeId === assigneeFilter;
-    return matchSearch && matchAssignee;
+    const matchTab      = activeTab === 'all' || (activeTab === 'my' && t.assigneeId === 'user-1');
+    return matchSearch && matchAssignee && matchTab;
   });
 
   const getColumnTasks = (status) => filteredTasks.filter((t) => t.status === status);
 
-  const handleAddTask = (taskData) => dispatch(addTaskAsync(taskData));
-  const handleOpenTask = (task) => dispatch(openTaskDrawer(task));
+  const totalPoints = tasks.reduce((sum, t) => sum + (t.estimatedHours || 3), 0);
+  const doneTasks   = tasks.filter((t) => t.status === 'done').length;
+  const progressPct = Math.round((doneTasks / (tasks.length || 1)) * 100);
+
+  const handleAddTask     = (taskData) => dispatch(addTaskAsync(taskData));
+  const handleOpenTask    = (task) => dispatch(openTaskDrawer(task));
   const handleCloseDrawer = () => dispatch(closeTaskDrawer());
 
   return (
-    <PageTransition className="flex flex-col h-full">
-      <div className="flex items-center justify-between gap-4 px-6 py-3 bg-white border-b border-surface-100">
-        {/* Left: title */}
-        <div className="shrink-0">
-          <h1 className="text-lg font-bold text-surface-900 leading-tight">Kanban Board</h1>
-          <p className="text-xs text-surface-400 mt-0.5">SprintFlow v2.0 · Sprint 7</p>
+    <PageTransition className="board-page-container">
+
+      {/* ------------------------------------------------
+          1. Sprint Top Header Bar (Jira / Linear Style)
+         ------------------------------------------------ */}
+      <div className="sprint-header-bar">
+        <div className="sprint-info-left">
+          <span className="sprint-tag-badge">
+            <Zap size={11} /> ACTIVE SPRINT
+          </span>
+          <h2 className="sprint-title-text">RP1 Sprint 2 · SprintFlow v2.0</h2>
+          <span className="sprint-date-range">Jul 20 – Jul 31</span>
+
+          <div style={{ width: 1, height: 18, background: '#334155', marginInline: 4 }} />
+
+          <div className="sprint-stats-summary">
+            <div className="sprint-stat-box">
+              <span className="sprint-stat-label">Progress</span>
+              <span className="sprint-stat-val" style={{ color: '#38BDF8' }}>{progressPct}% ({doneTasks}/{tasks.length})</span>
+            </div>
+            <div className="sprint-stat-box">
+              <span className="sprint-stat-label">Story Points</span>
+              <span className="sprint-stat-val">{totalPoints} pts</span>
+            </div>
+          </div>
+
+          <div className="sprint-health-banner">
+            <ShieldAlert size={13} />
+            <span>Sprint Health: 85% On Track</span>
+          </div>
         </div>
 
-        {/* Right: controls */}
-        <div className="flex items-center gap-3">
-          {/* Search */}
-          <div className="relative">
-            <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-surface-400" />
+        <div className="sprint-header-actions">
+          <button className="sprint-action-btn-secondary">
+            <SlidersHorizontal size={13} /> Sprint Options
+          </button>
+          <button className="sprint-action-btn-primary" onClick={() => dispatch(addTaskAsync({ title: 'New Board Issue', status: 'todo', priority: 'high', projectId: 'proj-1' }))}>
+            <Plus size={14} /> + New Issue
+          </button>
+        </div>
+      </div>
+
+      {/* ------------------------------------------------
+          2. Filters & Search Control Bar
+         ------------------------------------------------ */}
+      <div className="board-toolbar">
+        <div className="board-filter-left">
+          {/* Quick Tabs */}
+          <div className="board-filter-tabs">
+            <button
+              onClick={() => setActiveTab('all')}
+              className={`board-tab-btn ${activeTab === 'all' ? 'active' : ''}`}
+            >
+              All Issues ({tasks.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('my')}
+              className={`board-tab-btn ${activeTab === 'my' ? 'active' : ''}`}
+            >
+              My Issues
+            </button>
+          </div>
+
+          {/* Member Avatar Filter */}
+          <div className="board-avatars-filter">
+            {[{ id: 'all', name: 'All' }, ...members.slice(0, 5)].map((m) => (
+              <button
+                key={m.id}
+                onClick={() => setAssigneeFilter(m.id)}
+                className={`board-avatar-btn ${assigneeFilter === m.id ? 'active' : ''}`}
+                title={m.name}
+              >
+                {m.id === 'all' ? (
+                  <div className="board-all-pill">ALL</div>
+                ) : (
+                  <Avatar name={m.name} size="xs" color={m.color} />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="board-filter-right">
+          {/* Search Box */}
+          <div className="board-search-box">
+            <Search size={13} className="board-search-icon-inside" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search tasks..."
-              className="input-base pl-8 py-1.5 text-sm w-36"
+              placeholder="Search title or key..."
+              className="board-search-input-field"
             />
           </div>
-
-          {/* Divider */}
-          <div className="w-px h-5 bg-surface-200 shrink-0" />
-
-          {/* Assignee filter avatars */}
-          <div className="flex items-center gap-1">
-            {[{ id: 'all', name: 'All' }, ...members.slice(0, 4)].map((m) => (
-              <motion.button
-                key={m.id}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => setAssigneeFilter(m.id)}
-                className={`transition-all ${assigneeFilter === m.id ? 'ring-2 ring-primary-500 ring-offset-1' : 'opacity-50 hover:opacity-90'}`}
-              >
-                {m.id === 'all' ? (
-                  <div className="w-7 h-7 rounded-full bg-surface-100 border border-surface-200 flex items-center justify-center text-[10px] font-bold text-surface-500">
-                    All
-                  </div>
-                ) : (
-                  <Avatar name={m.name} size="sm" color={m.color} />
-                )}
-              </motion.button>
-            ))}
-          </div>
-
-          {/* Divider */}
-          <div className="w-px h-5 bg-surface-200 shrink-0" />
-
-          {/* New Task */}
-          <Button variant="primary" size="sm" icon={<Plus size={13} />}>
-            New Task
-          </Button>
         </div>
       </div>
 
-      <div className="flex-1 overflow-x-auto p-6">
-        <div className="flex gap-5 min-w-max pb-6">
+      {/* ------------------------------------------------
+          3. Kanban Columns Flex Canvas Area
+         ------------------------------------------------ */}
+      <div className="board-canvas-area">
+        <div className="board-columns-flex">
           {KANBAN_COLUMNS.map((column) => (
             <KanbanColumn
               key={column.id}
@@ -364,12 +434,13 @@ export default function Board() {
         </div>
       </div>
 
+      {/* Task Detail Drawer */}
       <Drawer
         isOpen={isDrawerOpen}
         onClose={handleCloseDrawer}
         width="xl"
         title={selectedTask?.title}
-        subtitle={`#${selectedTask?.id?.split('-').pop()?.toUpperCase()} · ${selectedTask?.projectId}`}
+        subtitle={`#SF-${selectedTask?.id?.split('-').pop()?.padStart(3, '0')} · ${selectedTask?.projectId}`}
       >
         {selectedTask && <TaskDetail task={selectedTask} />}
       </Drawer>

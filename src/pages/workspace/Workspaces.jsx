@@ -19,19 +19,20 @@ import { addWorkspaceAsync, updateWorkspaceAsync, deleteWorkspaceAsync } from '.
 import { useToast } from '../../hooks/useToast';
 import { useModal } from '../../hooks/useModal';
 import userService from '../../services/user.service';
+import './Workspaces.css';
 
 const WORKSPACE_ICONS = ['🚀', '🎨', '📊', '💡', '🔧', '🌟', '⚡', '🎯', '🔬', '📱', '🤖', '💎'];
 const WORKSPACE_COLORS = ['#2563EB', '#7C3AED', '#059669', '#D97706', '#DC2626', '#0891B2', '#DB2777', '#65A30D'];
 const PLAN_CONFIG = {
-  Starter: { color: 'gray',    label: 'STARTER'  },
-  Pro:     { color: 'primary', label: 'PRO'       },
-  Business:{ color: 'purple',  label: 'BUSINESS'  },
+  Starter:  { color: 'gray',    label: 'STARTER'  },
+  Pro:      { color: 'primary', label: 'PRO'       },
+  Business: { color: 'purple',  label: 'BUSINESS'  },
 };
 
 function WorkspaceCard({ workspace, allMembers, onEdit, onDelete, delay }) {
   const navigate = useNavigate();
-  const members = allMembers.filter((m) => workspace.members?.includes(m.id));
-  const plan = PLAN_CONFIG[workspace.plan] || PLAN_CONFIG.Starter;
+  const members  = allMembers.filter((m) => workspace.members?.includes(m.id));
+  const plan     = PLAN_CONFIG[workspace.plan] || PLAN_CONFIG.Starter;
 
   return (
     <motion.div
@@ -39,36 +40,35 @@ function WorkspaceCard({ workspace, allMembers, onEdit, onDelete, delay }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.38, ease: 'easeOut' }}
       whileHover={{ y: -6, transition: { duration: 0.22 } }}
-      className="group relative bg-white rounded-2xl border border-surface-200 overflow-hidden cursor-pointer"
-      style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04)' }}
+      className="ws-card group"
       onClick={() => navigate(`/workspaces/${workspace.id}`)}
     >
       <div
-        className="h-1.5 w-full transition-all duration-300 group-hover:h-2"
+        className="ws-card-stripe"
         style={{ background: `linear-gradient(90deg, ${workspace.color || '#2563EB'}, ${workspace.color || '#2563EB'}99)` }}
       />
 
-      <div className="p-5">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-3">
+      <div className="ws-card-inner">
+        <div className="ws-card-top">
+          <div className="ws-card-left">
             <motion.div
               whileHover={{ scale: 1.08, rotate: 4 }}
-              className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl shadow-sm flex-shrink-0"
+              className="ws-card-icon-box"
               style={{ backgroundColor: `${workspace.color || '#2563EB'}18`, border: `1.5px solid ${workspace.color || '#2563EB'}35` }}
             >
               {workspace.icon || '🚀'}
             </motion.div>
 
             <div>
-              <h3 className="font-bold text-surface-900 text-[15px] leading-tight">{workspace.name}</h3>
-              <div className="flex items-center gap-1.5 mt-1">
+              <h3 className="ws-card-title">{workspace.name}</h3>
+              <div className="ws-card-tags">
                 {workspace.isOwner && (
-                  <span className="flex items-center gap-0.5 text-[10px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full">
+                  <span className="ws-owner-badge">
                     <Crown size={9} />OWNER
                   </span>
                 )}
                 <span
-                  className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                  className="ws-plan-badge"
                   style={{
                     backgroundColor: `${workspace.color || '#2563EB'}15`,
                     color: workspace.color || '#2563EB',
@@ -86,7 +86,7 @@ function WorkspaceCard({ workspace, allMembers, onEdit, onDelete, delay }) {
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
-                  className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-surface-100 text-surface-400 hover:text-surface-600 transition-all"
+                  className="ws-more-btn"
                 >
                   <MoreHorizontal size={15} />
                 </motion.button>
@@ -94,64 +94,59 @@ function WorkspaceCard({ workspace, allMembers, onEdit, onDelete, delay }) {
               align="right"
               width="sm"
             >
-              <div className="py-1">
+              <div style={{ paddingBlock: 4 }}>
                 <button className="dropdown-item" onClick={() => onEdit(workspace)}>
-                  <Edit3 size={14} className="text-surface-400" />Edit workspace
+                  <Edit3 size={14} style={{ color: 'var(--color-surface-400)' }} />Edit workspace
                 </button>
                 <button className="dropdown-item" onClick={() => navigate('/settings')}>
-                  <Settings size={14} className="text-surface-400" />Settings
+                  <Settings size={14} style={{ color: 'var(--color-surface-400)' }} />Settings
                 </button>
-                <div className="my-1 border-t border-surface-100" />
+                <hr className="profile-menu-divider" />
                 <button className="dropdown-item danger" onClick={() => onDelete(workspace)}>
-                  <Trash2 size={14} className="text-danger-400" />Delete
+                  <Trash2 size={14} style={{ color: '#F87171' }} />Delete
                 </button>
               </div>
             </Dropdown>
           </div>
         </div>
 
-        <p
-          className="text-sm leading-relaxed line-clamp-2 mb-4"
-          style={{ color: '#64748B', minHeight: 40 }}
-        >
+        <p className="ws-card-desc">
           {workspace.description}
         </p>
 
-        <div className="flex items-center gap-5 mb-4">
-          <div className="flex items-center gap-1.5">
+        <div className="ws-card-counts">
+          <div className="ws-card-count-item">
             <FolderKanban size={13} style={{ color: workspace.color || '#2563EB' }} />
-            <span className="text-[13px] font-semibold" style={{ color: '#1e293b' }}>{workspace.projectCount || 0}</span>
-            <span className="text-[13px]" style={{ color: '#94a3b8' }}>projects</span>
+            <span className="ws-card-count-val">{workspace.projectCount || 0}</span>
+            <span className="ws-card-count-lbl">projects</span>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="ws-card-count-item">
             <Users size={13} style={{ color: workspace.color || '#2563EB' }} />
-            <span className="text-[13px] font-semibold" style={{ color: '#1e293b' }}>{members.length}</span>
-            <span className="text-[13px]" style={{ color: '#94a3b8' }}>members</span>
+            <span className="ws-card-count-val">{members.length}</span>
+            <span className="ws-card-count-lbl">members</span>
           </div>
         </div>
 
-        <div className="flex items-center justify-between pt-3 border-t border-surface-100">
-          <div className="flex -space-x-2">
+        <div className="ws-card-footer">
+          <div className="ws-card-members">
             {members.slice(0, 5).map((m) => (
-              <div key={m.id} className="ring-2 ring-white rounded-full">
+              <div key={m.id} className="ws-card-member-avatar">
                 <Avatar name={m.name} size="xs" color={m.color} />
               </div>
             ))}
             {members.length > 5 && (
-              <div className="w-6 h-6 rounded-full bg-surface-200 ring-2 ring-white flex items-center justify-center text-[9px] font-bold text-surface-600">
+              <div className="ws-card-member-more">
                 +{members.length - 5}
               </div>
             )}
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, x: -4 }}
-            whileHover={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-1 text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity"
+          <div
+            className="ws-card-open-link"
             style={{ color: workspace.color || '#2563EB' }}
           >
             Open <ArrowUpRight size={12} />
-          </motion.div>
+          </div>
         </div>
       </div>
     </motion.div>
@@ -159,7 +154,7 @@ function WorkspaceCard({ workspace, allMembers, onEdit, onDelete, delay }) {
 }
 
 function WorkspaceForm({ defaultValues, onSubmit, onClose, loading }) {
-  const [selectedIcon, setSelectedIcon] = useState(defaultValues?.icon || '🚀');
+  const [selectedIcon, setSelectedIcon]   = useState(defaultValues?.icon  || '🚀');
   const [selectedColor, setSelectedColor] = useState(defaultValues?.color || '#2563EB');
 
   const { register, handleSubmit, formState: { errors } } = useForm({
@@ -171,7 +166,7 @@ function WorkspaceForm({ defaultValues, onSubmit, onClose, loading }) {
   };
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-5">
+    <form onSubmit={handleSubmit(handleFormSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <Input
         label="Workspace name"
         placeholder="e.g. Engineering Hub"
@@ -181,18 +176,19 @@ function WorkspaceForm({ defaultValues, onSubmit, onClose, loading }) {
       />
 
       <div>
-        <label className="block text-sm font-medium text-surface-700 mb-2">Description</label>
+        <label className="profile-bio-label">Description</label>
         <textarea
           {...register('description')}
           placeholder="Describe the purpose of this workspace..."
           rows={3}
-          className="input-base resize-none"
+          className="input-base input-wrap--full"
+          style={{ resize: 'none' }}
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-surface-700 mb-2">Icon</label>
-        <div className="flex flex-wrap gap-2">
+        <label className="profile-bio-label">Icon</label>
+        <div className="ws-icon-picker">
           {WORKSPACE_ICONS.map((icon) => (
             <motion.button
               key={icon}
@@ -200,11 +196,7 @@ function WorkspaceForm({ defaultValues, onSubmit, onClose, loading }) {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={() => setSelectedIcon(icon)}
-              className={`w-10 h-10 rounded-xl text-lg flex items-center justify-center border-2 transition-all ${
-                selectedIcon === icon
-                  ? 'border-primary-500 bg-primary-50'
-                  : 'border-surface-200 hover:border-surface-300 bg-white'
-              }`}
+              className={`ws-icon-btn ${selectedIcon === icon ? 'ws-icon-btn--active' : 'ws-icon-btn--inactive'}`}
             >
               {icon}
             </motion.button>
@@ -213,8 +205,8 @@ function WorkspaceForm({ defaultValues, onSubmit, onClose, loading }) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-surface-700 mb-2">Color</label>
-        <div className="flex flex-wrap gap-2">
+        <label className="profile-bio-label">Color</label>
+        <div className="ws-color-picker">
           {WORKSPACE_COLORS.map((color) => (
             <motion.button
               key={color}
@@ -222,16 +214,16 @@ function WorkspaceForm({ defaultValues, onSubmit, onClose, loading }) {
               whileHover={{ scale: 1.15 }}
               whileTap={{ scale: 0.9 }}
               onClick={() => setSelectedColor(color)}
-              className="w-8 h-8 rounded-full flex items-center justify-center border-2 border-white shadow-sm"
+              className="ws-color-btn"
               style={{ backgroundColor: color }}
             >
-              {selectedColor === color && <CheckCircle size={14} className="text-white" />}
+              {selectedColor === color && <CheckCircle size={14} style={{ color: '#ffffff' }} />}
             </motion.button>
           ))}
         </div>
       </div>
 
-      <div className="flex justify-end gap-3 pt-2">
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, paddingTop: 8 }}>
         <Button type="button" variant="secondary" onClick={onClose}>Cancel</Button>
         <Button type="submit" loading={loading}>
           {defaultValues ? 'Save Changes' : 'Create Workspace'}
@@ -242,14 +234,14 @@ function WorkspaceForm({ defaultValues, onSubmit, onClose, loading }) {
 }
 
 export default function Workspaces() {
-  const dispatch = useDispatch();
+  const dispatch    = useDispatch();
   const { success } = useToast();
-  const workspaces = useSelector((state) => state.workspaces.list);
-  const [search, setSearch] = useState('');
+  const workspaces  = useSelector((state) => state.workspaces.list);
+  const [search, setSearch]         = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [members, setMembers] = useState([]);
+  const [members, setMembers]       = useState([]);
   const createModal = useModal();
-  const editModal = useModal();
+  const editModal   = useModal();
   const deleteModal = useModal();
 
   useEffect(() => {
@@ -262,23 +254,15 @@ export default function Workspaces() {
   );
 
   const totalProjects = workspaces.reduce((sum, w) => sum + (w.projectCount || 0), 0);
-  const totalMembers = members.length;
+  const totalMembers  = members.length;
 
   const handleCreate = async (data) => {
     setSubmitting(true);
     try {
-      await dispatch(addWorkspaceAsync({
-        ...data,
-        members: ['user-1'],
-        plan: 'Starter',
-      })).unwrap();
+      await dispatch(addWorkspaceAsync({ ...data, members: ['user-1'], plan: 'Starter' })).unwrap();
       success('Workspace created', `"${data.name}" is ready to use.`);
       createModal.close();
-    } catch (e) {
-      // ignore
-    } finally {
-      setSubmitting(false);
-    }
+    } catch (e) { /* ignore */ } finally { setSubmitting(false); }
   };
 
   const handleEdit = async (data) => {
@@ -287,11 +271,7 @@ export default function Workspaces() {
       await dispatch(updateWorkspaceAsync({ id: editModal.data.id, data })).unwrap();
       success('Workspace updated', 'Changes saved successfully.');
       editModal.close();
-    } catch (e) {
-      // ignore
-    } finally {
-      setSubmitting(false);
-    }
+    } catch (e) { /* ignore */ } finally { setSubmitting(false); }
   };
 
   const handleDelete = async () => {
@@ -300,64 +280,43 @@ export default function Workspaces() {
       await dispatch(deleteWorkspaceAsync(deleteModal.data.id)).unwrap();
       success('Workspace deleted', `"${deleteModal.data.name}" has been removed.`);
       deleteModal.close();
-    } catch (e) {
-      // ignore
-    } finally {
-      setSubmitting(false);
-    }
+    } catch (e) { /* ignore */ } finally { setSubmitting(false); }
   };
 
   return (
-    <PageTransition className="p-6 w-full max-w-[1700px] mx-auto">
+    <PageTransition className="ws-page">
+      {/* Banner */}
       <motion.div
         initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45 }}
-        className="relative rounded-2xl mb-7"
-        style={{
-          background: 'linear-gradient(135deg, #1e3560 0%, #2d5096 50%, #3b5fbf 100%)',
-          padding: '20px 24px',
-          overflow: 'hidden',
-        }}
+        className="ws-banner"
       >
-        {/* Soft ambient glow — top right */}
-        <div
-          className="absolute top-0 right-0 w-80 h-80 rounded-full pointer-events-none"
-          style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.07) 0%, transparent 65%)', transform: 'translate(35%, -45%)' }}
-        />
-        {/* Subtle bottom-left warmth */}
-        <div
-          className="absolute bottom-0 left-1/4 w-56 h-56 rounded-full pointer-events-none"
-          style={{ background: 'radial-gradient(circle, rgba(147,197,253,0.08) 0%, transparent 65%)', transform: 'translateY(55%)' }}
-        />
+        <div className="ws-banner-glow-tr" />
+        <div className="ws-banner-glow-bl" />
 
-        <div className="absolute top-5 right-6" onClick={createModal.open}>
+        <div className="ws-banner-btn-wrap" onClick={createModal.open}>
           <motion.button
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.97 }}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm cursor-pointer"
-            style={{
-              background: 'rgba(255,255,255,0.95)',
-              color: '#2d5096',
-              boxShadow: '0 2px 12px rgba(0,0,0,0.12)',
-            }}
+            className="ws-create-btn"
           >
             <Plus size={15} />
             New Workspace
           </motion.button>
         </div>
 
-        <div className="relative pr-44">
-          <div className="flex items-center gap-1.5 mb-1.5">
+        <div className="ws-banner-content">
+          <div className="ws-banner-org-tag">
             <Globe size={13} style={{ color: '#93c5fd', opacity: 0.85 }} />
-            <span style={{ color: '#bfdbfe', fontSize: 12, fontWeight: 500, opacity: 0.9 }}>Organization</span>
+            <span className="ws-banner-org-label">Organization</span>
           </div>
-          <h1 className="text-2xl font-bold text-white mb-0.5" style={{ letterSpacing: '-0.01em' }}>Workspaces</h1>
-          <p style={{ color: '#bfdbfe', fontSize: 13, opacity: 0.85 }}>
+          <h1 className="ws-banner-title">Workspaces</h1>
+          <p className="ws-banner-subtitle">
             Manage all your team workspaces in one place
           </p>
 
-          <div className="flex items-center gap-5 mt-4">
+          <div className="ws-banner-stats-row">
             {[
               { label: 'Workspaces', value: workspaces.length, icon: Layers },
               { label: 'Projects',   value: totalProjects,     icon: FolderKanban },
@@ -368,17 +327,14 @@ export default function Workspaces() {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 + i * 0.07 }}
-                className="flex items-center gap-2"
+                className="ws-banner-stat-item"
               >
-                <div
-                  className="rounded-lg flex items-center justify-center"
-                  style={{ width: 28, height: 28, background: 'rgba(255,255,255,0.12)' }}
-                >
+                <div className="ws-banner-stat-icon-box">
                   <Icon size={13} color="white" />
                 </div>
                 <div>
-                  <p className="font-bold text-white leading-none" style={{ fontSize: 16 }}>{value}</p>
-                  <p style={{ color: '#bfdbfe', fontSize: 11, marginTop: 2, opacity: 0.85 }}>{label}</p>
+                  <p className="ws-banner-stat-val">{value}</p>
+                  <p className="ws-banner-stat-lbl">{label}</p>
                 </div>
               </motion.div>
             ))}
@@ -386,22 +342,24 @@ export default function Workspaces() {
         </div>
       </motion.div>
 
+      {/* Search */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15 }}
-        className="relative mb-6 max-w-sm"
+        className="ws-search-wrap"
       >
-        <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400" />
+        <Search size={15} className="ws-search-icon" />
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search workspaces..."
-          className="input-base pl-10 w-full"
+          className="input-base ws-search-input"
         />
       </motion.div>
 
+      {/* Grid */}
       <AnimatePresence mode="wait">
         {filtered.length === 0 ? (
           <EmptyState
@@ -416,7 +374,7 @@ export default function Workspaces() {
             actionLabel="Create Workspace"
           />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          <div className="ws-grid">
             {filtered.map((ws, i) => (
               <WorkspaceCard
                 key={ws.id}
@@ -447,16 +405,16 @@ export default function Workspaces() {
       </Modal>
 
       <Modal isOpen={deleteModal.isOpen} onClose={deleteModal.close} title="Delete Workspace" size="sm">
-        <div className="text-center">
-          <div className="w-14 h-14 rounded-full bg-danger-100 flex items-center justify-center mx-auto mb-4">
-            <Trash2 size={22} className="text-danger-600" />
+        <div style={{ textAlign: 'center' }}>
+          <div className="auth-success-icon-wrap" style={{ background: '#FEE2E2', marginBottom: 16 }}>
+            <Trash2 size={22} style={{ color: '#EF4444' }} />
           </div>
-          <p className="text-surface-700 mb-1 font-medium">Are you sure you want to delete</p>
-          <p className="text-surface-900 font-bold mb-4">"{deleteModal.data?.name}"?</p>
-          <p className="text-sm text-surface-500 mb-6">
+          <p className="setting-row-label" style={{ marginBottom: 4 }}>Are you sure you want to delete</p>
+          <p className="setting-row-label" style={{ fontWeight: 700, fontSize: 16, marginBottom: 16 }}>"{deleteModal.data?.name}"?</p>
+          <p className="setting-row-desc" style={{ fontSize: 13, marginBottom: 24 }}>
             This action cannot be undone. All projects and data within this workspace will be permanently deleted.
           </p>
-          <div className="flex gap-3 justify-center">
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
             <Button variant="secondary" onClick={deleteModal.close}>Cancel</Button>
             <Button variant="danger" loading={submitting} onClick={handleDelete}>Delete Workspace</Button>
           </div>

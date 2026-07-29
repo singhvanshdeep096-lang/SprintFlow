@@ -1,22 +1,20 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useSelector, useDispatch } from 'react-redux';
-import {
-  Bell, CheckCheck, Trash2, AtSign, GitPullRequest,
-  MessageSquare, Clock, FolderKanban, MailOpen, Inbox,
-} from 'lucide-react';
+import { Bell, CheckCheck, Trash2, AtSign, GitPullRequest, MessageSquare, Clock, FolderKanban, MailOpen, Inbox } from 'lucide-react';
 import PageTransition from '../../components/common/PageTransition';
 import Button from '../../components/common/Button';
 import { markAsRead, markAllAsRead, deleteNotification } from '../../redux/notificationSlice';
 import { useToast } from '../../hooks/useToast';
+import './Notifications.css';
 
 const TYPE_CONFIG = {
-  mention:      { icon: AtSign,        color: '#3B82F6', bg: '#EFF6FF', label: 'Mention'    },
-  assignment:   { icon: GitPullRequest, color: '#8B5CF6', bg: '#F5F3FF', label: 'Assignment' },
-  comment:      { icon: MessageSquare,  color: '#F59E0B', bg: '#FFFBEB', label: 'Comment'    },
-  status_change:{ icon: GitPullRequest, color: '#10B981', bg: '#F0FDF4', label: 'Status'     },
-  due_date:     { icon: Clock,          color: '#EF4444', bg: '#FEF2F2', label: 'Due Date'   },
-  project:      { icon: FolderKanban,   color: '#06B6D4', bg: '#ECFEFF', label: 'Project'    },
+  mention:       { icon: AtSign,         color: '#3B82F6', bg: '#EFF6FF', label: 'Mention'    },
+  assignment:    { icon: GitPullRequest,  color: '#8B5CF6', bg: '#F5F3FF', label: 'Assignment' },
+  comment:       { icon: MessageSquare,   color: '#F59E0B', bg: '#FFFBEB', label: 'Comment'    },
+  status_change: { icon: GitPullRequest,  color: '#10B981', bg: '#F0FDF4', label: 'Status'     },
+  due_date:      { icon: Clock,           color: '#EF4444', bg: '#FEF2F2', label: 'Due Date'   },
+  project:       { icon: FolderKanban,    color: '#06B6D4', bg: '#ECFEFF', label: 'Project'    },
 };
 
 const TABS = [
@@ -40,6 +38,7 @@ function formatTime(dateStr) {
 function NotificationItem({ notification, onMarkRead, onDelete, delay }) {
   const cfg  = TYPE_CONFIG[notification.type] || TYPE_CONFIG.mention;
   const Icon = cfg.icon;
+
   return (
     <motion.div
       layout
@@ -47,7 +46,7 @@ function NotificationItem({ notification, onMarkRead, onDelete, delay }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: 40, scale: 0.96 }}
       transition={{ delay, duration: 0.25 }}
-      className="group relative flex gap-4 p-4 rounded-xl border cursor-pointer transition-all duration-150"
+      className="notif-row"
       style={{
         background:  !notification.isRead ? '#F0F7FF' : '#FFFFFF',
         borderColor: !notification.isRead ? '#BFDBFE' : '#E2E8F0',
@@ -55,50 +54,42 @@ function NotificationItem({ notification, onMarkRead, onDelete, delay }) {
       onClick={() => !notification.isRead && onMarkRead(notification.id)}
     >
       {!notification.isRead && (
-        <div
-          className="absolute left-0 top-3 bottom-3 w-1 rounded-full"
-          style={{ background: cfg.color }}
-        />
+        <div className="notif-row-stripe" style={{ background: cfg.color }} />
       )}
-      <div
-        className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-        style={{ background: cfg.bg }}
-      >
+
+      <div className="notif-type-icon" style={{ background: cfg.bg }}>
         <Icon size={16} style={{ color: cfg.color }} />
       </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-start justify-between gap-3 mb-0.5">
-          <div className="flex items-center gap-2 min-w-0">
+
+      <div className="notif-row-body">
+        <div className="notif-row-top">
+          <div className="notif-row-title-wrap">
             <p
-              className="text-sm leading-snug truncate"
+              className="notif-row-title"
               style={{ fontWeight: notification.isRead ? 500 : 700, color: '#0F172A' }}
             >
               {notification.title}
             </p>
             {!notification.isRead && (
-              <span className="w-2 h-2 rounded-full shrink-0" style={{ background: cfg.color }} />
+              <span className="notif-row-unread-dot" style={{ background: cfg.color }} />
             )}
           </div>
-          <span className="text-xs shrink-0" style={{ color: '#94A3B8' }}>
-            {formatTime(notification.createdAt)}
-          </span>
+          <span className="notif-row-time">{formatTime(notification.createdAt)}</span>
         </div>
-        <p className="text-sm leading-snug" style={{ color: '#64748B' }}>
-          {notification.description}
-        </p>
+        <p className="notif-row-desc">{notification.description}</p>
         <span
-          className="inline-block mt-2 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+          className="notif-type-badge"
           style={{ background: cfg.bg, color: cfg.color }}
         >
           {cfg.label}
         </span>
       </div>
-      <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+
+      <div className="notif-row-actions">
         {!notification.isRead && (
           <button
             onClick={(e) => { e.stopPropagation(); onMarkRead(notification.id); }}
-            className="p-1.5 rounded-lg transition-colors hover:bg-blue-50"
-            style={{ color: '#94A3B8' }}
+            className="notif-action-btn"
             title="Mark as read"
           >
             <MailOpen size={13} />
@@ -106,8 +97,7 @@ function NotificationItem({ notification, onMarkRead, onDelete, delay }) {
         )}
         <button
           onClick={(e) => { e.stopPropagation(); onDelete(notification.id); }}
-          className="p-1.5 rounded-lg transition-colors hover:bg-red-50 hover:text-red-500"
-          style={{ color: '#94A3B8' }}
+          className="notif-action-btn danger"
           title="Delete"
         >
           <Trash2 size={13} />
@@ -136,15 +126,15 @@ export default function Notifications() {
   };
 
   return (
-    <PageTransition className="p-6 w-full max-w-[1700px] mx-auto">
+    <PageTransition className="notif-page">
 
-      {/* Header — mirrors Projects page */}
-      <div className="flex items-center justify-between mb-6">
+      {/* Header */}
+      <div className="notif-page-header">
         <div>
-          <h1 className="text-2xl font-bold text-surface-900">Notifications</h1>
-          <p className="text-surface-500 text-sm mt-1">
+          <h1 className="notif-page-title">Notifications</h1>
+          <p className="notif-page-subtitle">
             {unreadCount > 0
-              ? unreadCount + ' unread notification' + (unreadCount > 1 ? 's' : '')
+              ? `${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}`
               : 'All caught up!'}
           </p>
         </div>
@@ -155,30 +145,27 @@ export default function Notifications() {
         )}
       </div>
 
-      {/* Toolbar — mirrors Projects filter/view bar */}
-      <div className="flex flex-wrap items-center gap-3 mb-6">
-        <div className="flex gap-1 bg-surface-100 p-1 rounded-xl">
+      {/* Filter bar */}
+      <div className="notif-filter-bar">
+        <div className="notif-filter-group">
           {TABS.map((tab) => {
             const count = tab.id === 'all'    ? notifications.length
                         : tab.id === 'unread' ? unreadCount
-                        : notifications.filter(n => n.type === tab.id).length;
+                        : notifications.filter((n) => n.type === tab.id).length;
+            const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                  activeTab === tab.id
-                    ? 'bg-white text-surface-900 shadow-sm'
-                    : 'text-surface-500 hover:text-surface-700'
-                }`}
+                className={`notif-filter-btn${isActive ? ' active' : ''}`}
               >
                 {tab.label}
                 {count > 0 && (
                   <span
-                    className="ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                    className="notif-filter-count"
                     style={{
-                      background: activeTab === tab.id ? '#EFF6FF' : '#E2E8F0',
-                      color:      activeTab === tab.id ? '#3B82F6' : '#94A3B8',
+                      background: isActive ? '#EFF6FF' : '#E2E8F0',
+                      color:      isActive ? '#3B82F6' : '#94A3B8',
                     }}
                   >
                     {count}
@@ -190,30 +177,27 @@ export default function Notifications() {
         </div>
       </div>
 
-      {/* Notification List */}
+      {/* List */}
       {filtered.length === 0 ? (
         <motion.div
           initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="flex flex-col items-center justify-center py-24 px-6 text-center rounded-2xl border border-surface-100 bg-white"
+          className="notif-empty"
         >
-          <div
-            className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
-            style={{ background: '#EFF6FF' }}
-          >
+          <div className="notif-empty-icon" style={{ background: '#EFF6FF' }}>
             <Inbox size={26} style={{ color: '#3B82F6' }} />
           </div>
-          <p className="font-semibold text-surface-700 text-base">
+          <p className="notif-empty-title">
             {activeTab === 'unread' ? 'All caught up!' : 'No notifications'}
           </p>
-          <p className="text-sm text-surface-400 mt-1">
+          <p className="notif-empty-desc">
             {activeTab === 'unread'
               ? "You've read everything — great job."
               : 'New activity will appear here as your team works.'}
           </p>
         </motion.div>
       ) : (
-        <div className="flex flex-col gap-2.5">
+        <div className="notif-list">
           <AnimatePresence mode="popLayout">
             {filtered.map((n, i) => (
               <NotificationItem

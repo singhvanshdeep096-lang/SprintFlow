@@ -7,6 +7,7 @@ import Input from '../../components/common/Input/Input';
 import { useDispatch, useSelector } from 'react-redux';
 import { registerAsync } from '../../redux/authSlice';
 import { useToast } from '../../hooks/useToast';
+import './Auth.css';
 
 export default function Register() {
   const dispatch = useDispatch();
@@ -38,13 +39,13 @@ export default function Register() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
     >
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-surface-900 mb-2">Create your account</h1>
-        <p className="text-surface-500 text-sm">Start your free 14-day trial. No credit card required.</p>
+      <div className="auth-page-heading">
+        <h1 className="auth-page-title">Create your account</h1>
+        <p className="auth-page-subtitle">Start your free 14-day trial. No credit card required.</p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div className="grid grid-cols-2 gap-3">
+      <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
+        <div className="auth-form-two-col">
           <Input
             label="Full name"
             icon={<User size={15} />}
@@ -101,30 +102,29 @@ export default function Register() {
           })}
         />
 
-        <div className="flex items-start gap-2 pt-1">
+        <div className="auth-terms-row">
           <input
             type="checkbox"
             id="terms"
             {...register('terms', { required: 'You must accept the terms' })}
-            className="mt-0.5 w-4 h-4 accent-primary-600"
           />
-          <label htmlFor="terms" className="text-xs text-surface-500 leading-relaxed">
+          <label htmlFor="terms" className="auth-terms-label">
             I agree to the{' '}
-            <span className="text-primary-600 hover:underline cursor-pointer">Terms of Service</span>
+            <span className="auth-terms-link">Terms of Service</span>
             {' '}and{' '}
-            <span className="text-primary-600 hover:underline cursor-pointer">Privacy Policy</span>
+            <span className="auth-terms-link">Privacy Policy</span>
           </label>
         </div>
-        {errors.terms && <p className="text-xs text-danger-600">{errors.terms.message}</p>}
+        {errors.terms && <p className="auth-terms-error">{errors.terms.message}</p>}
 
         <Button type="submit" fullWidth loading={loading} size="lg" icon={<ArrowRight size={16} />}>
           Create Free Account
         </Button>
       </form>
 
-      <p className="text-center text-sm text-surface-500 mt-6">
+      <p className="auth-switch">
         Already have an account?{' '}
-        <Link to="/login" className="text-primary-600 hover:text-primary-700 font-semibold transition-colors">
+        <Link to="/login">
           Sign in
         </Link>
       </p>

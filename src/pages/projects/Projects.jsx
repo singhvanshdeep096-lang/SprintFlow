@@ -19,6 +19,7 @@ import { PROJECT_STATUS_CONFIG, PRIORITY_CONFIG } from '../../constants';
 import { useToast } from '../../hooks/useToast';
 import { useModal } from '../../hooks/useModal';
 import userService from '../../services/user.service';
+import './Projects.css';
 
 function ProjectCard({ project, allMembers, onEdit, onDelete, delay, view }) {
   const navigate = useNavigate();
@@ -32,24 +33,32 @@ function ProjectCard({ project, allMembers, onEdit, onDelete, delay, view }) {
         initial={{ opacity: 0, x: -12 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay }}
-        className="card-flat p-4 flex items-center gap-4 hover:shadow-card hover:border-surface-300 transition-all cursor-pointer group"
+        className="card-flat pc-list"
         onClick={() => navigate(`/projects/${project.id}`)}
       >
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0" style={{ backgroundColor: `${project.color || '#2563EB'}18` }}>
+        <div
+          className="pc-icon-lg"
+          style={{ backgroundColor: `${project.color || '#2563EB'}18` }}
+        >
           {project.icon || '⚡'}
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="font-semibold text-surface-900 truncate">{project.name}</p>
-          <p className="text-sm text-surface-500 truncate">{project.description}</p>
+
+        <div className="pc-list-info">
+          <p className="pc-list-name">{project.name}</p>
+          <p className="pc-list-desc">{project.description}</p>
         </div>
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="flex -space-x-1.5">
-            {members.slice(0, 3).map((m) => <Avatar key={m.id} name={m.name} size="xs" color={m.color} />)}
+
+        <div className="pc-list-right">
+          <div className="pc-list-members">
+            {members.slice(0, 3).map((m) => (
+              <Avatar key={m.id} name={m.name} size="xs" color={m.color} />
+            ))}
           </div>
-          <div className="w-24">
-            <div className="flex justify-between text-xs mb-1">
-              <span className="text-surface-500">Progress</span>
-              <span className="font-medium text-surface-700">{project.progress || 0}%</span>
+
+          <div className="pc-list-progress">
+            <div className="pc-list-progress-label">
+              <span>Progress</span>
+              <span>{project.progress || 0}%</span>
             </div>
             <div className="progress-bar">
               <motion.div
@@ -60,10 +69,15 @@ function ProjectCard({ project, allMembers, onEdit, onDelete, delay, view }) {
               />
             </div>
           </div>
-          <div className="px-2 py-1 rounded-full text-xs font-semibold" style={{ backgroundColor: statusCfg.bg, color: statusCfg.color }}>
+
+          <div
+            className="pc-list-status"
+            style={{ backgroundColor: statusCfg.bg, color: statusCfg.color }}
+          >
             {statusCfg.label}
           </div>
-          <ArrowRight size={14} className="text-surface-300 group-hover:text-primary-500 group-hover:translate-x-1 transition-all" />
+
+          <ArrowRight size={14} className="pc-arrow" />
         </div>
       </motion.div>
     );
@@ -75,66 +89,86 @@ function ProjectCard({ project, allMembers, onEdit, onDelete, delay, view }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.35 }}
       whileHover={{ y: -4, transition: { duration: 0.2 } }}
-      className="card p-5 group cursor-pointer relative overflow-hidden"
+      className="card pc-grid"
       onClick={() => navigate(`/projects/${project.id}`)}
     >
-      <div className="absolute top-0 left-0 right-0 h-1 rounded-t-2xl" style={{ background: `linear-gradient(90deg, ${project.color || '#2563EB'}, ${project.color || '#2563EB'}80)` }} />
+      {/* Colour accent stripe */}
+      <div
+        className="pc-grid-accent"
+        style={{
+          background: `linear-gradient(90deg, ${project.color || '#2563EB'}, ${project.color || '#2563EB'}80)`,
+        }}
+      />
 
-      <div className="flex items-start justify-between mt-2 mb-4">
-        <div className="flex items-center gap-2.5">
-          <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl" style={{ backgroundColor: `${project.color || '#2563EB'}18` }}>
+      <div className="pc-grid-top">
+        <div className="pc-grid-identity">
+          <div
+            className="pc-icon"
+            style={{ backgroundColor: `${project.color || '#2563EB'}18` }}
+          >
             {project.icon || '⚡'}
           </div>
           <div>
-            <h3 className="font-semibold text-surface-900 leading-tight">{project.name}</h3>
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: statusCfg.bg, color: statusCfg.color }}>
+            <h3 className="pc-name">{project.name}</h3>
+            <div className="pc-status-row">
+              <span
+                className="pc-status-badge"
+                style={{ backgroundColor: statusCfg.bg, color: statusCfg.color }}
+              >
                 {statusCfg.label}
               </span>
             </div>
           </div>
         </div>
+
         <div onClick={(e) => e.stopPropagation()}>
           <Dropdown
             trigger={
-              <button className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-surface-100 text-surface-400 transition-all">
+              <button className="pc-menu-btn">
                 <MoreHorizontal size={15} />
               </button>
             }
-            align="right" width="sm"
+            align="right"
+            width="sm"
           >
-            <div className="py-1">
+            <div className="pc-dropdown-inner">
               <button className="dropdown-item" onClick={() => { onEdit(project); }}>
-                <Edit3 size={14} className="text-surface-400" />Edit project
+                <Edit3 size={14} style={{ color: 'var(--color-surface-400)' }} />
+                Edit project
               </button>
-              <button className="dropdown-item" onClick={() => navigate(`/board`)}>
-                <Kanban size={14} className="text-surface-400" />Open board
+              <button className="dropdown-item" onClick={() => navigate('/board')}>
+                <Kanban size={14} style={{ color: 'var(--color-surface-400)' }} />
+                Open board
               </button>
-              <div className="my-1 border-t border-surface-100" />
+              <hr className="pc-dropdown-divider" />
               <button className="dropdown-item danger" onClick={() => onDelete(project)}>
-                <Trash2 size={14} className="text-danger-400" />Delete
+                <Trash2 size={14} style={{ color: '#F87171' }} />
+                Delete
               </button>
             </div>
           </Dropdown>
         </div>
       </div>
 
-      <p className="text-sm text-surface-500 mb-4 line-clamp-2 leading-relaxed">{project.description}</p>
+      <p className="pc-description">{project.description}</p>
 
       {project.tags && project.tags.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mb-4">
+        <div className="pc-tags">
           {project.tags.slice(0, 3).map((tag) => (
-            <span key={tag} className="inline-flex items-center gap-1 px-2 py-0.5 bg-surface-100 text-surface-600 rounded-full text-xs font-medium">
-              <Tag size={9} />{tag}
+            <span key={tag} className="pc-tag">
+              <Tag size={9} />
+              {tag}
             </span>
           ))}
         </div>
       )}
 
-      <div className="mb-4">
-        <div className="flex justify-between text-xs mb-1.5">
-          <span className="text-surface-500">{project.completedTasks || 0}/{project.taskCount || 0} tasks</span>
-          <span className="font-semibold text-surface-700">{project.progress || 0}%</span>
+      <div className="pc-progress-wrap">
+        <div className="pc-progress-label">
+          <span className="pc-progress-label-left">
+            {project.completedTasks || 0}/{project.taskCount || 0} tasks
+          </span>
+          <span className="pc-progress-label-right">{project.progress || 0}%</span>
         </div>
         <div className="progress-bar">
           <motion.div
@@ -146,22 +180,26 @@ function ProjectCard({ project, allMembers, onEdit, onDelete, delay, view }) {
         </div>
       </div>
 
-      <div className="flex items-center justify-between pt-3 border-t border-surface-100">
-        <div className="flex -space-x-2">
-          {members.slice(0, 4).map((m) => <Avatar key={m.id} name={m.name} size="xs" color={m.color} />)}
+      <div className="pc-footer">
+        <div className="pc-members">
+          {members.slice(0, 4).map((m) => (
+            <Avatar key={m.id} name={m.name} size="xs" color={m.color} />
+          ))}
           {members.length > 4 && (
-            <div className="w-6 h-6 rounded-full bg-surface-200 border-2 border-white flex items-center justify-center text-[9px] font-bold text-surface-600">
-              +{members.length - 4}
-            </div>
+            <div className="pc-members-overflow">+{members.length - 4}</div>
           )}
         </div>
-        <div className="flex items-center gap-3 text-xs text-surface-400">
-          <div className="flex items-center gap-1">
+
+        <div className="pc-meta">
+          <div className="pc-meta-item">
             <Calendar size={11} />
             <span>{project.dueDate || 'No due date'}</span>
           </div>
-          <div className="flex items-center gap-1" style={{ color: priorityCfg.color }}>
-            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: priorityCfg.color }} />
+          <div className="pc-meta-item" style={{ color: priorityCfg.color }}>
+            <span
+              className="pc-priority-dot"
+              style={{ backgroundColor: priorityCfg.color }}
+            />
             {priorityCfg.label}
           </div>
         </div>
@@ -171,19 +209,34 @@ function ProjectCard({ project, allMembers, onEdit, onDelete, delay, view }) {
 }
 
 function ProjectForm({ defaultValues, onSubmit, onClose, loading }) {
-  const { register, handleSubmit, formState: { errors } } = useForm({ defaultValues: defaultValues || {} });
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    defaultValues: defaultValues || {},
+  });
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <Input label="Project name" placeholder="e.g. SprintFlow v2.0" error={errors.name?.message} required
-        {...register('name', { required: 'Project name is required' })} />
+    <form onSubmit={handleSubmit(onSubmit)} className="pf-form">
+      <Input
+        label="Project name"
+        placeholder="e.g. SprintFlow v2.0"
+        error={errors.name?.message}
+        required
+        {...register('name', { required: 'Project name is required' })}
+      />
+
       <div>
-        <label className="block text-sm font-medium text-surface-700 mb-1.5">Description</label>
-        <textarea {...register('description')} placeholder="Describe the project goals..." rows={3} className="input-base resize-none" />
+        <label className="pf-label">Description</label>
+        <textarea
+          {...register('description')}
+          placeholder="Describe the project goals..."
+          rows={3}
+          className="input-base"
+          style={{ resize: 'none' }}
+        />
       </div>
-      <div className="grid grid-cols-2 gap-3">
+
+      <div className="pf-two-col">
         <div>
-          <label className="block text-sm font-medium text-surface-700 mb-1.5">Status</label>
+          <label className="pf-label">Status</label>
           <select {...register('status')} className="input-base">
             <option value="active">Active</option>
             <option value="on_hold">On Hold</option>
@@ -192,7 +245,7 @@ function ProjectForm({ defaultValues, onSubmit, onClose, loading }) {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-surface-700 mb-1.5">Priority</label>
+          <label className="pf-label">Priority</label>
           <select {...register('priority')} className="input-base">
             <option value="low">Low</option>
             <option value="medium">Medium</option>
@@ -201,13 +254,17 @@ function ProjectForm({ defaultValues, onSubmit, onClose, loading }) {
           </select>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-3">
+
+      <div className="pf-two-col">
         <Input label="Start date" type="date" {...register('startDate')} />
         <Input label="Due date" type="date" {...register('dueDate')} />
       </div>
-      <div className="flex justify-end gap-3 pt-2">
+
+      <div className="pf-actions">
         <Button type="button" variant="secondary" onClick={onClose}>Cancel</Button>
-        <Button type="submit" loading={loading}>{defaultValues ? 'Save Changes' : 'Create Project'}</Button>
+        <Button type="submit" loading={loading}>
+          {defaultValues ? 'Save Changes' : 'Create Project'}
+        </Button>
       </div>
     </form>
   );
@@ -227,7 +284,7 @@ export default function Projects() {
   const deleteModal = useModal();
 
   useEffect(() => {
-    userService.getUsers().then((data) => setMembers(data)).catch(() => {});
+    userService.getUsers().then((data) => setMembers(data)).catch(() => { });
   }, []);
 
   const filtered = projects.filter((p) => {
@@ -286,80 +343,144 @@ export default function Projects() {
   const statusOptions = ['all', 'active', 'on_hold', 'completed', 'archived'];
 
   return (
-    <PageTransition className="p-6 w-full max-w-[1700px] mx-auto">
-      <div className="flex items-center justify-between mb-6">
+    <PageTransition className="projects-page">
+      {/* Header */}
+      <div className="projects-header">
         <div>
-          <h1 className="text-2xl font-bold text-surface-900">Projects</h1>
-          <p className="text-surface-500 text-sm mt-1">{projects.length} projects across all workspaces</p>
+          <h1 className="projects-title">Projects</h1>
+          <p className="projects-subtitle">
+            {projects.length} projects across all workspaces
+          </p>
         </div>
-        <Button variant="primary" icon={<Plus size={16} />} onClick={createModal.open}>New Project</Button>
+        <Button variant="primary" icon={<Plus size={16} />} onClick={createModal.open}>
+          New Project
+        </Button>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 mb-6">
-        <div className="relative flex-1 max-w-xs">
-          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400" />
-          <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search projects..." className="input-base pl-10 w-full" />
+      {/* Toolbar */}
+      <div className="projects-toolbar">
+        {/* Search */}
+        <div className="projects-search-wrap">
+          <Search size={15} className="projects-search-icon" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search projects..."
+            className="input-base projects-search-input"
+          />
         </div>
 
-        <div className="flex gap-1 bg-surface-100 p-1 rounded-xl">
+        {/* Status filter */}
+        <div className="projects-filter-group">
           {statusOptions.map((s) => (
-            <button key={s} onClick={() => setStatusFilter(s)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize ${statusFilter === s ? 'bg-white text-surface-900 shadow-sm' : 'text-surface-500 hover:text-surface-700'}`}>
+            <button
+              key={s}
+              onClick={() => setStatusFilter(s)}
+              className={`projects-filter-btn${statusFilter === s ? ' active' : ''}`}
+            >
               {s === 'all' ? 'All' : PROJECT_STATUS_CONFIG[s]?.label || s}
             </button>
           ))}
         </div>
 
-        <div className="flex gap-1 bg-surface-100 p-1 rounded-xl">
-          <button onClick={() => setView('grid')} className={`p-1.5 rounded-lg transition-all ${view === 'grid' ? 'bg-white shadow-sm text-surface-900' : 'text-surface-400'}`}>
+        {/* View toggle */}
+        <div className="projects-view-group">
+          <button
+            onClick={() => setView('grid')}
+            className={`projects-view-btn${view === 'grid' ? ' active' : ''}`}
+          >
             <Grid3X3 size={15} />
           </button>
-          <button onClick={() => setView('list')} className={`p-1.5 rounded-lg transition-all ${view === 'list' ? 'bg-white shadow-sm text-surface-900' : 'text-surface-400'}`}>
+          <button
+            onClick={() => setView('list')}
+            className={`projects-view-btn${view === 'list' ? ' active' : ''}`}
+          >
             <List size={15} />
           </button>
         </div>
       </div>
 
+      {/* Project list / grid */}
       {filtered.length === 0 ? (
         <EmptyState
           icon={<FolderKanban size={32} />}
           title={search ? 'No projects found' : 'No projects yet'}
-          description={search ? 'Try adjusting your filters.' : 'Create your first project to get started.'}
+          description={
+            search
+              ? 'Try adjusting your filters.'
+              : 'Create your first project to get started.'
+          }
           action={!search ? createModal.open : undefined}
           actionLabel="Create Project"
         />
       ) : (
-        <div className={view === 'grid'
-          ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5'
-          : 'flex flex-col gap-3'
-        }>
+        <div className={view === 'grid' ? 'projects-grid' : 'projects-list'}>
           {filtered.map((project, i) => (
-            <ProjectCard key={project.id} project={project} allMembers={members} delay={i * 0.05} view={view}
-              onEdit={editModal.open} onDelete={deleteModal.open} />
+            <ProjectCard
+              key={project.id}
+              project={project}
+              allMembers={members}
+              delay={i * 0.05}
+              view={view}
+              onEdit={editModal.open}
+              onDelete={deleteModal.open}
+            />
           ))}
         </div>
       )}
 
-      <Modal isOpen={createModal.isOpen} onClose={createModal.close} title="Create Project" subtitle="Set up a new project for your team" size="md">
-        <ProjectForm onSubmit={handleCreate} onClose={createModal.close} loading={submitting} />
+      {/* Create modal */}
+      <Modal
+        isOpen={createModal.isOpen}
+        onClose={createModal.close}
+        title="Create Project"
+        subtitle="Set up a new project for your team"
+        size="md"
+      >
+        <ProjectForm
+          onSubmit={handleCreate}
+          onClose={createModal.close}
+          loading={submitting}
+        />
       </Modal>
 
-      <Modal isOpen={editModal.isOpen} onClose={editModal.close} title="Edit Project" size="md">
-        {editModal.data && <ProjectForm defaultValues={editModal.data} onSubmit={handleEdit} onClose={editModal.close} loading={submitting} />}
+      {/* Edit modal */}
+      <Modal
+        isOpen={editModal.isOpen}
+        onClose={editModal.close}
+        title="Edit Project"
+        size="md"
+      >
+        {editModal.data && (
+          <ProjectForm
+            defaultValues={editModal.data}
+            onSubmit={handleEdit}
+            onClose={editModal.close}
+            loading={submitting}
+          />
+        )}
       </Modal>
 
-      <Modal isOpen={deleteModal.isOpen} onClose={deleteModal.close} title="Delete Project" size="sm">
-        <div className="text-center">
-          <div className="w-12 h-12 rounded-full bg-danger-100 flex items-center justify-center mx-auto mb-4">
-            <Trash2 size={20} className="text-danger-600" />
+      {/* Delete modal */}
+      <Modal
+        isOpen={deleteModal.isOpen}
+        onClose={deleteModal.close}
+        title="Delete Project"
+        size="sm"
+      >
+        <div className="del-center">
+          <div className="del-icon-wrap">
+            <Trash2 size={20} style={{ color: '#DC2626' }} />
           </div>
-          <p className="text-surface-700 mb-1">Are you sure you want to delete</p>
-          <p className="font-bold text-surface-900 mb-4">"{deleteModal.data?.name}"?</p>
-          <p className="text-sm text-surface-500 mb-6">All tasks and data will be permanently deleted.</p>
-          <div className="flex gap-3 justify-center">
+          <p className="del-q">Are you sure you want to delete</p>
+          <p className="del-name">"{deleteModal.data?.name}"?</p>
+          <p className="del-warn">All tasks and data will be permanently deleted.</p>
+          <div className="del-actions">
             <Button variant="secondary" onClick={deleteModal.close}>Cancel</Button>
-            <Button variant="danger" loading={submitting} onClick={handleDelete}>Delete Project</Button>
+            <Button variant="danger" loading={submitting} onClick={handleDelete}>
+              Delete Project
+            </Button>
           </div>
         </div>
       </Modal>

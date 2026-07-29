@@ -11,19 +11,21 @@ import { PRIORITY_CONFIG, STATUS_CONFIG } from '../../constants';
 import { useToast } from '../../hooks/useToast';
 import userService from '../../services/user.service';
 import taskService from '../../services/task.service';
+import './Tasks.css';
 
+/* ---- Inline status dropdown ---- */
 function StatusSelect({ value, onChange }) {
   const [open, setOpen] = useState(false);
   const statusCfg = STATUS_CONFIG[value] || STATUS_CONFIG.todo;
 
   return (
-    <div className="relative">
+    <div style={{ position: 'relative' }}>
       <button
         onClick={() => setOpen((p) => !p)}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-80 cursor-pointer"
+        className="td-select-btn"
         style={{ backgroundColor: statusCfg.bg, color: statusCfg.color }}
       >
-        <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: statusCfg.dotColor }} />
+        <span className="td-select-dot" style={{ backgroundColor: statusCfg.dotColor }} />
         {statusCfg.label}
         <ChevronDown size={12} />
       </button>
@@ -33,15 +35,15 @@ function StatusSelect({ value, onChange }) {
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
-            className="absolute top-full mt-1 left-0 bg-white border border-surface-200 rounded-xl shadow-panel z-10 overflow-hidden min-w-[140px]"
+            className="td-dropdown"
           >
             {Object.entries(STATUS_CONFIG).map(([key, cfg]) => (
               <button
                 key={key}
                 onClick={() => { onChange(key); setOpen(false); }}
-                className="flex items-center gap-2 w-full px-3 py-2 text-xs font-medium hover:bg-surface-50 transition-colors cursor-pointer"
+                className="td-dropdown-item"
               >
-                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: cfg.dotColor }} />
+                <span className="td-select-dot" style={{ backgroundColor: cfg.dotColor }} />
                 {cfg.label}
               </button>
             ))}
@@ -52,15 +54,16 @@ function StatusSelect({ value, onChange }) {
   );
 }
 
+/* ---- Inline priority dropdown ---- */
 function PrioritySelect({ value, onChange }) {
   const [open, setOpen] = useState(false);
   const cfg = PRIORITY_CONFIG[value] || PRIORITY_CONFIG.medium;
 
   return (
-    <div className="relative">
+    <div style={{ position: 'relative' }}>
       <button
         onClick={() => setOpen((p) => !p)}
-        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold hover:opacity-80 transition-all cursor-pointer"
+        className="td-select-btn"
         style={{ backgroundColor: cfg.bg, color: cfg.color }}
       >
         <Flag size={11} />
@@ -73,13 +76,13 @@ function PrioritySelect({ value, onChange }) {
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
-            className="absolute top-full mt-1 left-0 bg-white border border-surface-200 rounded-xl shadow-panel z-10 overflow-hidden min-w-[130px]"
+            className="td-dropdown"
           >
             {Object.entries(PRIORITY_CONFIG).map(([key, c]) => (
               <button
                 key={key}
                 onClick={() => { onChange(key); setOpen(false); }}
-                className="flex items-center gap-2 w-full px-3 py-2 text-xs font-medium hover:bg-surface-50 transition-colors cursor-pointer"
+                className="td-dropdown-item"
               >
                 <Flag size={11} style={{ color: c.color }} />
                 {c.label}
@@ -92,58 +95,52 @@ function PrioritySelect({ value, onChange }) {
   );
 }
 
+/* ---- Subtask row ---- */
 function SubtaskItem({ subtask, onToggle }) {
   return (
-    <motion.div
-      layout
-      className="flex items-center gap-2.5 py-2 border-b border-surface-50 last:border-0 group"
-    >
+    <motion.div layout className="td-subtask-row">
       <motion.button
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => onToggle(subtask.id)}
-        className={`w-4 h-4 rounded flex items-center justify-center border-2 shrink-0 transition-all cursor-pointer ${
-          subtask.done
-            ? 'border-success-500 bg-success-500'
-            : 'border-surface-300 hover:border-primary-400'
-        }`}
+        className={`td-subtask-check ${subtask.done ? 'td-subtask-check--done' : 'td-subtask-check--todo'}`}
       >
-        {subtask.done && <CheckCircle2 size={10} className="text-white" />}
+        {subtask.done && <CheckCircle2 size={10} style={{ color: '#ffffff' }} />}
       </motion.button>
-      <span className={`text-sm flex-1 ${subtask.done ? 'line-through text-surface-400' : 'text-surface-700'}`}>
+      <span className={`td-subtask-label ${subtask.done ? 'td-subtask-label--done' : 'td-subtask-label--todo'}`}>
         {subtask.title}
       </span>
     </motion.div>
   );
 }
 
+/* ---- Comment item ---- */
 function CommentItem({ comment, members, delay }) {
   const author = members.find((m) => m.id === comment.authorId);
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}
-      className="flex gap-3 group"
+      className="td-comment-row"
     >
-      <Avatar name={author?.name || 'User'} size="sm" color={author?.color} className="mt-0.5 shrink-0" />
-      <div className="flex-1">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-sm font-semibold text-surface-800">{author?.name || 'User'}</span>
-          <span className="text-xs text-surface-400">
-            {comment.createdAt ? new Date(comment.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Just now'}
+      <Avatar name={author?.name || 'User'} size="sm" color={author?.color} style={{ marginTop: 2, flexShrink: 0 }} />
+      <div className="td-comment-body">
+        <div className="td-comment-meta">
+          <span className="td-comment-author">{author?.name || 'User'}</span>
+          <span className="td-comment-time">
+            {comment.createdAt
+              ? new Date(comment.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+              : 'Just now'}
           </span>
         </div>
-        <div className="bg-surface-50 rounded-xl rounded-tl-sm p-3">
-          <p className="text-sm text-surface-700 leading-relaxed">{comment.content}</p>
+        <div className="td-comment-bubble">
+          <p className="td-comment-text">{comment.content}</p>
         </div>
         {comment.reactions?.length > 0 && (
-          <div className="flex gap-1.5 mt-2">
+          <div className="td-reactions">
             {comment.reactions.map((r, i) => (
-              <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 bg-surface-100 rounded-full text-xs font-medium text-surface-600 hover:bg-surface-200 cursor-pointer transition-colors">
-                {r.emoji} {r.count}
-              </span>
+              <span key={i} className="td-reaction">{r.emoji} {r.count}</span>
             ))}
           </div>
         )}
@@ -152,13 +149,14 @@ function CommentItem({ comment, members, delay }) {
   );
 }
 
+/* ---- Main TaskDetail component ---- */
 export default function TaskDetail({ task }) {
   const dispatch = useDispatch();
   const { success } = useToast();
   const [commentText, setCommentText] = useState('');
-  const [localTask, setLocalTask] = useState(task);
+  const [localTask, setLocalTask]       = useState(task);
   const [localSubtasks, setLocalSubtasks] = useState(task.subtasks || []);
-  const [members, setMembers] = useState([]);
+  const [members, setMembers]           = useState([]);
   const [taskComments, setTaskComments] = useState([]);
 
   useEffect(() => {
@@ -191,66 +189,58 @@ export default function TaskDetail({ task }) {
   const handleAddComment = async () => {
     if (!commentText.trim()) return;
     try {
-      const newComment = await taskService.addComment({
-        taskId: task.id,
-        authorId: 'user-1',
-        content: commentText.trim()
-      });
+      const newComment = await taskService.addComment({ taskId: task.id, authorId: 'user-1', content: commentText.trim() });
       setTaskComments((prev) => [...prev, newComment]);
       success('Comment added', 'Your comment has been posted.');
       setCommentText('');
-    } catch (e) {
-      // ignore
-    }
+    } catch (e) { /* ignore */ }
   };
 
   const completedSubtasks = localSubtasks.filter((s) => s.done).length;
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
-        <div className="flex items-center gap-2 flex-wrap">
+    <div className="td-wrap">
+      <div className="td-scroll">
+
+        {/* Status + Priority selectors */}
+        <div className="td-controls">
           <StatusSelect value={localTask.status} onChange={handleStatusChange} />
           <PrioritySelect value={localTask.priority} onChange={handlePriorityChange} />
         </div>
 
+        {/* Description */}
         <div>
-          <h3 className="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-2">Description</h3>
-          <div className="text-sm text-surface-700 leading-relaxed bg-surface-50 rounded-xl p-4 border border-surface-100">
-            {localTask.description || <span className="text-surface-400 italic">No description provided.</span>}
+          <p className="td-section-label">Description</p>
+          <div className="td-desc-box">
+            {localTask.description || <span className="td-desc-empty">No description provided.</span>}
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        {/* Assignee / Reporter / Date / Time */}
+        <div className="td-meta-grid">
           <div>
-            <p className="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-2 flex items-center gap-1">
-              <User size={11} />Assignee
-            </p>
+            <p className="td-section-label"><User size={11} />Assignee</p>
             {assignee ? (
-              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-surface-50 border border-surface-100">
+              <div className="td-person-card">
                 <Avatar name={assignee.name} size="sm" color={assignee.color} />
                 <div>
-                  <p className="text-xs font-semibold text-surface-800">{assignee.name}</p>
-                  <p className="text-[10px] text-surface-400">{assignee.role}</p>
+                  <p className="td-person-name">{assignee.name}</p>
+                  <p className="td-person-role">{assignee.role}</p>
                 </div>
               </div>
             ) : (
-              <button className="flex items-center gap-2 p-2.5 rounded-xl border border-dashed border-surface-300 text-surface-400 text-xs w-full hover:border-primary-300 hover:text-primary-500 transition-colors">
-                <User size={13} />Unassigned
-              </button>
+              <button className="td-unassigned-btn"><User size={13} />Unassigned</button>
             )}
           </div>
 
           <div>
-            <p className="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-2 flex items-center gap-1">
-              <User size={11} />Reporter
-            </p>
+            <p className="td-section-label"><User size={11} />Reporter</p>
             {reporter ? (
-              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-surface-50 border border-surface-100">
+              <div className="td-person-card">
                 <Avatar name={reporter.name} size="sm" color={reporter.color} />
                 <div>
-                  <p className="text-xs font-semibold text-surface-800">{reporter.name}</p>
-                  <p className="text-[10px] text-surface-400">{reporter.role}</p>
+                  <p className="td-person-name">{reporter.name}</p>
+                  <p className="td-person-role">{reporter.role}</p>
                 </div>
               </div>
             ) : null}
@@ -258,11 +248,9 @@ export default function TaskDetail({ task }) {
 
           {localTask.dueDate && (
             <div>
-              <p className="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-2 flex items-center gap-1">
-                <Calendar size={11} />Due Date
-              </p>
-              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-surface-50 border border-surface-100 text-xs font-medium text-surface-700">
-                <Calendar size={12} className="text-surface-400" />
+              <p className="td-section-label"><Calendar size={11} />Due Date</p>
+              <div className="td-info-card">
+                <Calendar size={12} style={{ color: 'var(--color-surface-400)' }} />
                 {localTask.dueDate}
               </div>
             </div>
@@ -270,17 +258,15 @@ export default function TaskDetail({ task }) {
 
           {localTask.estimatedHours && (
             <div>
-              <p className="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-2 flex items-center gap-1">
-                <Clock size={11} />Time
-              </p>
-              <div className="p-2.5 rounded-xl bg-surface-50 border border-surface-100">
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-surface-500">{localTask.loggedHours || 0}h logged</span>
-                  <span className="text-surface-500">/{localTask.estimatedHours}h est.</span>
+              <p className="td-section-label"><Clock size={11} />Time</p>
+              <div className="td-time-card">
+                <div className="td-time-labels">
+                  <span>{localTask.loggedHours || 0}h logged</span>
+                  <span>/{localTask.estimatedHours}h est.</span>
                 </div>
-                <div className="h-1.5 bg-surface-200 rounded-full overflow-hidden">
+                <div className="td-time-bar">
                   <div
-                    className="h-full rounded-full bg-primary-500"
+                    className="td-time-fill"
                     style={{ width: `${Math.min(((localTask.loggedHours || 0) / localTask.estimatedHours) * 100, 100)}%` }}
                   />
                 </div>
@@ -289,71 +275,65 @@ export default function TaskDetail({ task }) {
           )}
         </div>
 
+        {/* Labels */}
         {localTask.labels?.length > 0 && (
           <div>
-            <p className="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-2 flex items-center gap-1">
-              <Tag size={11} />Labels
-            </p>
-            <div className="flex flex-wrap gap-1.5">
+            <p className="td-section-label"><Tag size={11} />Labels</p>
+            <div className="td-labels-wrap">
               {localTask.labels.map((label) => (
-                <span key={label} className="px-2.5 py-1 bg-primary-50 text-primary-700 rounded-lg text-xs font-medium border border-primary-100">
-                  {label}
-                </span>
+                <span key={label} className="td-label">{label}</span>
               ))}
             </div>
           </div>
         )}
 
+        {/* Subtasks */}
         {localSubtasks.length > 0 && (
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-semibold text-surface-500 uppercase tracking-wider flex items-center gap-1">
-                <CheckSquare size={11} />Subtasks
-              </p>
-              <span className="text-xs text-surface-400 font-medium">{completedSubtasks}/{localSubtasks.length}</span>
+            <div className="td-subtasks-header">
+              <p className="td-section-label"><CheckSquare size={11} />Subtasks</p>
+              <span className="td-subtasks-count">{completedSubtasks}/{localSubtasks.length}</span>
             </div>
-            <div className="bg-surface-50 rounded-xl border border-surface-100 px-4 divide-y divide-surface-100">
+            <div className="td-subtasks-box">
               {localSubtasks.map((subtask) => (
                 <SubtaskItem key={subtask.id} subtask={subtask} onToggle={toggleSubtask} />
               ))}
             </div>
-            {localSubtasks.length > 0 && (
-              <div className="mt-2 h-1.5 bg-surface-200 rounded-full overflow-hidden">
-                <motion.div
-                  animate={{ width: `${(completedSubtasks / localSubtasks.length) * 100}%` }}
-                  transition={{ duration: 0.4 }}
-                  className="h-full rounded-full bg-success-500"
-                />
-              </div>
-            )}
+            <div className="td-subtask-progress">
+              <motion.div
+                animate={{ width: `${(completedSubtasks / localSubtasks.length) * 100}%` }}
+                transition={{ duration: 0.4 }}
+                className="td-subtask-progress-fill"
+              />
+            </div>
           </div>
         )}
 
+        {/* Comments */}
         <div>
-          <p className="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-3 flex items-center gap-1">
-            <MessageSquare size={11} />Comments ({taskComments.length})
-          </p>
-          <div className="space-y-4">
+          <p className="td-section-label"><MessageSquare size={11} />Comments ({taskComments.length})</p>
+          <div className="td-comments-list">
             {taskComments.map((c, i) => (
               <CommentItem key={c.id} comment={c} members={members} delay={i * 0.05} />
             ))}
             {taskComments.length === 0 && (
-              <p className="text-sm text-surface-400 italic text-center py-4">No comments yet. Be the first to comment!</p>
+              <p className="td-comment-empty">No comments yet. Be the first to comment!</p>
             )}
           </div>
         </div>
       </div>
 
-      <div className="border-t border-surface-100 p-4">
-        <div className="flex gap-3">
+      {/* Comment input */}
+      <div className="td-comment-footer">
+        <div className="td-comment-input-row">
           <Avatar name="Alex Morgan" size="sm" />
-          <div className="flex-1 flex items-end gap-2 bg-surface-50 border border-surface-200 rounded-xl p-3 focus-within:border-primary-400 focus-within:shadow-[0_0_0_3px_rgba(37,99,235,0.08)] transition-all">
+          <div className="td-comment-input-wrap">
             <textarea
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
               placeholder="Add a comment..."
               rows={2}
-              className="flex-1 bg-transparent outline-none text-sm text-surface-800 placeholder:text-surface-400 resize-none"
+              className="td-comment-textarea"
               onKeyDown={(e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) handleAddComment(); }}
             />
             <motion.button
@@ -361,7 +341,7 @@ export default function TaskDetail({ task }) {
               whileTap={{ scale: 0.9 }}
               onClick={handleAddComment}
               disabled={!commentText.trim()}
-              className="p-1.5 rounded-lg bg-primary-600 text-white disabled:opacity-40 disabled:cursor-not-allowed transition-opacity cursor-pointer"
+              className="td-comment-send"
             >
               <Send size={14} />
             </motion.button>

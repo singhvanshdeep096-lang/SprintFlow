@@ -1,0 +1,41 @@
+/* =====================================================
+   SearchBar Component — plain CSS
+   ===================================================== */
+
+.searchbar-wrap         { position: relative; }
+.searchbar-wrap--full   { width: 100%; }
+
+.searchbar-icon-left {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-surface-400, #94A3B8);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+
+/* Size-specific icon positions */
+.searchbar-icon-left--sm { left: 10px; }
+.searchbar-icon-left--md { left: 14px; }
+.searchbar-icon-left--lg { left: 14px; }
+
+.searchbar-clear {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-surface-400, #94A3B8);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s ease;
+}
+.searchbar-clear:hover { color: var(--color-surface-600, #475569); }
+
+/* Input padding per size (left-icon + right-clear) */
+.searchbar-input--sm { padding: 6px  32px; font-size: 0.8125rem; }
+.searchbar-input--md { padding: 10px 40px; font-size: 0.875rem;  }
+.searchbar-input--lg { padding: 12px 44px; font-size: 0.9375rem; }

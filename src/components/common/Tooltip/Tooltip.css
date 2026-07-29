@@ -1,0 +1,34 @@
+/* =====================================================
+   Tooltip Component — plain CSS
+   ===================================================== */
+
+.tooltip-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.tooltip-panel {
+  position: absolute;
+  z-index: 100;
+  pointer-events: none;
+}
+
+/* Placement */
+.tooltip-panel--top    { bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: 8px; }
+.tooltip-panel--bottom { top: 100%;    left: 50%; transform: translateX(-50%); margin-top: 8px; }
+.tooltip-panel--left   { right: 100%;  top: 50%;  transform: translateY(-50%); margin-right: 8px; }
+.tooltip-panel--right  { left: 100%;   top: 50%;  transform: translateY(-50%); margin-left: 8px; }
+
+.tooltip-content {
+  background-color: var(--color-surface-900, #0F172A);
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 6px 10px;
+  border-radius: 8px;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  max-width: 200px;
+  text-align: center;
+  line-height: 1.4;
+}

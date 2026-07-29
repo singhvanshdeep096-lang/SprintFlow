@@ -1,0 +1,75 @@
+/* =====================================================
+   Reports Page — plain CSS
+   ===================================================== */
+
+.reports-page {
+  padding: 24px;
+  width: 100%;
+  max-width: 1700px;
+  margin-inline: auto;
+}
+
+.reports-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+.reports-title    { font-size: 1.5rem; font-weight: 700; color: var(--color-surface-900); letter-spacing: -0.02em; }
+.reports-subtitle { font-size: 0.875rem; color: var(--color-surface-500); margin-top: 4px; }
+
+.reports-updated-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: var(--color-surface-500);
+  background: var(--color-surface-100);
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+
+/* Metric cards grid */
+.reports-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+@media (min-width: 1024px) {
+  .reports-metrics-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+.metric-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.metric-card-icon-box { padding: 10px; border-radius: 12px; }
+
+.metric-card-change { display: flex; align-items: center; gap: 4px; font-size: 0.75rem; font-weight: 700; }
+.metric-card-change--up   { color: #16A34A; }
+.metric-card-change--down { color: #DC2626; }
+
+.metric-card-val   { font-size: 1.5rem; font-weight: 700; color: var(--color-surface-900); margin-bottom: 2px; }
+.metric-card-lbl   { font-size: 0.75rem; font-weight: 500; color: var(--color-surface-500); }
+
+/* Charts row */
+.reports-charts-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+@media (min-width: 1024px) {
+  .reports-charts-row { grid-template-columns: repeat(2, 1fr); }
+}
+
+.reports-chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.reports-chart-legend { display: flex; align-items: center; gap: 12px; font-size: 0.75rem; color: var(--color-surface-500); }
+.reports-legend-item  { display: flex; align-items: center; gap: 4px; }
+.reports-legend-box   { width: 10px; height: 10px; border-radius: 2px; }
+
+.reports-chart-bars { display: flex; align-items: flex-end; gap: 8px; height: 144px; }
+
+/* Progress row list */
+.reports-progress-stack { display: flex; flex-direction: column; gap: 16px; }
+.reports-progress-row   { display: flex; align-items: center; gap: 12px; }
+.reports-progress-name  { font-size: 0.875rem; color: var(--color-surface-700); width: 160px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.reports-progress-val   { font-size: 0.875rem; font-weight: 600; color: var(--color-surface-700); width: 40px; text-align: right; flex-shrink: 0; }

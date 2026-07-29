@@ -11,15 +11,16 @@ import Button from '../../components/common/Button';
 import { useNavigate } from 'react-router-dom';
 import reportService from '../../services/report.service';
 import userService from '../../services/user.service';
+import './Dashboard.css';
 
 // ===== Stat Card =====
 function StatCard({ label, value, icon: Icon, color, trend, delay = 0 }) {
   const colorMap = {
-    blue: { bg: 'stat-card-blue', iconBg: 'bg-primary-100', iconColor: 'text-primary-600' },
-    green: { bg: 'stat-card-green', iconBg: 'bg-success-100', iconColor: 'text-success-600' },
-    yellow: { bg: 'stat-card-yellow', iconBg: 'bg-yellow-100', iconColor: 'text-yellow-600' },
-    red: { bg: 'stat-card-red', iconBg: 'bg-red-100', iconColor: 'text-red-600' },
-    purple: { bg: 'stat-card-purple', iconBg: 'bg-purple-100', iconColor: 'text-purple-600' },
+    blue:   { iconBg: 'icon-blue-bg',   iconColor: 'icon-blue-fg'   },
+    green:  { iconBg: 'icon-green-bg',  iconColor: 'icon-green-fg'  },
+    yellow: { iconBg: 'icon-yellow-bg', iconColor: 'icon-yellow-fg' },
+    red:    { iconBg: 'icon-red-bg',    iconColor: 'icon-red-fg'    },
+    purple: { iconBg: 'icon-purple-bg', iconColor: 'icon-purple-fg' },
   };
 
   const c = colorMap[color] || colorMap.blue;
@@ -30,33 +31,30 @@ function StatCard({ label, value, icon: Icon, color, trend, delay = 0 }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.4, ease: 'easeOut' }}
       whileHover={{ y: -4, transition: { duration: 0.2 } }}
-      className={`${c.bg} rounded-[16px] border border-white/60 dark:border-surface-700/50 p-6 flex flex-col justify-between h-full shadow-card hover:shadow-panel transition-all`}
+      className="card stat-card-wrap"
     >
-      <div className="flex items-center justify-between">
-        <div className={`${c.iconBg} w-10 h-10 rounded-xl flex items-center justify-center shrink-0`}>
+      <div className="stat-card-top">
+        <div className={`stat-card-icon-wrap ${c.iconBg}`}>
           <Icon size={20} className={c.iconColor} />
         </div>
         {trend !== undefined && (
-          <span
-            className={`flex items-center gap-1 text-[13px] font-semibold px-2.5 py-1 rounded-full shrink-0 ${trend >= 0 ? 'bg-green-100 text-green-700 dark:bg-green-950/60 dark:text-green-400' : 'bg-red-100 text-red-600 dark:bg-red-950/60 dark:text-red-400'
-              }`}
-          >
+          <span className={`stat-card-trend ${trend >= 0 ? 'stat-card-trend--up' : 'stat-card-trend--down'}`}>
             <TrendingUp size={12} className={trend < 0 ? 'rotate-180' : ''} />
             {Math.abs(trend)}%
           </span>
         )}
       </div>
 
-      <div className="mt-6">
+      <div className="stat-card-body">
         <motion.p
           initial={{ scale: 0.7, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: delay + 0.1, type: 'spring', stiffness: 260 }}
-          className="text-[36px] font-bold text-surface-900 leading-tight tracking-tight"
+          className="stat-card-value"
         >
           {(value || 0).toLocaleString()}
         </motion.p>
-        <p className="text-[15px] font-medium text-surface-500 mt-2">{label}</p>
+        <p className="stat-card-label">{label}</p>
       </div>
     </motion.div>
   );
@@ -67,12 +65,12 @@ function ActivityItem({ activity, members, delay }) {
   const member = members.find((m) => m.id === activity.userId);
 
   const actionColors = {
-    moved: 'text-primary-600 font-semibold',
-    completed: 'text-success-600 font-semibold',
-    created: 'text-purple-600 font-semibold',
-    commented: 'text-yellow-600 font-semibold',
-    started: 'text-blue-600 font-semibold',
-    'created project': 'text-indigo-600 font-semibold',
+    moved: '#2563EB',
+    completed: '#16A34A',
+    created: '#9333EA',
+    commented: '#CA8A04',
+    started: '#2563EB',
+    'created project': '#4F46E5',
   };
 
   const formatTime = (dateStr) => {
@@ -89,19 +87,19 @@ function ActivityItem({ activity, members, delay }) {
       initial={{ opacity: 0, x: -12 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay, duration: 0.3 }}
-      className="flex items-start gap-4 p-4 rounded-xl hover:bg-surface-50/80 transition-colors"
+      className="dash-activity-row"
     >
-      <Avatar name={member?.name || 'User'} size="md" color={member?.color} className="mt-0.5 shrink-0" />
-      <div className="flex-1 min-w-0">
-        <p className="text-[14px] text-surface-700 leading-relaxed">
-          <span className="font-bold text-surface-900">{member?.name || 'User'}</span>{' '}
-          <span className={actionColors[activity.action] || 'text-surface-600'}>{activity.action}</span>{' '}
-          <span className="font-semibold text-surface-800">{activity.target}</span>
+      <Avatar name={member?.name || 'User'} size="md" color={member?.color} style={{ marginTop: 2, flexShrink: 0 }} />
+      <div className="dash-activity-body">
+        <p className="dash-activity-text">
+          <span style={{ fontWeight: 700, color: '#0F172A' }}>{member?.name || 'User'}</span>{' '}
+          <span style={{ fontWeight: 600, color: actionColors[activity.action] || '#475569' }}>{activity.action}</span>{' '}
+          <span style={{ fontWeight: 600, color: '#1E293B' }}>{activity.target}</span>
           {activity.from && activity.to && (
-            <span className="text-surface-500"> from <span className="font-semibold">{activity.from}</span> to <span className="font-semibold">{activity.to}</span></span>
+            <span style={{ color: '#64748B' }}> from <span style={{ fontWeight: 600 }}>{activity.from}</span> to <span style={{ fontWeight: 600 }}>{activity.to}</span></span>
           )}
         </p>
-        <p className="text-[13px] text-surface-400 mt-1">{formatTime(activity.createdAt)}</p>
+        <p className="dash-activity-time">{formatTime(activity.createdAt)}</p>
       </div>
     </motion.div>
   );
@@ -119,37 +117,35 @@ function ChartPlaceholder({ title, subtitle, chartData, height = 220 }) {
   ];
 
   return (
-    <div className="card p-6 rounded-[16px] h-full flex flex-col justify-between shadow-card">
-      <div className="flex items-center justify-between mb-6">
+    <div className="card dash-chart-card">
+      <div className="dash-chart-header">
         <div>
-          <h3 className="text-[20px] font-bold text-surface-900">{title}</h3>
-          {subtitle && <p className="text-[14px] text-surface-500 mt-1 font-medium">{subtitle}</p>}
+          <h3 className="dash-chart-title">{title}</h3>
+          {subtitle && <p className="dash-chart-subtitle">{subtitle}</p>}
         </div>
-        <button className="text-[14px] text-primary-600 font-semibold hover:text-primary-700 transition-colors cursor-pointer">
+        <button className="dash-chart-link">
           View All
         </button>
       </div>
 
-      <div className="chart-area rounded-xl flex items-end justify-around gap-3 px-6 py-4 bg-surface-50/50" style={{ height }}>
+      <div className="dash-chart-canvas" style={{ height }}>
         {completion.map((d, i) => (
-          <div key={i} className="flex flex-col items-center gap-2 flex-1">
-            <div className="w-full flex flex-col gap-1 justify-end" style={{ height: height - 40 }}>
+          <div key={i} className="dash-bar-col">
+            <div className="dash-bar-stack" style={{ height: height - 40 }}>
               <motion.div
                 initial={{ height: 0 }}
                 animate={{ height: `${(d.created / 100) * 70}%` }}
                 transition={{ delay: i * 0.06 + 0.2, duration: 0.5, ease: 'easeOut' }}
-                className="w-full rounded-t-md"
-                style={{ background: 'rgba(37, 99, 235, 0.2)', minHeight: 6 }}
+                className="dash-bar-top"
               />
               <motion.div
                 initial={{ height: 0 }}
                 animate={{ height: `${(d.completed / 100) * 70}%` }}
                 transition={{ delay: i * 0.06 + 0.3, duration: 0.5, ease: 'easeOut' }}
-                className="w-full rounded-t-md shadow-xs"
-                style={{ background: 'linear-gradient(180deg, #2563EB, #7C3AED)', minHeight: 6 }}
+                className="dash-bar-bottom"
               />
             </div>
-            <span className="text-[13px] text-surface-500 font-semibold">{d.month}</span>
+            <span className="dash-bar-label">{d.month}</span>
           </div>
         ))}
       </div>
@@ -168,29 +164,29 @@ function ProjectMiniCard({ project, delay }) {
       transition={{ delay }}
       whileHover={{ x: 4 }}
       onClick={() => navigate(`/projects/${project.id}`)}
-      className="flex items-center gap-4 p-3.5 rounded-xl hover:bg-surface-50 cursor-pointer group transition-all"
+      className="dash-project-mini"
     >
       <div
-        className="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 shadow-xs"
+        className="dash-project-mini-icon"
         style={{ backgroundColor: `${project.color || '#2563EB'}18` }}
       >
         {project.icon || '⚡'}
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-[14px] font-bold text-surface-900 truncate">{project.name}</p>
-        <div className="flex items-center gap-3 mt-1.5">
-          <div className="progress-bar flex-1 h-2 rounded-full overflow-hidden bg-surface-100">
+      <div className="dash-project-mini-info">
+        <p className="dash-project-mini-name">{project.name}</p>
+        <div className="dash-project-mini-bar-row">
+          <div className="progress-bar" style={{ flex: 1 }}>
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${project.progress || 0}%` }}
               transition={{ delay: delay + 0.2, duration: 0.8, ease: 'easeOut' }}
-              className="progress-fill h-full rounded-full bg-primary-600"
+              className="progress-fill"
             />
           </div>
-          <span className="text-[13px] font-semibold text-surface-500 shrink-0">{project.progress || 0}%</span>
+          <span className="dash-project-mini-percent">{project.progress || 0}%</span>
         </div>
       </div>
-      <ArrowUpRight size={16} className="text-surface-400 group-hover:text-primary-600 transition-colors shrink-0" />
+      <ArrowUpRight size={16} style={{ color: 'var(--color-surface-400)', flexShrink: 0 }} />
     </motion.div>
   );
 }
@@ -235,15 +231,15 @@ export default function Dashboard() {
   ];
 
   return (
-    <PageTransition className="px-8 pt-8 pb-12 w-full max-w-[1600px] mx-auto space-y-8">
+    <PageTransition className="dash-page">
 
       {/* Header Section */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+      <div className="dash-header">
         <div>
           <motion.h1
             initial={{ opacity: 0, x: -16 }}
             animate={{ opacity: 1, x: 0 }}
-            className="text-[36px] font-bold text-surface-900 leading-tight tracking-tight"
+            className="dash-header-title"
           >
             Good morning, {user?.name?.split(' ')[0] || 'User'} 👋
           </motion.h1>
@@ -251,7 +247,7 @@ export default function Dashboard() {
             initial={{ opacity: 0, x: -12 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-[15px] font-medium text-surface-500 mt-2"
+            className="dash-header-subtitle"
           >
             Here's what's happening across your workspaces today.
           </motion.p>
@@ -261,7 +257,7 @@ export default function Dashboard() {
           initial={{ opacity: 0, x: 12 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.15 }}
-          className="flex items-center gap-4 shrink-0"
+          className="dash-header-actions"
         >
           <Button variant="secondary" icon={<Calendar size={16} />} size="md">
             This Week
@@ -273,7 +269,7 @@ export default function Dashboard() {
       </div>
 
       {/* Stat Cards Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-6">
+      <div className="dash-stats-grid">
         <StatCard label="Total Projects" value={stats.totalProjects || projects.length} icon={FolderKanban} color="blue" trend={12} delay={0.05} />
         <StatCard label="Total Tasks" value={stats.totalTasks || tasks.length} icon={CheckSquare} color="purple" trend={8} delay={0.1} />
         <StatCard label="Completed" value={stats.completedTasks} icon={CheckCircle2} color="green" trend={24} delay={0.15} />
@@ -282,11 +278,11 @@ export default function Dashboard() {
         <StatCard label="Team Members" value={stats.teamMembers || members.length} icon={Users} color="blue" trend={2} delay={0.3} />
       </div>
 
-      {/* Main Charts & Priority Grid (70% / 30% Desktop Grid) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-10 gap-6">
+      {/* Main Charts & Priority Grid */}
+      <div className="dash-two-col">
 
-        {/* Main Content Column (70%) */}
-        <div className="lg:col-span-7">
+        {/* Chart Column */}
+        <div>
           <ChartPlaceholder
             title="Task Completion"
             subtitle="Tasks completed vs created over time"
@@ -295,33 +291,34 @@ export default function Dashboard() {
           />
         </div>
 
-        {/* Priority Distribution Widget (30%) */}
-        <div className="lg:col-span-3 card p-6 rounded-[16px] flex flex-col justify-between shadow-card">
+        {/* Priority Distribution Widget */}
+        <div className="card dash-priority-card">
           <div>
-            <h3 className="text-[20px] font-bold text-surface-900 mb-1">Priority Distribution</h3>
-            <p className="text-[13px] text-surface-500 mb-6">Task workload breakdown</p>
+            <h3 className="dash-chart-title" style={{ fontSize: '1.25rem' }}>Priority Distribution</h3>
+            <p className="dash-chart-subtitle" style={{ marginBottom: 24 }}>Task workload breakdown</p>
 
-            <div className="space-y-4">
+            <div>
               {(chartData.priorityDistribution || []).map((item, i) => (
                 <motion.div
                   key={item.name}
                   initial={{ opacity: 0, x: 12 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.1 * i + 0.2 }}
+                  className="dash-priority-item"
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-                      <span className="text-[14px] font-semibold text-surface-800">{item.name}</span>
+                  <div className="dash-priority-row">
+                    <div className="dash-priority-left">
+                      <div className="dash-priority-dot" style={{ backgroundColor: item.color }} />
+                      <span className="dash-priority-name">{item.name}</span>
                     </div>
-                    <span className="text-[14px] font-bold text-surface-900">{item.value}</span>
+                    <span className="dash-priority-val">{item.value}</span>
                   </div>
-                  <div className="progress-bar h-2 rounded-full overflow-hidden bg-surface-100">
+                  <div className="progress-bar">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${Math.min(100, (item.value / 20) * 100)}%` }}
                       transition={{ delay: i * 0.08 + 0.3, duration: 0.6, ease: 'easeOut' }}
-                      className="h-full rounded-full"
+                      className="progress-fill"
                       style={{ backgroundColor: item.color }}
                     />
                   </div>
@@ -330,53 +327,54 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="mt-6 pt-4 border-t border-surface-100">
-            <div className="flex items-center justify-between text-[13px]">
-              <span className="text-surface-500 font-medium">This week's completion</span>
-              <span className="font-bold text-success-600">{stats.thisWeekCompleted || 18} tasks</span>
+          <div className="dash-priority-footer">
+            <div className="dash-priority-footer-row">
+              <span style={{ color: 'var(--color-surface-500)', fontWeight: 500 }}>This week's completion</span>
+              <span style={{ fontWeight: 700, color: '#16A34A' }}>{stats.thisWeekCompleted || 18} tasks</span>
             </div>
           </div>
         </div>
 
       </div>
 
-      {/* Activity & Sidebar Section (70% / 30% Desktop Grid) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-10 gap-6">
+      {/* Activity & Sidebar Section */}
+      <div className="dash-two-col">
 
-        {/* Activity Feed Column (70%) */}
-        <div className="lg:col-span-7 card p-6 rounded-[16px] shadow-card">
-          <div className="flex items-center justify-between mb-6 pb-4 border-b border-surface-100">
-            <div className="flex items-center gap-2.5">
-              <Activity size={20} className="text-primary-600" />
-              <h3 className="text-[20px] font-bold text-surface-900">Recent Activity</h3>
+        {/* Activity Feed Column */}
+        <div className="card dash-activity-card">
+          <div className="dash-activity-header">
+            <div className="dash-activity-title-wrap">
+              <Activity size={20} style={{ color: '#2563EB' }} />
+              <h3 className="dash-chart-title" style={{ fontSize: '1.25rem' }}>Recent Activity</h3>
             </div>
-            <button className="text-[14px] font-semibold text-primary-600 hover:text-primary-700 transition-colors cursor-pointer">
+            <button className="dash-chart-link">
               View all
             </button>
           </div>
 
-          <div className="space-y-3">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {mockActivities.map((activity, i) => (
               <ActivityItem key={activity.id} activity={activity} members={members} delay={i * 0.05} />
             ))}
           </div>
         </div>
 
-        {/* Sidebar Widgets Column (30%) */}
-        <div className="lg:col-span-3 space-y-6">
+        {/* Sidebar Widgets Column */}
+        <div className="dash-sidebar-stack">
 
           {/* Active Projects Widget */}
-          <div className="card p-6 rounded-[16px] shadow-card">
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="text-[16px] font-bold text-surface-900">Active Projects</h3>
+          <div className="card p-6">
+            <div className="dash-widget-header">
+              <h3 className="dash-widget-title">Active Projects</h3>
               <button
                 onClick={() => navigate('/projects')}
-                className="text-[13px] font-semibold text-primary-600 hover:text-primary-700 transition-colors cursor-pointer"
+                className="dash-chart-link"
+                style={{ fontSize: 13 }}
               >
                 All projects
               </button>
             </div>
-            <div className="space-y-2">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {recentProjects.map((project, i) => (
                 <ProjectMiniCard key={project.id} project={project} delay={i * 0.06} />
               ))}
@@ -384,12 +382,12 @@ export default function Dashboard() {
           </div>
 
           {/* Team Widget */}
-          <div className="card p-6 rounded-[16px] shadow-card">
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="text-[16px] font-bold text-surface-900">Team Members</h3>
-              <span className="text-[13px] font-semibold text-surface-500">{members.length} members</span>
+          <div className="card p-6">
+            <div className="dash-widget-header">
+              <h3 className="dash-widget-title">Team Members</h3>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-surface-500)' }}>{members.length} members</span>
             </div>
-            <div className="flex flex-wrap gap-3">
+            <div className="dash-team-avatars">
               {members.map((member, i) => (
                 <motion.div
                   key={member.id}
@@ -397,23 +395,23 @@ export default function Dashboard() {
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ delay: i * 0.05 + 0.1, type: 'spring', stiffness: 300 }}
                   whileHover={{ scale: 1.1 }}
-                  className="cursor-pointer"
+                  style={{ cursor: 'pointer' }}
                 >
-                  <Avatar name={member.name} size="md" color={member.color} badge badgeColor="#22C55E" />
+                  <Avatar name={member.name} size="sm" color={member.color} badge badgeColor="#22C55E" />
                 </motion.div>
               ))}
             </div>
           </div>
 
           {/* Quick Actions Widget */}
-          <div className="card p-6 rounded-[16px] shadow-card">
-            <h3 className="text-[16px] font-bold text-surface-900 mb-4">Quick Actions</h3>
-            <div className="space-y-3">
+          <div className="card p-6">
+            <h3 className="dash-widget-title" style={{ marginBottom: 16 }}>Quick Actions</h3>
+            <div className="dash-actions-stack">
               {[
-                { label: 'Create a task', icon: CheckSquare, path: '/tasks', color: 'text-primary-600' },
-                { label: 'New project', icon: FolderKanban, path: '/projects', color: 'text-purple-600' },
-                { label: 'View reports', icon: BarChart3, path: '/reports', color: 'text-success-600' },
-              ].map(({ label, icon: Icon, path, color }, i) => (
+                { label: 'Create a task', icon: CheckSquare, path: '/tasks',    iconColor: '#2563EB' },
+                { label: 'New project',   icon: FolderKanban, path: '/projects', iconColor: '#9333EA' },
+                { label: 'View reports',  icon: BarChart3,    path: '/reports',  iconColor: '#16A34A' },
+              ].map(({ label, icon: Icon, path, iconColor }, i) => (
                 <motion.button
                   key={label}
                   initial={{ opacity: 0, x: -8 }}
@@ -421,15 +419,15 @@ export default function Dashboard() {
                   transition={{ delay: i * 0.06 }}
                   whileHover={{ x: 4 }}
                   onClick={() => navigate(path)}
-                  className="w-full flex items-center gap-3.5 p-3 rounded-xl hover:bg-surface-50 transition-all text-left group border border-surface-100 hover:border-surface-200 cursor-pointer"
+                  className="dash-action-btn"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-surface-100 flex items-center justify-center shrink-0">
-                    <Icon size={16} className={color} />
+                  <div className="dash-action-icon">
+                    <Icon size={16} style={{ color: iconColor }} />
                   </div>
-                  <span className="text-[14px] font-semibold text-surface-800 group-hover:text-surface-900 transition-colors">
+                  <span className="dash-action-label">
                     {label}
                   </span>
-                  <ArrowUpRight size={14} className="ml-auto text-surface-400 group-hover:text-primary-600 transition-colors" />
+                  <ArrowUpRight size={14} style={{ marginLeft: 'auto', color: 'var(--color-surface-400)' }} />
                 </motion.button>
               ))}
             </div>

@@ -1,5 +1,9 @@
-import { Search, X } from 'lucide-react';
 import { motion } from 'motion/react';
+import { Search, X } from 'lucide-react';
+import './SearchBar.css';
+
+const SIZES = ['sm', 'md', 'lg'];
+const iconSize = { sm: 14, md: 16, lg: 18 };
 
 export default function SearchBar({
   value,
@@ -11,24 +15,13 @@ export default function SearchBar({
   fullWidth = true,
   autoFocus = false,
 }) {
-  const sizeClasses = {
-    sm: 'pl-8 pr-8 py-1.5 text-sm',
-    md: 'pl-10 pr-10 py-2.5 text-sm',
-    lg: 'pl-11 pr-11 py-3 text-base',
-  };
-
-  const iconSize = { sm: 14, md: 16, lg: 18 };
-  const iconPos = {
-    sm: 'left-2.5 top-1/2 -translate-y-1/2',
-    md: 'left-3.5 top-1/2 -translate-y-1/2',
-    lg: 'left-3.5 top-1/2 -translate-y-1/2',
-  };
+  const s = SIZES.includes(size) ? size : 'md';
 
   return (
-    <div className={`relative ${fullWidth ? 'w-full' : ''} ${className}`}>
+    <div className={['searchbar-wrap', fullWidth ? 'searchbar-wrap--full' : '', className].filter(Boolean).join(' ')}>
       <Search
-        size={iconSize[size]}
-        className={`absolute ${iconPos[size]} text-surface-400 pointer-events-none`}
+        size={iconSize[s]}
+        className={`searchbar-icon-left searchbar-icon-left--${s}`}
       />
       <input
         type="text"
@@ -36,10 +29,7 @@ export default function SearchBar({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         autoFocus={autoFocus}
-        className={[
-          'input-base w-full',
-          sizeClasses[size],
-        ].join(' ')}
+        className={`input-base searchbar-wrap--full searchbar-input--${s}`}
       />
       {value && (
         <motion.button
@@ -47,9 +37,9 @@ export default function SearchBar({
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.8 }}
           onClick={() => { onChange(''); onClear?.(); }}
-          className={`absolute right-3 top-1/2 -translate-y-1/2 text-surface-400 hover:text-surface-600 transition-colors`}
+          className="searchbar-clear"
         >
-          <X size={iconSize[size]} />
+          <X size={iconSize[s]} />
         </motion.button>
       )}
     </div>
