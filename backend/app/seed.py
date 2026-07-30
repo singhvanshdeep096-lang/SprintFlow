@@ -27,9 +27,16 @@ def init_db():
     # Seed Users
     users_data = [
         User(
+            id='user-0', name='System Administrator', email='admin@sprintflow.io',
+            hashed_password=default_hashed, avatar=None, initials='SA',
+            role='admin', is_superuser=True, department='Administration', location='San Francisco, CA',
+            timezone='America/Los_Angeles', color='#EF4444',
+            bio='SprintFlow System Administrator with full platform management privileges.'
+        ),
+        User(
             id='user-1', name='Alex Morgan', email='alex.morgan@sprintflow.io',
             hashed_password=default_hashed, avatar=None, initials='AM',
-            role='Product Manager', department='Engineering', location='San Francisco, CA',
+            role='user', department='Engineering', location='San Francisco, CA',
             timezone='America/Los_Angeles', color='#2563EB',
             bio='Building products that people love. PM by day, designer by night.'
         ),
