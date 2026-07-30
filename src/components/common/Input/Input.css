@@ -2,7 +2,7 @@
    Input Component — plain CSS
    ===================================================== */
 
-.input-wrap        { }
+.input-wrap        { display: block; }
 .input-wrap--full  { width: 100%; }
 
 /* Label */

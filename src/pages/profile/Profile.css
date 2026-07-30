@@ -51,7 +51,7 @@
 @media (min-width: 768px) {
   .profile-form-grid { grid-template-columns: repeat(2, 1fr); }
 }
-.profile-form-full { }
+.profile-form-full { display: block; }
 @media (min-width: 768px) {
   .profile-form-full { grid-column: 1 / -1; }
 }
