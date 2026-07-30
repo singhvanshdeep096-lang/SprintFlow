@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1 import auth, users, workspaces, projects, tasks, comments, notifications, reports, attachments
+from app.api.v1 import auth, users, workspaces, projects, tasks, comments, notifications, reports, attachments, admin
 from app.seed import init_db
 
 app = FastAPI(title="SprintFlow API", version="1.0.0")
@@ -18,6 +18,7 @@ def startup_event():
     init_db()
 
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
+app.include_router(admin.router, prefix="/api/v1/admin", tags=["admin"])
 app.include_router(users.router, prefix="/api/v1/users", tags=["users"])
 app.include_router(workspaces.router, prefix="/api/v1/workspaces", tags=["workspaces"])
 app.include_router(projects.router, prefix="/api/v1/projects", tags=["projects"])

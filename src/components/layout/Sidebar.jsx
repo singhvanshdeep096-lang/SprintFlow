@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   LayoutDashboard, Building2, FolderKanban, Kanban, CheckSquare,
   BarChart3, Bell, Settings, User, LogOut, ChevronLeft, Zap,
-  ChevronRight, Plus
+  ChevronRight, Plus, ShieldCheck
 } from 'lucide-react';
 import { toggleSidebar } from '../../redux/uiSlice';
 import { logoutAsync } from '../../redux/authSlice';
@@ -13,13 +13,44 @@ import Tooltip from '../common/Tooltip';
 import { useToast } from '../../hooks/useToast';
 import './Layout.css';
 
-const NAV_SECTIONS = [
+const ADMIN_NAV_SECTIONS = [
+  {
+    title: 'Administration',
+    items: [
+      { label: 'Admin Panel', path: '/admin', icon: ShieldCheck }
+    ]
+  },
   {
     title: 'Main',
     items: [
       { label: 'Dashboard',  path: '/dashboard',     icon: LayoutDashboard },
       { label: 'Workspaces', path: '/workspaces',    icon: Building2 },
       { label: 'Projects',   path: '/projects',      icon: FolderKanban },
+    ],
+  },
+  {
+    title: 'Work',
+    items: [
+      { label: 'Board',   path: '/board',   icon: Kanban },
+      { label: 'Tasks',   path: '/tasks',   icon: CheckSquare },
+      { label: 'Reports', path: '/reports', icon: BarChart3 },
+    ],
+  },
+  {
+    title: 'Account',
+    items: [
+      { label: 'Notifications', path: '/notifications', icon: Bell,     badge: true },
+      { label: 'Settings',      path: '/settings',      icon: Settings },
+      { label: 'Profile',       path: '/profile',       icon: User },
+    ],
+  },
+];
+
+const USER_NAV_SECTIONS = [
+  {
+    title: 'Main',
+    items: [
+      { label: 'Projects', path: '/projects', icon: FolderKanban },
     ],
   },
   {
@@ -85,12 +116,16 @@ function NavItem({ item, collapsed, unreadCount }) {
 }
 
 export default function Sidebar() {
-  const dispatch    = useDispatch();
-  const navigate    = useNavigate();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { success } = useToast();
-  const collapsed   = useSelector((state) => state.ui.sidebarCollapsed);
-  const user        = useSelector((state) => state.auth.user);
+  const collapsed = useSelector((state) => state.ui.sidebarCollapsed);
+  const user = useSelector((state) => state.auth.user);
   const unreadCount = useSelector((state) => state.notifications.unreadCount);
+
+  const isAdmin = user?.role?.toLowerCase() === 'admin' || user?.is_superuser === true;
+
+  const sectionsToRender = isAdmin ? ADMIN_NAV_SECTIONS : USER_NAV_SECTIONS;
 
   const handleLogout = () => {
     dispatch(logoutAsync());
@@ -107,7 +142,7 @@ export default function Sidebar() {
     >
       {/* Logo */}
       <div className={`sidebar-logo-wrap ${collapsed ? 'sidebar-logo-wrap--collapsed' : 'sidebar-logo-wrap--expanded'}`}>
-        <motion.div whileHover={{ scale: 1.05 }} className="sidebar-logo-btn" onClick={() => navigate('/dashboard')}>
+        <motion.div whileHover={{ scale: 1.05 }} className="sidebar-logo-btn" onClick={() => navigate(isAdmin ? '/admin' : '/dashboard')}>
           <div className="sidebar-logo-icon gradient-primary">
             <Zap size={16} style={{ color: '#ffffff' }} />
           </div>
@@ -145,7 +180,7 @@ export default function Sidebar() {
 
       {/* Navigation */}
       <nav className="sidebar-nav">
-        {NAV_SECTIONS.map((section) => (
+        {sectionsToRender.map((section) => (
           <div key={section.title} className="sidebar-nav-section">
             <AnimatePresence mode="wait">
               {!collapsed && (

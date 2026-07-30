@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import AuthLayout from '../components/layout/AuthLayout';
 import AppLayout from '../components/layout/AppLayout';
 import ProtectedRoute from './ProtectedRoute';
+import AdminRoute from './AdminRoute';
 import Loader from '../components/common/Loader/Loader';
 
 // Lazy-loaded pages
@@ -10,6 +11,7 @@ const Login = lazy(() => import('../pages/auth/Login'));
 const Register = lazy(() => import('../pages/auth/Register'));
 const ForgotPassword = lazy(() => import('../pages/auth/ForgotPassword'));
 const Dashboard = lazy(() => import('../pages/dashboard/Dashboard'));
+const AdminDashboard = lazy(() => import('../pages/admin/AdminDashboard'));
 const Workspaces = lazy(() => import('../pages/workspace/Workspaces'));
 const Projects = lazy(() => import('../pages/projects/Projects'));
 const ProjectDetail = lazy(() => import('../pages/projects/ProjectDetail'));
@@ -38,7 +40,14 @@ export default function AppRouter() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
         </Route>
 
-        {/* Protected App Routes */}
+        {/* Protected Admin Route */}
+        <Route element={<AdminRoute />}>
+          <Route element={<AppLayout />}>
+            <Route path="/admin" element={<AdminDashboard />} />
+          </Route>
+        </Route>
+
+        {/* Protected Standard App Routes */}
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />

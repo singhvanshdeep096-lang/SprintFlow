@@ -74,21 +74,46 @@ export default function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { success, error: toastError } = useToast();
-  const { loading, isAuthenticated, error: authErr } = useSelector((state) => state.auth);
+  const { loading, isAuthenticated, user, error: authErr } = useSelector((state) => state.auth);
+  const [selectedRole, setSelectedRole] = useState('user'); // 'user' or 'admin'
 
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm({
     defaultValues: { email: 'alex.morgan@sprintflow.io', password: 'password123' },
   });
 
   useEffect(() => {
-    if (isAuthenticated) navigate('/dashboard');
-  }, [isAuthenticated, navigate]);
+    if (isAuthenticated && user) {
+      const userRole = user?.role?.toLowerCase();
+      if (userRole === 'admin' || user?.is_superuser) {
+        navigate('/admin');
+      } else {
+        navigate('/projects');
+      }
+    }
+  }, [isAuthenticated, user, navigate]);
+
+  const selectRoleDemo = (role) => {
+    setSelectedRole(role);
+    if (role === 'admin') {
+      setValue('email', 'admin@sprintflow.io');
+      setValue('password', 'password123');
+    } else {
+      setValue('email', 'alex.morgan@sprintflow.io');
+      setValue('password', 'password123');
+    }
+  };
 
   const onSubmit = async (data) => {
     try {
-      await dispatch(loginAsync(data)).unwrap();
-      success('Welcome back!', 'You have been successfully signed in.');
-      navigate('/dashboard');
+      const loggedUser = await dispatch(loginAsync(data)).unwrap();
+      const roleName = loggedUser?.role?.toLowerCase();
+      if (roleName === 'admin' || loggedUser?.is_superuser) {
+        success('Administrator Access', 'Credentials verified! Redirecting to Admin Panel...');
+        navigate('/admin');
+      } else {
+        success('Welcome back!', 'Credentials verified! Redirecting to Projects...');
+        navigate('/projects');
+      }
     } catch (err) {
       toastError('Login failed', err || 'Invalid credentials');
     }
@@ -100,11 +125,66 @@ export default function Login() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
     >
-      <div style={{ marginBottom: 28 }}>
+      <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 26, fontWeight: 800, color: '#0F172A', marginBottom: 6, letterSpacing: '-0.03em' }}>
           Welcome back
         </h1>
         <p style={{ fontSize: 14, color: '#64748B' }}>Sign in to your SprintFlow workspace</p>
+      </div>
+
+      {/* Role Selection Tabs */}
+      <div style={{ marginBottom: 20 }}>
+        <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          Select Login Role
+        </label>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, background: '#F1F5F9', padding: 4, borderRadius: 12 }}>
+          <button
+            type="button"
+            onClick={() => selectRoleDemo('user')}
+            style={{
+              padding: '10px 12px',
+              borderRadius: 9,
+              fontSize: 13,
+              fontWeight: 700,
+              fontFamily: 'inherit',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 6,
+              background: selectedRole === 'user' ? '#FFFFFF' : 'transparent',
+              color: selectedRole === 'user' ? '#2563EB' : '#64748B',
+              boxShadow: selectedRole === 'user' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            <span>👤 User Login</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => selectRoleDemo('admin')}
+            style={{
+              padding: '10px 12px',
+              borderRadius: 9,
+              fontSize: 13,
+              fontWeight: 700,
+              fontFamily: 'inherit',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 6,
+              background: selectedRole === 'admin' ? '#FFFFFF' : 'transparent',
+              color: selectedRole === 'admin' ? '#DC2626' : '#64748B',
+              boxShadow: selectedRole === 'admin' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            <span>🛡️ Admin Login</span>
+          </button>
+        </div>
       </div>
 
       <motion.button
