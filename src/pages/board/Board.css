@@ -15,14 +15,14 @@
    1. Active Sprint Header Bar
    ---------------------------------------------------- */
 .sprint-header-bar {
-  background: #0F172A;
-  color: #ffffff;
+  background: #ffffff;
+  color: var(--color-surface-900, #0F172A);
   padding: 12px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  border-bottom: 1px solid #1E293B;
+  border-bottom: 1px solid var(--color-surface-200, #E2E8F0);
   flex-shrink: 0;
 }
 
@@ -37,9 +37,9 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #1E293B;
-  border: 1px solid #334155;
-  color: #38BDF8;
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  color: #2563EB;
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -51,14 +51,21 @@
 .sprint-title-text {
   font-size: 1rem;
   font-weight: 700;
-  color: #F8FAFC;
+  color: var(--color-surface-900, #0F172A);
   letter-spacing: -0.01em;
 }
 
 .sprint-date-range {
   font-size: 0.75rem;
-  color: #94A3B8;
+  color: var(--color-surface-500, #64748B);
   font-weight: 500;
+}
+
+.sprint-header-divider {
+  width: 1px;
+  height: 18px;
+  background: var(--color-surface-200, #E2E8F0);
+  margin-inline: 4px;
 }
 
 .sprint-stats-summary {
@@ -71,16 +78,17 @@
   display: flex;
   flex-direction: column;
 }
-.sprint-stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #64748B; font-weight: 600; }
-.sprint-stat-val   { font-size: 0.8125rem; font-weight: 700; color: #E2E8F0; margin-top: 1px; }
+.sprint-stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-surface-500, #64748B); font-weight: 600; }
+.sprint-stat-val   { font-size: 0.8125rem; font-weight: 700; color: var(--color-surface-900, #0F172A); margin-top: 1px; }
+.sprint-stat-val--highlight { color: #0284C7; }
 
 .sprint-health-banner {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(239, 68, 68, 0.15);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: #FCA5A5;
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  color: #DC2626;
   font-size: 0.75rem;
   font-weight: 600;
   padding: 4px 10px;
@@ -112,9 +120,9 @@
 .sprint-action-btn-primary:hover { background: #1D4ED8; }
 
 .sprint-action-btn-secondary {
-  background: #1E293B;
-  color: #E2E8F0;
-  border: 1px solid #334155;
+  background: var(--color-surface-100, #F1F5F9);
+  color: var(--color-surface-700, #334155);
+  border: 1px solid var(--color-surface-200, #E2E8F0);
   padding: 7px 14px;
   border-radius: 8px;
   font-size: 0.8125rem;
@@ -126,7 +134,7 @@
   transition: all 0.15s ease;
   font-family: inherit;
 }
-.sprint-action-btn-secondary:hover { background: #334155; color: #ffffff; }
+.sprint-action-btn-secondary:hover { background: var(--color-surface-200, #E2E8F0); color: var(--color-surface-900, #0F172A); }
 
 /* ----------------------------------------------------
    2. Filter & Controls Bar
@@ -571,6 +579,52 @@ html.dark .board-page-container {
 html.dark .sprint-header-bar {
   background: #090D16 !important;
   border-bottom-color: #1E293B !important;
+}
+
+html.dark .sprint-tag-badge {
+  background: #1E293B !important;
+  border-color: #334155 !important;
+  color: #38BDF8 !important;
+}
+
+html.dark .sprint-title-text {
+  color: #F8FAFC !important;
+}
+
+html.dark .sprint-date-range {
+  color: #94A3B8 !important;
+}
+
+html.dark .sprint-header-divider {
+  background: #334155 !important;
+}
+
+html.dark .sprint-stat-label {
+  color: #64748B !important;
+}
+
+html.dark .sprint-stat-val {
+  color: #E2E8F0 !important;
+}
+
+html.dark .sprint-stat-val--highlight {
+  color: #38BDF8 !important;
+}
+
+html.dark .sprint-health-banner {
+  background: rgba(239, 68, 68, 0.15) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+  color: #FCA5A5 !important;
+}
+
+html.dark .sprint-action-btn-secondary {
+  background: #1E293B !important;
+  color: #E2E8F0 !important;
+  border-color: #334155 !important;
+}
+html.dark .sprint-action-btn-secondary:hover {
+  background: #334155 !important;
+  color: #ffffff !important;
 }
 
 html.dark .board-toolbar {

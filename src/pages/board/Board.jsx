@@ -332,12 +332,12 @@ export default function Board() {
           <h2 className="sprint-title-text">RP1 Sprint 2 · SprintFlow v2.0</h2>
           <span className="sprint-date-range">Jul 20 – Jul 31</span>
 
-          <div style={{ width: 1, height: 18, background: '#334155', marginInline: 4 }} />
+          <div className="sprint-header-divider" />
 
           <div className="sprint-stats-summary">
             <div className="sprint-stat-box">
               <span className="sprint-stat-label">Progress</span>
-              <span className="sprint-stat-val" style={{ color: '#38BDF8' }}>{progressPct}% ({doneTasks}/{tasks.length})</span>
+              <span className="sprint-stat-val sprint-stat-val--highlight">{progressPct}% ({doneTasks}/{tasks.length})</span>
             </div>
             <div className="sprint-stat-box">
               <span className="sprint-stat-label">Story Points</span>

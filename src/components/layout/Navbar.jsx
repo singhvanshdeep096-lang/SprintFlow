@@ -76,10 +76,10 @@ export default function Navbar() {
   const { success } = useToast();
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
-  const user          = useSelector((state) => state.auth.user);
-  const theme         = useSelector((state) => state.ui.theme);
-  const collapsed     = useSelector((state) => state.ui.sidebarCollapsed);
-  const unreadCount   = useSelector((state) => state.notifications.unreadCount);
+  const user = useSelector((state) => state.auth.user);
+  const theme = useSelector((state) => state.ui.theme);
+  const collapsed = useSelector((state) => state.ui.sidebarCollapsed);
+  const unreadCount = useSelector((state) => state.notifications.unreadCount);
   const notifications = useSelector((state) => state.notifications.list);
 
   const handleLogout = () => {
@@ -90,10 +90,10 @@ export default function Navbar() {
 
   const handleThemeToggle = (e) => {
     if (!document.startViewTransition) { dispatch(toggleTheme()); return; }
-    const btn  = e.currentTarget;
+    const btn = e.currentTarget;
     const rect = btn.getBoundingClientRect();
-    const x = Math.round(rect.left + rect.width  / 2);
-    const y = Math.round(rect.top  + rect.height / 2);
+    const x = Math.round(rect.left + rect.width / 2);
+    const y = Math.round(rect.top + rect.height / 2);
     const transition = document.startViewTransition(() => dispatch(toggleTheme()));
     transition.ready.then(() => {
       document.documentElement.animate(

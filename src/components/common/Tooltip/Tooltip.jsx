@@ -26,7 +26,13 @@ export default function Tooltip({ children, content, placement = 'top', delay = 
   if (!content) return children;
 
   return (
-    <div className="tooltip-wrap" onMouseEnter={show} onMouseLeave={hide}>
+    <div
+      className="tooltip-wrap"
+      onMouseEnter={show}
+      onMouseLeave={hide}
+      onClick={hide}
+      onMouseDown={hide}
+    >
       {children}
       <AnimatePresence>
         {visible && (

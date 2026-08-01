@@ -23,25 +23,25 @@ const ADMIN_NAV_SECTIONS = [
   {
     title: 'Main',
     items: [
-      { label: 'Dashboard',  path: '/dashboard',     icon: LayoutDashboard },
-      { label: 'Workspaces', path: '/workspaces',    icon: Building2 },
-      { label: 'Projects',   path: '/projects',      icon: FolderKanban },
+      { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+      { label: 'Workspaces', path: '/workspaces', icon: Building2 },
+      { label: 'Projects', path: '/projects', icon: FolderKanban },
     ],
   },
   {
     title: 'Work',
     items: [
-      { label: 'Board',   path: '/board',   icon: Kanban },
-      { label: 'Tasks',   path: '/tasks',   icon: CheckSquare },
+      { label: 'Board', path: '/board', icon: Kanban },
+      { label: 'Tasks', path: '/tasks', icon: CheckSquare },
       { label: 'Reports', path: '/reports', icon: BarChart3 },
     ],
   },
   {
     title: 'Account',
     items: [
-      { label: 'Notifications', path: '/notifications', icon: Bell,     badge: true },
-      { label: 'Settings',      path: '/settings',      icon: Settings },
-      { label: 'Profile',       path: '/profile',       icon: User },
+      { label: 'Notifications', path: '/notifications', icon: Bell, badge: true },
+      { label: 'Settings', path: '/settings', icon: Settings },
+      { label: 'Profile', path: '/profile', icon: User },
     ],
   },
 ];
@@ -56,17 +56,17 @@ const USER_NAV_SECTIONS = [
   {
     title: 'Work',
     items: [
-      { label: 'Board',   path: '/board',   icon: Kanban },
-      { label: 'Tasks',   path: '/tasks',   icon: CheckSquare },
+      { label: 'Board', path: '/board', icon: Kanban },
+      { label: 'Tasks', path: '/tasks', icon: CheckSquare },
       { label: 'Reports', path: '/reports', icon: BarChart3 },
     ],
   },
   {
     title: 'Account',
     items: [
-      { label: 'Notifications', path: '/notifications', icon: Bell,     badge: true },
-      { label: 'Settings',      path: '/settings',      icon: Settings },
-      { label: 'Profile',       path: '/profile',       icon: User },
+      { label: 'Notifications', path: '/notifications', icon: Bell, badge: true },
+      { label: 'Settings', path: '/settings', icon: Settings },
+      { label: 'Profile', path: '/profile', icon: User },
     ],
   },
 ];
