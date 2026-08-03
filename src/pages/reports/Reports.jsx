@@ -6,63 +6,87 @@ import PageTransition from '../../components/common/PageTransition';
 import reportService from '../../services/report.service';
 import './Reports.css';
 
-function MetricCard({ label, value, change, icon: Icon, color, delay }) {
+function MetricCard({ label, value, change, icon: Icon, colorTheme, delay }) {
   const isPositive = change >= 0;
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}
-      className="card p-5"
+      className={`reports-metric-card ${colorTheme}`}
     >
       <div className="metric-card-top">
-        <div className={`metric-card-icon-box ${color}`}>
-          <Icon size={18} style={{ color: 'currentColor' }} />
+        <div className="metric-icon-box">
+          <Icon size={20} />
         </div>
-        <span className={`metric-card-change ${isPositive ? 'metric-card-change--up' : 'metric-card-change--down'}`}>
-          <TrendingUp size={11} className={!isPositive ? 'rotate-180' : ''} />
-          {Math.abs(change)}%
+        <span className={`metric-badge ${isPositive ? 'metric-badge--up' : 'metric-badge--down'}`}>
+          <TrendingUp size={12} className={!isPositive ? 'rotate-180' : ''} />
+          {isPositive ? `+${change}%` : `${change}%`}
         </span>
       </div>
-      <motion.p
-        initial={{ scale: 0.5 }}
-        animate={{ scale: 1 }}
-        transition={{ type: 'spring', stiffness: 300, delay: delay + 0.1 }}
-        className="metric-card-val"
-      >
-        {value}
-      </motion.p>
-      <p className="metric-card-lbl">{label}</p>
+      <div className="metric-card-body">
+        <motion.span
+          initial={{ scale: 0.8 }}
+          animate={{ scale: 1 }}
+          transition={{ type: 'spring', stiffness: 260, damping: 20, delay: delay + 0.08 }}
+          className="metric-card-value"
+        >
+          {value}
+        </motion.span>
+        <span className="metric-card-label">{label}</span>
+      </div>
     </motion.div>
   );
 }
 
 function ChartBar({ data, index, maxVal }) {
-  const height  = (data.completed / (maxVal || 100)) * 100;
-  const height2 = (data.created   / (maxVal || 100)) * 100;
+  const [hovered, setHovered] = useState(false);
+  const completedHeight = Math.max(6, Math.round((data.completed / (maxVal || 100)) * 100));
+  const createdHeight   = Math.max(6, Math.round((data.created   / (maxVal || 100)) * 100));
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flex: 1 }}>
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, flex: 1, width: '100%', height: 120 }}>
+    <div
+      className="chart-column-group"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <div className="chart-bars-wrapper">
+        {hovered && (
+          <div className="chart-popover-tooltip">
+            <div className="tooltip-title">{data.month} Stats</div>
+            <div className="tooltip-item">
+              <span className="dot dot-created" /> Created: <strong>{data.created}</strong>
+            </div>
+            <div className="tooltip-item">
+              <span className="dot dot-completed" /> Completed: <strong>{data.completed}</strong>
+            </div>
+          </div>
+        )}
         <motion.div
           initial={{ height: 0 }}
-          animate={{ height: `${height2}%` }}
-          transition={{ delay: index * 0.07 + 0.2, duration: 0.5, ease: 'easeOut' }}
-          style={{ flex: 1, borderRadius: '6px 6px 0 0', opacity: 0.3, background: '#2563EB', alignSelf: 'flex-end', minHeight: 4 }}
+          animate={{ height: `${createdHeight}%` }}
+          transition={{ delay: index * 0.06 + 0.1, duration: 0.5, ease: 'easeOut' }}
+          className="chart-bar bar-created"
         />
         <motion.div
           initial={{ height: 0 }}
-          animate={{ height: `${height}%` }}
-          transition={{ delay: index * 0.07 + 0.3, duration: 0.5, ease: 'easeOut' }}
-          style={{ flex: 1, borderRadius: '6px 6px 0 0', background: 'linear-gradient(180deg, #2563EB, #7C3AED)', alignSelf: 'flex-end', minHeight: 4 }}
+          animate={{ height: `${completedHeight}%` }}
+          transition={{ delay: index * 0.06 + 0.18, duration: 0.5, ease: 'easeOut' }}
+          className="chart-bar bar-completed"
         />
       </div>
-      <span style={{ fontSize: 10, color: 'var(--color-surface-400)', fontWeight: 500 }}>{data.month}</span>
+      <span className="chart-x-label">{data.month}</span>
     </div>
   );
 }
 
 function ProgressRow({ name, progress, delay }) {
+  const getGradient = (val) => {
+    if (val >= 70) return 'linear-gradient(90deg, #10B981, #059669)';
+    if (val >= 40) return 'linear-gradient(90deg, #3B82F6, #6366F1)';
+    return 'linear-gradient(90deg, #F59E0B, #EF4444)';
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, x: -12 }}
@@ -70,16 +94,19 @@ function ProgressRow({ name, progress, delay }) {
       transition={{ delay }}
       className="reports-progress-row"
     >
-      <p className="reports-progress-name">{name}</p>
-      <div className="progress-bar" style={{ flex: 1 }}>
+      <div className="progress-row-info">
+        <span className="progress-row-name" title={name}>{name}</span>
+      </div>
+      <div className="progress-track-bg">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${progress}%` }}
-          transition={{ delay: delay + 0.1, duration: 0.8, ease: 'easeOut' }}
-          className="progress-fill"
+          transition={{ delay: delay + 0.08, duration: 0.7, ease: 'easeOut' }}
+          className="progress-track-fill"
+          style={{ background: getGradient(progress) }}
         />
       </div>
-      <span className="reports-progress-val">{progress}%</span>
+      <span className="progress-row-badge">{progress}%</span>
     </motion.div>
   );
 }
@@ -113,107 +140,193 @@ export default function Reports() {
   ];
 
   const maxVal = Math.max(...taskCompletion.map((d) => d.created));
-  const projectProgress = projects.length > 0 ? projects.map(p => ({ name: p.name, progress: p.progress || 0 })) : chartData.projectProgress;
+
+  const priorityItems = (chartData.priorityDistribution && chartData.priorityDistribution.length > 0)
+    ? chartData.priorityDistribution
+    : [
+        { name: 'Urgent', value: 2, color: '#EF4444' },
+        { name: 'High', value: 4, color: '#F59E0B' },
+        { name: 'Medium', value: 2, color: '#3B82F6' },
+        { name: 'Low', value: 2, color: '#10B981' },
+      ];
+
+  const totalPriorityTasks = priorityItems.reduce((acc, curr) => acc + curr.value, 0) || 10;
+
+  const projectProgress = projects.length > 0 
+    ? projects.map(p => ({ name: p.name, progress: p.progress || 0 })) 
+    : (chartData.projectProgress.length > 0 ? chartData.projectProgress : [
+        { name: 'SprintFlow v2.0', progress: 68 },
+        { name: 'API Gateway Migration', progress: 35 },
+        { name: 'Design System 3.0', progress: 52 },
+        { name: 'Mobile App (iOS/Android)', progress: 18 },
+      ]);
 
   return (
     <PageTransition className="reports-page">
+      {/* Top Page Header */}
       <div className="reports-header">
-        <div>
+        <div className="reports-header-text">
           <h1 className="reports-title">Reports & Analytics</h1>
-          <p className="reports-subtitle">Insights for the last 6 months</p>
+          <p className="reports-subtitle">Performance breakdown and productivity metrics for the last 6 months</p>
         </div>
-        <div className="reports-updated-badge">
-          <Clock size={12} />Last updated just now
+        <div className="reports-live-badge">
+          <span className="live-dot" />
+          <Clock size={13} />
+          <span>Updated live</span>
         </div>
       </div>
 
+      {/* Top 4 Key Metric Cards */}
       <div className="reports-metrics-grid">
-        <MetricCard label="Tasks Completed" value={stats.completedTasks} change={24} icon={CheckCircle2} color="icon-green-bg icon-green-fg" delay={0.05} />
-        <MetricCard label="Active Projects" value={stats.totalProjects || projects.length} change={12} icon={Target} color="icon-blue-bg icon-blue-fg" delay={0.1} />
-        <MetricCard label="Team Velocity" value="8.4" change={-3} icon={TrendingUp} color="icon-yellow-bg icon-yellow-fg" delay={0.15} />
-        <MetricCard label="Team Members" value={stats.teamMembers || 6} change={33} icon={Users} color="icon-purple-bg icon-purple-fg" delay={0.2} />
+        <MetricCard
+          label="Tasks Completed"
+          value={stats.completedTasks || 24}
+          change={24}
+          icon={CheckCircle2}
+          colorTheme="theme-green"
+          delay={0.04}
+        />
+        <MetricCard
+          label="Active Projects"
+          value={stats.totalProjects || projects.length || 6}
+          change={12}
+          icon={Target}
+          colorTheme="theme-blue"
+          delay={0.08}
+        />
+        <MetricCard
+          label="Team Velocity"
+          value="8.4"
+          change={-3}
+          icon={TrendingUp}
+          colorTheme="theme-amber"
+          delay={0.12}
+        />
+        <MetricCard
+          label="Team Members"
+          value={stats.teamMembers || 7}
+          change={33}
+          icon={Users}
+          colorTheme="theme-purple"
+          delay={0.16}
+        />
       </div>
 
-      <div className="reports-charts-row">
+      {/* Main Charts Row */}
+      <div className="reports-charts-grid">
+        {/* Task Completion Bar Chart Card */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="card p-5"
+          className="reports-card chart-card"
         >
-          <div className="reports-chart-header">
+          <div className="reports-card-header">
             <div>
-              <h3 className="setting-row-label">Task Completion</h3>
-              <p className="setting-row-desc">Completed vs Created</p>
+              <h3 className="reports-card-title">Task Completion</h3>
+              <p className="reports-card-desc">Completed vs Created Tasks per month</p>
             </div>
-            <div className="reports-chart-legend">
-              <div className="reports-legend-item">
-                <div className="reports-legend-box" style={{ background: '#2563EB', opacity: 0.3 }} />
-                Created
+            <div className="reports-legend-group">
+              <div className="legend-item">
+                <span className="legend-swatch swatch-created" />
+                <span>Created</span>
               </div>
-              <div className="reports-legend-item">
-                <div className="reports-legend-box" style={{ background: 'linear-gradient(180deg, #2563EB, #7C3AED)' }} />
-                Completed
+              <div className="legend-item">
+                <span className="legend-swatch swatch-completed" />
+                <span>Completed</span>
               </div>
             </div>
           </div>
-          <div className="reports-chart-bars">
-            {taskCompletion.map((d, i) => (
-              <ChartBar key={i} data={d} index={i} maxVal={maxVal} />
-            ))}
+
+          <div className="chart-canvas-area">
+            {/* Horizontal Grid lines */}
+            <div className="chart-grid-lines">
+              <div className="grid-line"><span className="grid-label">100</span></div>
+              <div className="grid-line"><span className="grid-label">75</span></div>
+              <div className="grid-line"><span className="grid-label">50</span></div>
+              <div className="grid-line"><span className="grid-label">25</span></div>
+              <div className="grid-line"><span className="grid-label">0</span></div>
+            </div>
+            <div className="chart-columns-container">
+              {taskCompletion.map((d, i) => (
+                <ChartBar key={d.month} data={d} index={i} maxVal={maxVal} />
+              ))}
+            </div>
           </div>
         </motion.div>
 
+        {/* Priority Distribution Card */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
-          className="card p-5"
+          className="reports-card priority-card"
         >
-          <h3 className="setting-row-label" style={{ marginBottom: 20 }}>Priority Distribution</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {(chartData.priorityDistribution || []).map((item, i) => (
-              <div key={item.name}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 6 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={{ width: 10, height: 10, borderRadius: 9999, backgroundColor: item.color }} />
-                    <span style={{ fontWeight: 500, color: 'var(--color-surface-700)' }}>{item.name}</span>
+          <div className="reports-card-header">
+            <div>
+              <h3 className="reports-card-title">Priority Distribution</h3>
+              <p className="reports-card-desc">Active issues breakdown by urgency</p>
+            </div>
+          </div>
+
+          <div className="priority-list">
+            {priorityItems.map((item, i) => {
+              const percentage = Math.round((item.value / totalPriorityTasks) * 100);
+              return (
+                <div key={item.name} className="priority-row-item">
+                  <div className="priority-row-header">
+                    <div className="priority-label-group">
+                      <span className="priority-dot" style={{ backgroundColor: item.color, boxShadow: `0 0 10px ${item.color}40` }} />
+                      <span className="priority-name">{item.name}</span>
+                    </div>
+                    <span className="priority-badge-count">{item.value} tasks</span>
                   </div>
-                  <span style={{ fontWeight: 700, color: 'var(--color-surface-800)' }}>{item.value} tasks</span>
+                  <div className="priority-track-bg">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${percentage}%` }}
+                      transition={{ delay: i * 0.08 + 0.3, duration: 0.7, ease: 'easeOut' }}
+                      className="priority-track-fill"
+                      style={{ backgroundColor: item.color }}
+                    />
+                  </div>
                 </div>
-                <div className="progress-bar">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${(item.value / 20) * 100}%` }}
-                    transition={{ delay: i * 0.08 + 0.3, duration: 0.7 }}
-                    className="progress-fill"
-                    style={{ backgroundColor: item.color }}
-                  />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </motion.div>
       </div>
 
+      {/* Project Progress Card */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="card p-5"
+        className="reports-card progress-card"
       >
-        <div className="reports-chart-header">
-          <h3 className="setting-row-label">Project Progress</h3>
-          <button className="dash-chart-link" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}>
-            View all <ArrowUpRight size={11} />
+        <div className="reports-card-header">
+          <div>
+            <h3 className="reports-card-title">Project Progress</h3>
+            <p className="reports-card-desc">Overall milestone completion across active projects</p>
+          </div>
+          <button className="reports-action-btn">
+            <span>View details</span>
+            <ArrowUpRight size={14} />
           </button>
         </div>
+
         <div className="reports-progress-stack">
-          {(projectProgress || []).map((project, i) => (
-            <ProgressRow key={project.name} name={project.name} progress={project.progress} delay={i * 0.06 + 0.1} />
+          {projectProgress.map((project, i) => (
+            <ProgressRow
+              key={project.name}
+              name={project.name}
+              progress={project.progress}
+              delay={i * 0.06 + 0.1}
+            />
           ))}
         </div>
       </motion.div>
     </PageTransition>
   );
 }
+
