@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Bell, CheckCheck, Trash2, AtSign, GitPullRequest, MessageSquare, Clock, FolderKanban, MailOpen, Inbox } from 'lucide-react';
 import PageTransition from '../../components/common/PageTransition';
 import Button from '../../components/common/Button';
-import { markAsRead, markAllAsRead, deleteNotification } from '../../redux/notificationSlice';
+import { markAsReadAsync, markAllAsReadAsync, deleteNotificationAsync } from '../../redux/notificationSlice';
 import { useToast } from '../../hooks/useToast';
 import './Notifications.css';
 
@@ -114,7 +114,7 @@ export default function Notifications() {
   });
 
   const handleMarkAll = () => {
-    dispatch(markAllAsRead());
+    dispatch(markAllAsReadAsync());
     success('All caught up!', 'All notifications marked as read.');
   };
 
@@ -191,9 +191,9 @@ export default function Notifications() {
                 key={n.id}
                 notification={n}
                 delay={i * 0.04}
-                onMarkRead={(id) => dispatch(markAsRead(id))}
+                onMarkRead={(id) => dispatch(markAsReadAsync(id))}
                 onDelete={(id) => {
-                  dispatch(deleteNotification(id));
+                  dispatch(deleteNotificationAsync(id));
                   success('Notification removed', '');
                 }}
               />

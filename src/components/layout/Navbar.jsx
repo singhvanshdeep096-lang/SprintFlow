@@ -7,6 +7,7 @@ import Avatar from '../common/Avatar';
 import Dropdown from '../common/Dropdown';
 import { toggleTheme, toggleMobileSidebar } from '../../redux/uiSlice';
 import { logoutAsync } from '../../redux/authSlice';
+import { markAsReadAsync } from '../../redux/notificationSlice';
 import { useToast } from '../../hooks/useToast';
 import './Layout.css';
 
@@ -36,7 +37,7 @@ function ProfileMenu({ user, onLogout }) {
   );
 }
 
-function NotificationPreview({ notifications, onViewAll }) {
+function NotificationPreview({ notifications, onViewAll, onNotificationClick }) {
   return (
     <div className="notif-panel dropdown-content">
       <div className="notif-panel-header">
@@ -51,6 +52,8 @@ function NotificationPreview({ notifications, onViewAll }) {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: i * 0.04 }}
             className={`notif-item${!n.isRead ? ' notif-item--unread' : ''}`}
+            onClick={() => onNotificationClick && onNotificationClick(n)}
+            style={{ cursor: 'pointer' }}
           >
             <div
               className="notif-avatar"
@@ -81,6 +84,17 @@ export default function Navbar() {
   const collapsed = useSelector((state) => state.ui.sidebarCollapsed);
   const unreadCount = useSelector((state) => state.notifications.unreadCount);
   const notifications = useSelector((state) => state.notifications.list);
+
+  const handleNotificationClick = (notif) => {
+    if (!notif.isRead) {
+      dispatch(markAsReadAsync(notif.id));
+    }
+    if (notif.link) {
+      navigate(notif.link);
+    } else {
+      navigate('/notifications');
+    }
+  };
 
   const handleLogout = () => {
     dispatch(logoutAsync());
@@ -199,7 +213,11 @@ export default function Navbar() {
             )}
           </motion.button>
         } align="right" width="auto">
-          <NotificationPreview notifications={notifications} onViewAll={() => navigate('/notifications')} />
+          <NotificationPreview
+            notifications={notifications}
+            onViewAll={() => navigate('/notifications')}
+            onNotificationClick={handleNotificationClick}
+          />
         </Dropdown>
 
         {/* Profile */}

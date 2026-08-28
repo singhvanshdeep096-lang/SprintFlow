@@ -67,6 +67,15 @@ const notificationSlice = createSlice({
         state.list = action.payload;
         state.unreadCount = action.payload.filter((n) => !n.isRead).length;
       })
+      .addCase(markAsReadAsync.pending, (state, action) => {
+        const id = action.meta.arg;
+        const notif = state.list.find((n) => n.id === id);
+        if (notif && !notif.isRead) {
+          notif.isRead = true;
+          state.unreadCount = Math.max(0, state.unreadCount - 1);
+          saveToStorage(state.list);
+        }
+      })
       .addCase(markAsReadAsync.fulfilled, (state, action) => {
         const idx = state.list.findIndex((n) => n.id === action.payload.id);
         if (idx !== -1 && !state.list[idx].isRead) {
@@ -75,9 +84,21 @@ const notificationSlice = createSlice({
         }
         saveToStorage(state.list);
       })
+      .addCase(markAllAsReadAsync.pending, (state) => {
+        state.list.forEach((n) => (n.isRead = true));
+        state.unreadCount = 0;
+        saveToStorage(state.list);
+      })
       .addCase(markAllAsReadAsync.fulfilled, (state) => {
         state.list.forEach((n) => (n.isRead = true));
         state.unreadCount = 0;
+        saveToStorage(state.list);
+      })
+      .addCase(deleteNotificationAsync.pending, (state, action) => {
+        const id = action.meta.arg;
+        const notif = state.list.find((n) => n.id === id);
+        if (notif && !notif.isRead) state.unreadCount = Math.max(0, state.unreadCount - 1);
+        state.list = state.list.filter((n) => n.id !== id);
         saveToStorage(state.list);
       })
       .addCase(deleteNotificationAsync.fulfilled, (state, action) => {
