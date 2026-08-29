@@ -110,3 +110,41 @@
 /* Icon / text wrappers */
 .btn-icon   { flex-shrink: 0; display: inline-flex; align-items: center; }
 .btn-label  { line-height: 1.25; }
+
+/* =====================================================
+   Button Component — Dark Mode Overrides
+   ===================================================== */
+html.dark .btn--secondary {
+  background: #161B22;
+  color: #E2E8F0;
+  border-color: #30363D;
+}
+html.dark .btn--secondary:hover {
+  background: #21262D;
+  border-color: #484F58;
+  color: #FFFFFF;
+}
+
+html.dark .btn--ghost {
+  color: #8B949E;
+}
+html.dark .btn--ghost:hover {
+  background: #161B22;
+  color: #F0F6FC;
+}
+
+html.dark .btn--outline {
+  color: #60A5FA;
+  border-color: #3B82F6;
+}
+html.dark .btn--outline:hover {
+  background: rgba(59, 130, 246, 0.15);
+}
+
+html.dark .btn--outline-danger {
+  color: #F87171;
+  border-color: #EF4444;
+}
+html.dark .btn--outline-danger:hover {
+  background: rgba(239, 68, 68, 0.15);
+}
