@@ -485,3 +485,146 @@
   gap: 12px;
   justify-content: center;
 }
+
+/* ================================================================
+   DARK MODE OVERRIDES
+   ================================================================ */
+html.dark .projects-title {
+  color: #F0F6FC;
+}
+
+html.dark .projects-subtitle {
+  color: #8B949E;
+}
+
+html.dark .projects-filter-group,
+html.dark .projects-view-group {
+  background-color: #161B22;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+html.dark .projects-filter-btn {
+  color: #8B949E;
+}
+
+html.dark .projects-filter-btn:hover {
+  color: #F0F6FC;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+html.dark .projects-filter-btn.active {
+  background: #21262D;
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+html.dark .projects-view-btn {
+  color: #8B949E;
+}
+
+html.dark .projects-view-btn:hover {
+  color: #F0F6FC;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+html.dark .projects-view-btn.active {
+  background: #21262D;
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+html.dark .pc-grid {
+  background: #161B22;
+  border-color: #21262D;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+html.dark .pc-name {
+  color: #F0F6FC;
+}
+
+html.dark .pc-description {
+  color: #8B949E;
+}
+
+html.dark .pc-tag {
+  background-color: #21262D;
+  color: #C9D1D9;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+html.dark .pc-progress-label-left {
+  color: #8B949E;
+}
+
+html.dark .pc-progress-label-right {
+  color: #F0F6FC;
+}
+
+html.dark .pc-footer {
+  border-top-color: #21262D;
+}
+
+html.dark .pc-members-overflow {
+  background-color: #21262D;
+  border-color: #161B22;
+  color: #8B949E;
+}
+
+html.dark .pc-meta {
+  color: #8B949E;
+}
+
+html.dark .pc-menu-btn:hover {
+  background-color: #21262D;
+  color: #F0F6FC;
+}
+
+html.dark .pc-list {
+  background: #161B22;
+  border-color: #21262D;
+}
+
+html.dark .pc-list:hover {
+  border-color: #30363D;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+}
+
+html.dark .pc-list-name {
+  color: #F0F6FC;
+}
+
+html.dark .pc-list-desc {
+  color: #8B949E;
+}
+
+html.dark .pc-list-progress-label span:first-child {
+  color: #8B949E;
+}
+
+html.dark .pc-list-progress-label span:last-child {
+  color: #F0F6FC;
+}
+
+html.dark .pc-dropdown-divider {
+  border-top-color: #21262D;
+}
+
+html.dark .del-icon-wrap {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #F87171;
+}
+
+html.dark .del-q {
+  color: #C9D1D9;
+}
+
+html.dark .del-name {
+  color: #F0F6FC;
+}
+
+html.dark .del-warn {
+  color: #8B949E;
+}
