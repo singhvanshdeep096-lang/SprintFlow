@@ -146,8 +146,180 @@
   justify-content: center;
   min-height: 400px;
 }
-.pd-not-found-inner { text-align: center; }
-.pd-not-found-text { color: var(--color-surface-500); margin-bottom: 16px; }
+.pd-not-found-inner { text-align: center; max-width: 440px; }
+.pd-not-found-text { color: var(--color-surface-500); margin-bottom: 20px; font-size: 0.9375rem; line-height: 1.5; }
+
+/* Member management link & badge */
+.pd-manage-link {
+  background: transparent;
+  border: none;
+  color: #2563EB;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+.pd-manage-link:hover {
+  background: #EFF6FF;
+}
+
+.pd-member-access-tag {
+  font-size: 10px;
+  font-weight: 700;
+  color: #16A34A;
+  background: #DCFCE7;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Modal Content for Member Management */
+.pd-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.pd-modal-search-wrap {
+  position: relative;
+}
+
+.pd-modal-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-surface-400);
+  pointer-events: none;
+}
+
+.pd-modal-search-input {
+  width: 100%;
+  padding-left: 36px;
+}
+
+.pd-modal-users-list {
+  max-height: 320px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-right: 4px;
+}
+
+.pd-modal-user-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--color-surface-200);
+  background: var(--color-surface-50);
+  transition: all 0.15s ease;
+}
+
+.pd-modal-user-row:hover {
+  background: #ffffff;
+  border-color: #CBD5E1;
+}
+
+.pd-modal-user-row.assigned {
+  background: #EFF6FF;
+  border-color: #BFDBFE;
+}
+
+.pd-modal-user-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.pd-modal-user-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-surface-900);
+}
+
+.pd-modal-user-email {
+  font-size: 0.75rem;
+  color: var(--color-surface-500);
+}
+
+.pd-member-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+}
+
+.pd-member-action-btn.add {
+  background: #2563EB;
+  color: #ffffff;
+}
+.pd-member-action-btn.add:hover {
+  background: #1D4ED8;
+}
+
+.pd-member-action-btn.remove {
+  background: #DCFCE7;
+  color: #166534;
+  border-color: #BBF7D0;
+}
+.pd-member-action-btn.remove:hover {
+  background: #FEE2E2;
+  color: #991B1B;
+  border-color: #FECACA;
+}
+
+.pd-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-surface-200);
+  margin-top: 6px;
+}
+
+/* Dark mode overrides */
+html.dark .pd-manage-link:hover {
+  background: #1E293B;
+}
+
+html.dark .pd-member-access-tag {
+  background: rgba(22, 163, 74, 0.2);
+  color: #86EFAC;
+}
+
+html.dark .pd-modal-user-row {
+  background: #111827;
+  border-color: #1F2937;
+}
+html.dark .pd-modal-user-row:hover {
+  background: #1F2937;
+  border-color: #374151;
+}
+html.dark .pd-modal-user-row.assigned {
+  background: rgba(37, 99, 235, 0.15);
+  border-color: #3B82F6;
+}
+html.dark .pd-modal-user-name {
+  color: #F9FAFB;
+}
+html.dark .pd-modal-footer {
+  border-top-color: #374151;
+}
 
 /* ================================================================
    DARK MODE OVERRIDES

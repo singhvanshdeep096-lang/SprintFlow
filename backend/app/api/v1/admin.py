@@ -5,14 +5,12 @@ from app.models.user import User
 from app.models.project import Project
 from app.models.workspace import Workspace
 from app.models.task import Task
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, is_admin_user
 
 router = APIRouter()
 
-def verify_admin(current_user: dict = Depends(get_current_user)):
-    user_role = current_user.get("role", "").lower()
-    is_admin = user_role == "admin" or current_user.get("is_superuser") is True
-    if not is_admin:
+def verify_admin(current_user: User = Depends(get_current_user)):
+    if not is_admin_user(current_user):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Access forbidden: Administrator privileges required"

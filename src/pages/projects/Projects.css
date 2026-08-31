@@ -445,6 +445,130 @@
   gap: 12px;
 }
 
+/* Role Badges in Header */
+.projects-role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.projects-role-badge.admin {
+  background: #FEF2F2;
+  color: #DC2626;
+  border: 1px solid #FECACA;
+}
+
+.projects-role-badge.user {
+  background: #EFF6FF;
+  color: #2563EB;
+  border: 1px solid #BFDBFE;
+}
+
+/* Members selection in ProjectForm */
+.pf-members-section {
+  border-top: 1px solid var(--color-surface-200);
+  padding-top: 14px;
+  margin-top: 4px;
+}
+
+.pf-member-selector-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+  max-height: 190px;
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.pf-member-toggle-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--color-surface-200);
+  background: var(--color-surface-50);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.pf-member-toggle-chip:hover {
+  background: #ffffff;
+  border-color: #93C5FD;
+}
+
+.pf-member-toggle-chip.active {
+  background: #EFF6FF;
+  border-color: #3B82F6;
+}
+
+.pf-member-chip-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.pf-member-chip-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-surface-900);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pf-member-chip-role {
+  font-size: 10px;
+  color: var(--color-surface-400);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Dark mode overrides */
+html.dark .projects-role-badge.admin {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #FCA5A5;
+}
+
+html.dark .projects-role-badge.user {
+  background: rgba(37, 99, 235, 0.15);
+  border-color: rgba(37, 99, 235, 0.3);
+  color: #93C5FD;
+}
+
+html.dark .pf-members-section {
+  border-top-color: #374151;
+}
+
+html.dark .pf-member-toggle-chip {
+  background: #111827;
+  border-color: #374151;
+}
+
+html.dark .pf-member-toggle-chip:hover {
+  background: #1F2937;
+  border-color: #3B82F6;
+}
+
+html.dark .pf-member-toggle-chip.active {
+  background: rgba(37, 99, 235, 0.15);
+  border-color: #3B82F6;
+}
+
+html.dark .pf-member-chip-name {
+  color: #F9FAFB;
+}
+
 .pf-actions {
   display: flex;
   justify-content: flex-end;

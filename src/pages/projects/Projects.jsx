@@ -5,7 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import {
   Plus, Search, FolderKanban, MoreHorizontal, Edit3, Trash2,
-  Kanban, Calendar, Grid3X3, List, Tag, ArrowRight
+  Kanban, Calendar, Grid3X3, List, Tag, ArrowRight, Users,
+  CheckCircle2, ShieldCheck, UserCheck
 } from 'lucide-react';
 import PageTransition from '../../components/common/PageTransition';
 import Button from '../../components/common/Button';
@@ -21,7 +22,7 @@ import { useModal } from '../../hooks/useModal';
 import userService from '../../services/user.service';
 import './Projects.css';
 
-function ProjectCard({ project, allMembers, onEdit, onDelete, delay, view }) {
+function ProjectCard({ project, allMembers, onEdit, onDelete, delay, view, isAdmin }) {
   const navigate = useNavigate();
   const members = allMembers.filter((m) => project.members?.includes(m.id));
   const statusCfg = PROJECT_STATUS_CONFIG[project.status] || PROJECT_STATUS_CONFIG.active;
@@ -136,15 +137,19 @@ function ProjectCard({ project, allMembers, onEdit, onDelete, delay, view }) {
                 <Edit3 size={14} style={{ color: 'var(--color-surface-400)' }} />
                 Edit project
               </button>
-              <button className="dropdown-item" onClick={() => navigate('/board')}>
+              <button className="dropdown-item" onClick={() => navigate(`/board?project=${project.id}`)}>
                 <Kanban size={14} style={{ color: 'var(--color-surface-400)' }} />
                 Open board
               </button>
-              <hr className="pc-dropdown-divider" />
-              <button className="dropdown-item danger" onClick={() => onDelete(project)}>
-                <Trash2 size={14} style={{ color: '#F87171' }} />
-                Delete
-              </button>
+              {isAdmin && (
+                <>
+                  <hr className="pc-dropdown-divider" />
+                  <button className="dropdown-item danger" onClick={() => onDelete(project)}>
+                    <Trash2 size={14} style={{ color: '#F87171' }} />
+                    Delete
+                  </button>
+                </>
+              )}
             </div>
           </Dropdown>
         </div>
@@ -188,6 +193,9 @@ function ProjectCard({ project, allMembers, onEdit, onDelete, delay, view }) {
           {members.length > 4 && (
             <div className="pc-members-overflow">+{members.length - 4}</div>
           )}
+          <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-surface-400)', marginLeft: 6 }}>
+            {members.length} {members.length === 1 ? 'member' : 'members'}
+          </span>
         </div>
 
         <div className="pc-meta">
@@ -208,13 +216,30 @@ function ProjectCard({ project, allMembers, onEdit, onDelete, delay, view }) {
   );
 }
 
-function ProjectForm({ defaultValues, onSubmit, onClose, loading }) {
+function ProjectForm({ defaultValues, allMembers = [], onSubmit, onClose, loading, currentUser }) {
+  const [selectedMembers, setSelectedMembers] = useState(
+    defaultValues?.members || (currentUser?.id ? [currentUser.id] : ['user-1'])
+  );
+
   const { register, handleSubmit, formState: { errors } } = useForm({
     defaultValues: defaultValues || {},
   });
 
+  const toggleMember = (memberId) => {
+    setSelectedMembers((prev) =>
+      prev.includes(memberId) ? prev.filter((id) => id !== memberId) : [...prev, memberId]
+    );
+  };
+
+  const handleFormSubmit = (data) => {
+    onSubmit({
+      ...data,
+      members: selectedMembers.length > 0 ? selectedMembers : [currentUser?.id || 'user-1'],
+    });
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="pf-form">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="pf-form">
       <Input
         label="Project name"
         placeholder="e.g. SprintFlow v2.0"
@@ -238,7 +263,8 @@ function ProjectForm({ defaultValues, onSubmit, onClose, loading }) {
         <div>
           <label className="pf-label">Status</label>
           <select {...register('status')} className="input-base">
-            <option value="active">Active</option>
+            <option value="active">Active (Running)</option>
+            <option value="in_progress">In Progress</option>
             <option value="on_hold">On Hold</option>
             <option value="completed">Completed</option>
             <option value="archived">Archived</option>
@@ -260,6 +286,40 @@ function ProjectForm({ defaultValues, onSubmit, onClose, loading }) {
         <Input label="Due date" type="date" {...register('dueDate')} />
       </div>
 
+      {/* Team Member Selection Section */}
+      <div className="pf-members-section">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+          <label className="pf-label" style={{ marginBottom: 0 }}>
+            <Users size={13} style={{ display: 'inline', marginRight: 4, verticalAlign: 'middle' }} />
+            Assigned Team Members ({selectedMembers.length})
+          </label>
+          <span style={{ fontSize: 11, color: 'var(--color-surface-400)' }}>
+            Only selected members can view this project & board
+          </span>
+        </div>
+
+        <div className="pf-member-selector-grid">
+          {allMembers.map((m) => {
+            const isAssigned = selectedMembers.includes(m.id);
+            return (
+              <button
+                type="button"
+                key={m.id}
+                onClick={() => toggleMember(m.id)}
+                className={`pf-member-toggle-chip ${isAssigned ? 'active' : ''}`}
+              >
+                <Avatar name={m.name} size="xs" color={m.color} />
+                <div className="pf-member-chip-text">
+                  <span className="pf-member-chip-name">{m.name}</span>
+                  <span className="pf-member-chip-role">{m.role || m.department || 'Member'}</span>
+                </div>
+                {isAssigned && <CheckCircle2 size={14} style={{ color: '#2563EB', marginLeft: 'auto' }} />}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       <div className="pf-actions">
         <Button type="button" variant="secondary" onClick={onClose}>Cancel</Button>
         <Button type="submit" loading={loading}>
@@ -273,6 +333,7 @@ function ProjectForm({ defaultValues, onSubmit, onClose, loading }) {
 export default function Projects() {
   const dispatch = useDispatch();
   const { success } = useToast();
+  const currentUser = useSelector((state) => state.auth.user);
   const projects = useSelector((state) => state.projects.list);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -282,6 +343,8 @@ export default function Projects() {
   const createModal = useModal();
   const editModal = useModal();
   const deleteModal = useModal();
+
+  const isAdmin = currentUser?.role?.toLowerCase() === 'admin' || currentUser?.is_superuser === true;
 
   useEffect(() => {
     userService.getUsers().then((data) => setMembers(data)).catch(() => { });
@@ -302,10 +365,9 @@ export default function Projects() {
         progress: 0,
         color: '#2563EB',
         icon: '📁',
-        members: ['user-1'],
-        tags: ['New'],
+        tags: ['Project'],
       })).unwrap();
-      success('Project created', `"${data.name}" is ready.`);
+      success('Project created', `"${data.name}" has been created with assigned members.`);
       createModal.close();
     } catch (e) {
       // ignore
@@ -318,7 +380,7 @@ export default function Projects() {
     setSubmitting(true);
     try {
       await dispatch(updateProjectAsync({ id: editModal.data.id, data })).unwrap();
-      success('Project updated', 'Changes saved.');
+      success('Project updated', 'Project settings and members updated successfully.');
       editModal.close();
     } catch (e) {
       // ignore
@@ -340,16 +402,29 @@ export default function Projects() {
     }
   };
 
-  const statusOptions = ['all', 'active', 'on_hold', 'completed', 'archived'];
+  const statusOptions = ['all', 'active', 'in_progress', 'on_hold', 'completed', 'archived'];
 
   return (
     <PageTransition className="projects-page">
       {/* Header */}
       <div className="projects-header">
         <div>
-          <h1 className="projects-title">Projects</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <h1 className="projects-title">Projects</h1>
+            {isAdmin ? (
+              <span className="projects-role-badge admin">
+                <ShieldCheck size={12} /> Admin View · All Projects
+              </span>
+            ) : (
+              <span className="projects-role-badge user">
+                <UserCheck size={12} /> Assigned Projects Only
+              </span>
+            )}
+          </div>
           <p className="projects-subtitle">
-            {projects.length} projects across all workspaces
+            {isAdmin
+              ? `${projects.length} total projects across organization`
+              : `You are assigned to ${projects.length} active project${projects.length === 1 ? '' : 's'}`}
           </p>
         </div>
         <Button variant="primary" icon={<Plus size={16} />} onClick={createModal.open}>
@@ -405,13 +480,15 @@ export default function Projects() {
       {filtered.length === 0 ? (
         <EmptyState
           icon={<FolderKanban size={32} />}
-          title={search ? 'No projects found' : 'No projects yet'}
+          title={search ? 'No projects found' : 'No projects assigned'}
           description={
             search
               ? 'Try adjusting your filters.'
-              : 'Create your first project to get started.'
+              : isAdmin
+              ? 'Create your first project to get started.'
+              : 'You have not been assigned to any projects yet. Contact your administrator.'
           }
-          action={!search ? createModal.open : undefined}
+          action={isAdmin && !search ? createModal.open : undefined}
           actionLabel="Create Project"
         />
       ) : (
@@ -421,6 +498,7 @@ export default function Projects() {
               key={project.id}
               project={project}
               allMembers={members}
+              isAdmin={isAdmin}
               delay={i * 0.05}
               view={view}
               onEdit={editModal.open}
@@ -435,10 +513,12 @@ export default function Projects() {
         isOpen={createModal.isOpen}
         onClose={createModal.close}
         title="Create Project"
-        subtitle="Set up a new project for your team"
+        subtitle="Set up a new project and assign team members"
         size="md"
       >
         <ProjectForm
+          allMembers={members}
+          currentUser={currentUser}
           onSubmit={handleCreate}
           onClose={createModal.close}
           loading={submitting}
@@ -450,11 +530,14 @@ export default function Projects() {
         isOpen={editModal.isOpen}
         onClose={editModal.close}
         title="Edit Project"
+        subtitle="Modify project settings and manage assigned team members"
         size="md"
       >
         {editModal.data && (
           <ProjectForm
             defaultValues={editModal.data}
+            allMembers={members}
+            currentUser={currentUser}
             onSubmit={handleEdit}
             onClose={editModal.close}
             loading={submitting}
@@ -487,3 +570,4 @@ export default function Projects() {
     </PageTransition>
   );
 }
+

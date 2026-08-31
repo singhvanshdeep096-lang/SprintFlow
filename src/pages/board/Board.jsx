@@ -1,17 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   Plus, MessageSquare, Paperclip, Flag, Calendar,
   CheckSquare, User, Search, AlertTriangle, ShieldAlert,
-  SlidersHorizontal, CheckCircle2, Zap
+  SlidersHorizontal, CheckCircle2, Zap, ChevronDown, FolderKanban, Layers
 } from 'lucide-react';
 import PageTransition from '../../components/common/PageTransition';
 import Avatar from '../../components/common/Avatar';
 import Button from '../../components/common/Button';
 import Drawer from '../../components/common/Drawer/Drawer';
+import Dropdown from '../../components/common/Dropdown/Dropdown';
+import EmptyState from '../../components/common/EmptyState/EmptyState';
 import { updateTaskStatusAsync, addTaskAsync, openTaskDrawer, closeTaskDrawer } from '../../redux/taskSlice';
-import { KANBAN_COLUMNS, PRIORITY_CONFIG } from '../../constants';
+import { KANBAN_COLUMNS, PRIORITY_CONFIG, PROJECT_STATUS_CONFIG } from '../../constants';
 import { useToast } from '../../hooks/useToast';
 import TaskDetail from '../task/TaskDetail';
 import userService from '../../services/user.service';
@@ -140,7 +143,7 @@ function TaskCard({ task, members, onOpen, delay }) {
 }
 
 /* ---- Inline Quick Add Task Form ---- */
-function AddTaskInline({ columnStatus, onAdd, onCancel }) {
+function AddTaskInline({ columnStatus, projectId, onAdd, onCancel }) {
   const [title, setTitle] = useState('');
   const { success }       = useToast();
 
@@ -151,9 +154,8 @@ function AddTaskInline({ columnStatus, onAdd, onCancel }) {
       title: title.trim(),
       status: columnStatus,
       priority: 'medium',
-      projectId: 'proj-1',
-      assigneeId: 'user-1',
-      labels: ['Frontend'],
+      projectId: projectId || 'proj-1',
+      labels: ['General'],
       subtasks: [],
     });
     success('Task created', `"${title}" added to the board.`);
@@ -186,7 +188,7 @@ function AddTaskInline({ columnStatus, onAdd, onCancel }) {
 }
 
 /* ---- Kanban Column Component ---- */
-function KanbanColumn({ column, tasks, members, onAddTask, onOpenTask }) {
+function KanbanColumn({ column, tasks, members, projectId, onAddTask, onOpenTask }) {
   const [addingTask, setAddingTask] = useState(false);
   const dispatch = useDispatch();
   const [dragOver, setDragOver]     = useState(false);
@@ -256,6 +258,7 @@ function KanbanColumn({ column, tasks, members, onAddTask, onOpenTask }) {
           {addingTask && (
             <AddTaskInline
               columnStatus={column.status}
+              projectId={projectId}
               onAdd={onAddTask}
               onCancel={() => setAddingTask(false)}
             />
@@ -286,76 +289,218 @@ function KanbanColumn({ column, tasks, members, onAddTask, onOpenTask }) {
 /* ---- Main Board Page Component ---- */
 export default function Board() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  const currentUser = useSelector((state) => state.auth.user);
+  const projects = useSelector((state) => state.projects.list);
   const tasks    = useSelector((state) => state.tasks.list);
   const selectedTask = useSelector((state) => state.tasks.selected);
   const isDrawerOpen = useSelector((state) => state.tasks.isDrawerOpen);
 
+  const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [search, setSearch]                 = useState('');
   const [assigneeFilter, setAssigneeFilter] = useState('all');
   const [activeTab, setActiveTab]           = useState('all');
-  const [members, setMembers]               = useState([]);
+  const [allUsers, setAllUsers]             = useState([]);
+  const [projectDropdownOpen, setProjectDropdownOpen] = useState(false);
 
   useEffect(() => {
-    userService.getUsers().then((data) => setMembers(data)).catch(() => {});
+    userService.getUsers().then((data) => setAllUsers(data)).catch(() => {});
   }, []);
 
-  // Filtering
-  const filteredTasks = tasks.filter((t) => {
-    const matchSearch   = t.title.toLowerCase().includes(search.toLowerCase()) ||
-                          t.id?.toLowerCase().includes(search.toLowerCase());
-    const matchAssignee = assigneeFilter === 'all' || t.assigneeId === assigneeFilter;
-    const matchTab      = activeTab === 'all' || (activeTab === 'my' && t.assigneeId === 'user-1');
-    return matchSearch && matchAssignee && matchTab;
-  });
+  // Initialize selected project
+  useEffect(() => {
+    if (projects.length === 0) return;
+
+    const paramProjectId = searchParams.get('project');
+    if (paramProjectId && projects.some((p) => p.id === paramProjectId)) {
+      setSelectedProjectId(paramProjectId);
+      return;
+    }
+
+    if (!selectedProjectId || !projects.some((p) => p.id === selectedProjectId)) {
+      // Pick first active running project, or fallback to first project
+      const activeRunningProject = projects.find(
+        (p) => (p.status === 'active' || p.status === 'in_progress')
+      ) || projects[0];
+      
+      setSelectedProjectId(activeRunningProject?.id || null);
+      if (activeRunningProject) {
+        setSearchParams({ project: activeRunningProject.id }, { replace: true });
+      }
+    }
+  }, [projects, searchParams, selectedProjectId, setSearchParams]);
+
+  const handleSelectProject = (projId) => {
+    setSelectedProjectId(projId);
+    setSearchParams({ project: projId });
+    setProjectDropdownOpen(false);
+    setAssigneeFilter('all');
+  };
+
+  // Find currently selected project object
+  const currentProject = useMemo(() => {
+    return projects.find((p) => p.id === selectedProjectId) || projects[0] || null;
+  }, [projects, selectedProjectId]);
+
+  // Project-specific members
+  const projectMembers = useMemo(() => {
+    if (!currentProject || !currentProject.members) return allUsers;
+    return allUsers.filter((u) => currentProject.members.includes(u.id));
+  }, [currentProject, allUsers]);
+
+  // Tasks scoped to the selected project
+  const projectTasks = useMemo(() => {
+    if (!currentProject) return [];
+    return tasks.filter((t) => t.projectId === currentProject.id);
+  }, [tasks, currentProject]);
+
+  // Filter tasks based on search, assignee, and activeTab
+  const filteredTasks = useMemo(() => {
+    return projectTasks.filter((t) => {
+      const matchSearch   = t.title.toLowerCase().includes(search.toLowerCase()) ||
+                            t.id?.toLowerCase().includes(search.toLowerCase());
+      const matchAssignee = assigneeFilter === 'all' || t.assigneeId === assigneeFilter;
+      const matchTab      = activeTab === 'all' || (activeTab === 'my' && t.assigneeId === currentUser?.id);
+      return matchSearch && matchAssignee && matchTab;
+    });
+  }, [projectTasks, search, assigneeFilter, activeTab, currentUser]);
 
   const getColumnTasks = (status) => filteredTasks.filter((t) => t.status === status);
 
-  const totalPoints = tasks.reduce((sum, t) => sum + (t.estimatedHours || 3), 0);
-  const doneTasks   = tasks.filter((t) => t.status === 'done').length;
-  const progressPct = Math.round((doneTasks / (tasks.length || 1)) * 100);
+  const totalPoints = projectTasks.reduce((sum, t) => sum + (t.estimatedHours || 3), 0);
+  const doneTasks   = projectTasks.filter((t) => t.status === 'done').length;
+  const progressPct = projectTasks.length > 0 ? Math.round((doneTasks / projectTasks.length) * 100) : 0;
 
-  const handleAddTask     = (taskData) => dispatch(addTaskAsync(taskData));
+  const handleAddTask     = (taskData) => dispatch(addTaskAsync({ ...taskData, projectId: currentProject?.id }));
   const handleOpenTask    = (task) => dispatch(openTaskDrawer(task));
   const handleCloseDrawer = () => dispatch(closeTaskDrawer());
+
+  // Empty state if no assigned projects exist
+  if (projects.length === 0) {
+    return (
+      <PageTransition className="board-page-container">
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 32 }}>
+          <EmptyState
+            icon={<FolderKanban size={40} />}
+            title="No Assigned Projects Found"
+            description="You are not currently assigned to any active projects. Contact an administrator to be added to a project board."
+          />
+        </div>
+      </PageTransition>
+    );
+  }
+
+  const projectStatusCfg = currentProject
+    ? PROJECT_STATUS_CONFIG[currentProject.status] || PROJECT_STATUS_CONFIG.active
+    : PROJECT_STATUS_CONFIG.active;
 
   return (
     <PageTransition className="board-page-container">
 
       {/* ------------------------------------------------
-          1. Sprint Top Header Bar (Jira / Linear Style)
+          1. Sprint Top Header Bar with Project Selector
          ------------------------------------------------ */}
       <div className="sprint-header-bar">
         <div className="sprint-info-left">
-          <span className="sprint-tag-badge">
-            <Zap size={11} /> ACTIVE SPRINT
-          </span>
-          <h2 className="sprint-title-text">RP1 Sprint 2 · SprintFlow v2.0</h2>
-          <span className="sprint-date-range">Jul 20 – Jul 31</span>
+          
+          {/* Project Selector Dropdown */}
+          <div className="board-project-selector-wrap">
+            <button
+              onClick={() => setProjectDropdownOpen(!projectDropdownOpen)}
+              className="board-project-selector-btn"
+              title="Switch Project Board"
+            >
+              <span className="board-project-icon" style={{ backgroundColor: `${currentProject?.color || '#2563EB'}22` }}>
+                {currentProject?.icon || '⚡'}
+              </span>
+              <div className="board-project-title-group">
+                <span className="board-project-name">{currentProject?.name || 'Select Project'}</span>
+                <span className="board-project-badge" style={{ backgroundColor: projectStatusCfg.bg, color: projectStatusCfg.color }}>
+                  {projectStatusCfg.label}
+                </span>
+              </div>
+              {projects.length > 1 && <ChevronDown size={14} className={`board-chevron ${projectDropdownOpen ? 'open' : ''}`} />}
+            </button>
+
+            {/* Project Picker Dropdown Menu */}
+            <AnimatePresence>
+              {projectDropdownOpen && projects.length > 1 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 4, scale: 0.98 }}
+                  transition={{ duration: 0.15 }}
+                  className="board-project-dropdown-menu"
+                >
+                  <div className="board-project-dropdown-header">
+                    <Layers size={13} />
+                    <span>Your Assigned Projects ({projects.length})</span>
+                  </div>
+                  <div className="board-project-dropdown-list">
+                    {projects.map((p) => {
+                      const isSelected = p.id === currentProject?.id;
+                      const sCfg = PROJECT_STATUS_CONFIG[p.status] || PROJECT_STATUS_CONFIG.active;
+                      return (
+                        <button
+                          key={p.id}
+                          onClick={() => handleSelectProject(p.id)}
+                          className={`board-project-dropdown-item ${isSelected ? 'active' : ''}`}
+                        >
+                          <span className="board-project-item-icon" style={{ backgroundColor: `${p.color || '#2563EB'}20` }}>
+                            {p.icon || '⚡'}
+                          </span>
+                          <div className="board-project-item-text">
+                            <span className="board-project-item-name">{p.name}</span>
+                            <span className="board-project-item-status" style={{ color: sCfg.color }}>
+                              ● {sCfg.label} · {p.taskCount || 0} issues
+                            </span>
+                          </div>
+                          {isSelected && <CheckCircle2 size={15} style={{ color: '#2563EB', marginLeft: 'auto' }} />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           <div className="sprint-header-divider" />
 
           <div className="sprint-stats-summary">
             <div className="sprint-stat-box">
               <span className="sprint-stat-label">Progress</span>
-              <span className="sprint-stat-val sprint-stat-val--highlight">{progressPct}% ({doneTasks}/{tasks.length})</span>
+              <span className="sprint-stat-val sprint-stat-val--highlight">{progressPct}% ({doneTasks}/{projectTasks.length})</span>
             </div>
             <div className="sprint-stat-box">
               <span className="sprint-stat-label">Story Points</span>
               <span className="sprint-stat-val">{totalPoints} pts</span>
             </div>
+            <div className="sprint-stat-box">
+              <span className="sprint-stat-label">Team Members</span>
+              <span className="sprint-stat-val">{projectMembers.length} active</span>
+            </div>
           </div>
 
           <div className="sprint-health-banner">
             <ShieldAlert size={13} />
-            <span>Sprint Health: 85% On Track</span>
+            <span>Sprint Health: {progressPct >= 50 ? '92% On Track' : '85% In Progress'}</span>
           </div>
         </div>
 
         <div className="sprint-header-actions">
-          <button className="sprint-action-btn-secondary">
-            <SlidersHorizontal size={13} /> Sprint Options
+          <button
+            className="sprint-action-btn-secondary"
+            onClick={() => navigate(`/projects/${currentProject?.id}`)}
+          >
+            <SlidersHorizontal size={13} /> Project Details
           </button>
-          <button className="sprint-action-btn-primary" onClick={() => dispatch(addTaskAsync({ title: 'New Board Issue', status: 'todo', priority: 'high', projectId: 'proj-1' }))}>
+          <button
+            className="sprint-action-btn-primary"
+            onClick={() => dispatch(addTaskAsync({ title: 'New Board Issue', status: 'todo', priority: 'high', projectId: currentProject?.id }))}
+          >
             <Plus size={14} /> + New Issue
           </button>
         </div>
@@ -372,7 +517,7 @@ export default function Board() {
               onClick={() => setActiveTab('all')}
               className={`board-tab-btn ${activeTab === 'all' ? 'active' : ''}`}
             >
-              All Issues ({tasks.length})
+              All Issues ({projectTasks.length})
             </button>
             <button
               onClick={() => setActiveTab('my')}
@@ -382,9 +527,9 @@ export default function Board() {
             </button>
           </div>
 
-          {/* Member Avatar Filter */}
+          {/* Member Avatar Filter (Scoped to Project Members) */}
           <div className="board-avatars-filter">
-            {[{ id: 'all', name: 'All' }, ...members.slice(0, 5)].map((m) => (
+            {[{ id: 'all', name: 'All' }, ...projectMembers.slice(0, 6)].map((m) => (
               <button
                 key={m.id}
                 onClick={() => setAssigneeFilter(m.id)}
@@ -419,14 +564,15 @@ export default function Board() {
       {/* ------------------------------------------------
           3. Kanban Columns Flex Canvas Area
          ------------------------------------------------ */}
-      <div className="board-canvas-area">
+      <div className="board-canvas-area" onClick={() => projectDropdownOpen && setProjectDropdownOpen(false)}>
         <div className="board-columns-flex">
           {KANBAN_COLUMNS.map((column) => (
             <KanbanColumn
               key={column.id}
               column={column}
               tasks={getColumnTasks(column.status)}
-              members={members}
+              members={projectMembers}
+              projectId={currentProject?.id}
               onAddTask={handleAddTask}
               onOpenTask={handleOpenTask}
             />
@@ -447,3 +593,4 @@ export default function Board() {
     </PageTransition>
   );
 }
+

@@ -1,16 +1,21 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
+import { useNavigate } from 'react-router-dom';
 import {
   ShieldCheck, Users, Building2, FolderKanban, Activity,
   Server, Cpu, HardDrive, RefreshCw, Lock, CheckCircle2,
-  AlertTriangle, Search, Filter, Database, Wrench
+  AlertTriangle, Search, Filter, Database, Wrench, UserPlus,
+  Trash2, Kanban, ExternalLink, Plus
 } from 'lucide-react';
 import api from '../../services/api';
+import projectService from '../../services/project.service';
 import { useToast } from '../../hooks/useToast';
 import Avatar from '../../components/common/Avatar';
+import { PROJECT_STATUS_CONFIG } from '../../constants';
 import './AdminDashboard.css';
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
   const { success, error: toastError } = useToast();
   const [activeTab, setActiveTab] = useState('users');
   const [loading, setLoading] = useState(true);
@@ -35,6 +40,7 @@ export default function AdminDashboard() {
     { id: 'user-5', name: 'Jordan Kim', email: 'jordan@sprintflow.io', role: 'user', department: 'DevOps', is_active: true, is_superuser: false },
   ]);
 
+  const [projects, setProjects] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
 
@@ -45,6 +51,8 @@ export default function AdminDashboard() {
       setStats(statsRes);
       const usersRes = await api.get('/admin/users');
       setUsers(usersRes);
+      const projRes = await projectService.getProjects();
+      setProjects(projRes);
     } catch (err) {
       console.warn('Backend admin fetch fallback used:', err.message);
     } finally {
@@ -62,17 +70,42 @@ export default function AdminDashboard() {
       setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole, is_superuser: newRole === 'admin' } : u));
       success('Role Updated', `User role successfully changed to ${newRole.toUpperCase()}.`);
     } catch (err) {
-      // Local state update fallback
       setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole, is_superuser: newRole === 'admin' } : u));
       success('Role Updated', `User role updated to ${newRole.toUpperCase()} (local).`);
+    }
+  };
+
+  const handleToggleProjectMember = async (projectId, userId) => {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+
+    const currentMembers = project.members || [];
+    const isAssigned = currentMembers.includes(userId);
+
+    try {
+      if (isAssigned) {
+        if (currentMembers.length <= 1) {
+          toastError('Cannot Remove', 'Project must have at least one team member.');
+          return;
+        }
+        await projectService.removeMember(projectId, userId);
+        setProjects(prev => prev.map(p => p.id === projectId ? { ...p, members: p.members.filter(m => m !== userId) } : p));
+        success('Member Removed', `User removed from ${project.name}`);
+      } else {
+        await projectService.addMember(projectId, userId);
+        setProjects(prev => prev.map(p => p.id === projectId ? { ...p, members: [...(p.members || []), userId] } : p));
+        success('Member Added', `User assigned to ${project.name}`);
+      }
+    } catch (err) {
+      toastError('Update Failed', err.message);
     }
   };
 
   const filteredUsers = users.filter(u => {
     const matchesSearch = u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          u.department.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesRole = roleFilter === 'all' || u.role.toLowerCase() === roleFilter.toLowerCase();
+                          (u.department && u.department.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesRole = roleFilter === 'all' || (u.role && u.role.toLowerCase() === roleFilter.toLowerCase());
     return matchesSearch && matchesRole;
   });
 
@@ -89,7 +122,7 @@ export default function AdminDashboard() {
             <span className="admin-badge">
               <Lock size={12} /> ADMIN ACCESS GRANTED
             </span>
-            <span className="admin-subtitle">Manage system roles, permissions, security & cluster health.</span>
+            <span className="admin-subtitle">Manage system roles, project access allocation & security.</span>
           </div>
         </div>
 
@@ -97,7 +130,7 @@ export default function AdminDashboard() {
           <button className="admin-action-btn" onClick={fetchAdminData}>
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh Telemetry
           </button>
-          <button className="admin-action-btn primary" onClick={() => success('System Diagnostic', 'All 14 node microservices reported 100% health.')}>
+          <button className="admin-action-btn primary" onClick={() => success('System Diagnostic', 'All system microservices running with 100% health.')}>
             <Wrench size={14} /> System Check
           </button>
         </div>
@@ -129,13 +162,13 @@ export default function AdminDashboard() {
 
         <motion.div whileHover={{ y: -2 }} className="admin-metric-card">
           <div className="admin-metric-header">
-            <span className="admin-metric-label">CPU & Memory Load</span>
+            <span className="admin-metric-label">Total Projects</span>
             <div className="admin-metric-icon" style={{ background: '#FEF3C7', color: '#D97706' }}>
-              <Cpu size={20} />
+              <FolderKanban size={20} />
             </div>
           </div>
-          <div className="admin-metric-value">{stats.cpu_load || '14.2%'}</div>
-          <div style={{ fontSize: 12, color: '#D97706', fontWeight: 600 }}>Memory: {stats.memory_usage || '38.6%'} / 64GB</div>
+          <div className="admin-metric-value">{projects.length || stats.total_projects || 6}</div>
+          <div style={{ fontSize: 12, color: '#D97706', fontWeight: 600 }}>Member access control active</div>
         </motion.div>
 
         <motion.div whileHover={{ y: -2 }} className="admin-metric-card">
@@ -157,6 +190,12 @@ export default function AdminDashboard() {
           onClick={() => setActiveTab('users')}
         >
           User & Role Management
+        </button>
+        <button
+          className={`admin-tab-btn ${activeTab === 'projects' ? 'active' : ''}`}
+          onClick={() => setActiveTab('projects')}
+        >
+          Project Allocations & Member Access
         </button>
         <button
           className={`admin-tab-btn ${activeTab === 'health' ? 'active' : ''}`}
@@ -217,7 +256,7 @@ export default function AdminDashboard() {
             </thead>
             <tbody>
               {filteredUsers.map((u) => {
-                const isAdmin = u.role?.toLowerCase() === 'admin';
+                const isSuperAdmin = u.role?.toLowerCase() === 'admin';
                 return (
                   <tr key={u.id}>
                     <td>
@@ -232,19 +271,19 @@ export default function AdminDashboard() {
                     <td style={{ fontFamily: 'monospace', fontSize: 13 }}>{u.email}</td>
                     <td>{u.department || 'Engineering'}</td>
                     <td>
-                      <span className={`role-tag ${isAdmin ? 'admin' : 'user'}`}>
-                        {isAdmin ? '🛡️ Admin' : '👤 User'}
+                      <span className={`role-tag ${isSuperAdmin ? 'admin' : 'user'}`}>
+                        {isSuperAdmin ? '🛡️ Admin' : '👤 User'}
                       </span>
                     </td>
                     <td>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: isAdmin ? '#EF4444' : '#64748B' }}>
-                        {isAdmin ? 'Granted' : 'Standard'}
+                      <span style={{ fontSize: 12, fontWeight: 700, color: isSuperAdmin ? '#EF4444' : '#64748B' }}>
+                        {isSuperAdmin ? 'Full Access' : 'Scoped Member'}
                       </span>
                     </td>
                     <td>
                       <select
                         className="role-select"
-                        value={isAdmin ? 'admin' : 'user'}
+                        value={isSuperAdmin ? 'admin' : 'user'}
                         onChange={(e) => handleRoleChange(u.id, e.target.value)}
                       >
                         <option value="user">User</option>
@@ -256,6 +295,101 @@ export default function AdminDashboard() {
               })}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Tab Content: Project Allocations */}
+      {activeTab === 'projects' && (
+        <div className="admin-card">
+          <div className="admin-card-header">
+            <div className="admin-card-title">
+              <FolderKanban size={18} style={{ color: '#2563EB' }} />
+              Organization Project Access Allocation ({projects.length})
+            </div>
+            <div style={{ fontSize: 12, color: '#64748B' }}>
+              Assign members to grant them visibility into specific projects and their Kanban boards.
+            </div>
+          </div>
+
+          <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {projects.map((proj) => {
+              const statusCfg = PROJECT_STATUS_CONFIG[proj.status] || PROJECT_STATUS_CONFIG.active;
+              return (
+                <div key={proj.id} style={{ border: '1px solid var(--color-surface-200, #E2E8F0)', borderRadius: 12, padding: 16, background: '#ffffff' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <span style={{ fontSize: 20 }}>{proj.icon || '⚡'}</span>
+                      <div>
+                        <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0 }}>{proj.name}</h3>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 3 }}>
+                          <span style={{ fontSize: 11, background: statusCfg.bg, color: statusCfg.color, padding: '2px 8px', borderRadius: 9999, fontWeight: 600 }}>
+                            {statusCfg.label}
+                          </span>
+                          <span style={{ fontSize: 12, color: '#64748B' }}>
+                            {proj.taskCount || 0} tasks · {(proj.members || []).length} assigned members
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button
+                        onClick={() => navigate(`/board?project=${proj.id}`)}
+                        className="admin-action-btn"
+                        style={{ fontSize: 12, padding: '5px 10px' }}
+                      >
+                        <Kanban size={13} /> View Board
+                      </button>
+                      <button
+                        onClick={() => navigate(`/projects/${proj.id}`)}
+                        className="admin-action-btn primary"
+                        style={{ fontSize: 12, padding: '5px 10px' }}
+                      >
+                        <ExternalLink size={13} /> Details
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Member toggles for this project */}
+                  <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #F1F5F9' }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', marginBottom: 8 }}>
+                      Team Member Access (Click to Toggle):
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                      {users.map((u) => {
+                        const isAssigned = (proj.members || []).includes(u.id);
+                        return (
+                          <button
+                            key={u.id}
+                            type="button"
+                            onClick={() => handleToggleProjectMember(proj.id, u.id)}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 6,
+                              padding: '5px 10px',
+                              borderRadius: 8,
+                              fontSize: 12,
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              border: isAssigned ? '1.5px solid #3B82F6' : '1px solid #E2E8F0',
+                              background: isAssigned ? '#EFF6FF' : '#F8FAFC',
+                              color: isAssigned ? '#1D4ED8' : '#64748B',
+                              transition: 'all 0.15s ease'
+                            }}
+                          >
+                            <Avatar name={u.name} size="xs" color={u.color} />
+                            <span>{u.name.split(' ')[0]}</span>
+                            {isAssigned && <CheckCircle2 size={13} style={{ color: '#2563EB' }} />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 
@@ -350,3 +484,4 @@ export default function AdminDashboard() {
     </div>
   );
 }
+

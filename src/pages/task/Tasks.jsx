@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Plus, Filter, Search, CheckSquare, Flag, Calendar } from 'lucide-react';
+import { Plus, Filter, Search, CheckSquare, Flag, Calendar, FolderKanban } from 'lucide-react';
 import PageTransition from '../../components/common/PageTransition';
 import Button from '../../components/common/Button';
 import Avatar from '../../components/common/Avatar';
@@ -9,13 +9,14 @@ import Tabs from '../../components/common/Tabs/Tabs';
 import Drawer from '../../components/common/Drawer/Drawer';
 import EmptyState from '../../components/common/EmptyState/EmptyState';
 import TaskDetail from './TaskDetail';
-import { openTaskDrawer, closeTaskDrawer } from '../../redux/taskSlice';
+import { openTaskDrawer, closeTaskDrawer, addTaskAsync } from '../../redux/taskSlice';
 import { PRIORITY_CONFIG, STATUS_CONFIG } from '../../constants';
 import userService from '../../services/user.service';
 import './Tasks.css';
 
-function TaskRow({ task, members, onOpen, delay }) {
+function TaskRow({ task, members, projects, onOpen, delay }) {
   const assignee    = members.find((m) => m.id === task.assigneeId);
+  const project     = projects.find((p) => p.id === task.projectId);
   const priorityCfg = PRIORITY_CONFIG[task.priority] || PRIORITY_CONFIG.medium;
   const statusCfg   = STATUS_CONFIG[task.status]     || STATUS_CONFIG.todo;
   const isOverdue   = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'done';
@@ -33,7 +34,10 @@ function TaskRow({ task, members, onOpen, delay }) {
           <div className="tasks-row-stripe" style={{ backgroundColor: priorityCfg.color }} />
           <div>
             <p className="tasks-row-title">{task.title}</p>
-            <p className="tasks-row-subtitle">{task.projectId}</p>
+            <p className="tasks-row-subtitle" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span>{project?.icon || '📁'}</span>
+              <span>{project?.name || task.projectId}</span>
+            </p>
           </div>
         </div>
       </td>
@@ -86,27 +90,34 @@ function TaskRow({ task, members, onOpen, delay }) {
 export default function Tasks() {
   const dispatch      = useDispatch();
   const tasks         = useSelector((state) => state.tasks.list);
+  const projects      = useSelector((state) => state.projects.list);
   const selectedTask  = useSelector((state) => state.tasks.selected);
   const isDrawerOpen  = useSelector((state) => state.tasks.isDrawerOpen);
-  const [search, setSearch]   = useState('');
-  const [activeTab, setActiveTab] = useState('all');
-  const [members, setMembers] = useState([]);
+  const [search, setSearch]                 = useState('');
+  const [selectedProjectFilter, setSelectedProjectFilter] = useState('all');
+  const [activeTab, setActiveTab]           = useState('all');
+  const [members, setMembers]               = useState([]);
 
   useEffect(() => {
     userService.getUsers().then((data) => setMembers(data)).catch(() => {});
   }, []);
 
+  const projectFilteredTasks = selectedProjectFilter === 'all'
+    ? tasks
+    : tasks.filter((t) => t.projectId === selectedProjectFilter);
+
   const tabsData = [
-    { id: 'all',         label: 'All Tasks',   badge: tasks.length },
-    { id: 'todo',        label: 'To Do',       badge: tasks.filter((t) => t.status === 'todo').length },
-    { id: 'in_progress', label: 'In Progress', badge: tasks.filter((t) => t.status === 'in_progress').length },
-    { id: 'review',      label: 'In Review',   badge: tasks.filter((t) => t.status === 'review').length },
-    { id: 'done',        label: 'Done',        badge: tasks.filter((t) => t.status === 'done').length },
+    { id: 'all',         label: 'All Tasks',   badge: projectFilteredTasks.length },
+    { id: 'todo',        label: 'To Do',       badge: projectFilteredTasks.filter((t) => t.status === 'todo').length },
+    { id: 'in_progress', label: 'In Progress', badge: projectFilteredTasks.filter((t) => t.status === 'in_progress').length },
+    { id: 'review',      label: 'In Review',   badge: projectFilteredTasks.filter((t) => t.status === 'review').length },
+    { id: 'done',        label: 'Done',        badge: projectFilteredTasks.filter((t) => t.status === 'done').length },
   ];
 
-  const filtered = tasks.filter((t) => {
+  const filtered = projectFilteredTasks.filter((t) => {
     const matchTab    = activeTab === 'all' || t.status === activeTab;
-    const matchSearch = t.title.toLowerCase().includes(search.toLowerCase());
+    const matchSearch = t.title.toLowerCase().includes(search.toLowerCase()) ||
+                        t.id?.toLowerCase().includes(search.toLowerCase());
     return matchTab && matchSearch;
   });
 
@@ -115,15 +126,39 @@ export default function Tasks() {
       <div className="tasks-header">
         <div>
           <h1 className="tasks-title">Tasks</h1>
-          <p className="tasks-subtitle">{tasks.length} tasks across all projects</p>
+          <p className="tasks-subtitle">{tasks.length} tasks across your accessible projects</p>
         </div>
-        <Button variant="primary" icon={<Plus size={16} />}>New Task</Button>
+        <Button
+          variant="primary"
+          icon={<Plus size={16} />}
+          onClick={() => dispatch(addTaskAsync({ title: 'New Task', status: 'todo', priority: 'medium', projectId: projects[0]?.id || 'proj-1' }))}
+        >
+          New Task
+        </Button>
       </div>
 
       <div className="card" style={{ overflow: 'hidden' }}>
         <div className="tasks-card-toolbar">
           <Tabs tabs={tabsData} activeTab={activeTab} onTabChange={setActiveTab} variant="line" />
           <div className="tasks-toolbar-right">
+            
+            {/* Project Filter */}
+            {projects.length > 1 && (
+              <select
+                value={selectedProjectFilter}
+                onChange={(e) => setSelectedProjectFilter(e.target.value)}
+                className="input-base"
+                style={{ padding: '5px 10px', fontSize: 12, height: 32 }}
+              >
+                <option value="all">All Accessible Projects</option>
+                {projects.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.icon} {p.name}
+                  </option>
+                ))}
+              </select>
+            )}
+
             <div className="tasks-search-wrap">
               <Search size={14} className="tasks-search-icon" />
               <input
@@ -134,7 +169,6 @@ export default function Tasks() {
                 className="input-base tasks-search-input"
               />
             </div>
-            <Button variant="secondary" size="sm" icon={<Filter size={14} />}>Filter</Button>
           </div>
         </div>
 
@@ -142,14 +176,14 @@ export default function Tasks() {
           <EmptyState
             icon={<CheckSquare size={28} />}
             title="No tasks found"
-            description={search ? 'Try adjusting your search.' : 'No tasks in this status.'}
+            description={search ? 'Try adjusting your search filters.' : 'No tasks in this status.'}
             size="sm"
           />
         ) : (
           <table className="tasks-table">
             <thead>
               <tr>
-                {['Task', 'Status', 'Priority', 'Assignee', 'Due Date', 'Labels'].map((h, i) => (
+                {['Task / Project', 'Status', 'Priority', 'Assignee', 'Due Date', 'Labels'].map((h, i) => (
                   <th
                     key={h}
                     className={`tasks-th${i === 0 ? ' tasks-th--first' : i === 5 ? ' tasks-th--last' : ''}`}
@@ -165,6 +199,7 @@ export default function Tasks() {
                   key={task.id}
                   task={task}
                   members={members}
+                  projects={projects}
                   delay={i * 0.03}
                   onOpen={(t) => dispatch(openTaskDrawer(t))}
                 />
@@ -186,3 +221,4 @@ export default function Tasks() {
     </PageTransition>
   );
 }
+
