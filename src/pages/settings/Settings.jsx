@@ -8,8 +8,7 @@ import {
 } from 'lucide-react';
 import PageTransition from '../../components/common/PageTransition';
 import Tabs from '../../components/common/Tabs/Tabs';
-import Button from '../../components/common/Button';
-import { toggleTheme } from '../../redux/uiSlice';
+import { toggleTheme, setTheme } from '../../redux/uiSlice';
 import { useToast } from '../../hooks/useToast';
 import './Settings.css';
 
@@ -135,7 +134,7 @@ function AppearanceSettings() {
                 key={id}
                 whileHover={{ y: -3 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => dispatch(toggleTheme())}
+                onClick={() => dispatch(setTheme(id))}
                 className={`theme-preview-card ${isActive ? 'theme-preview-card--active' : ''}`}
               >
                 <div className={`theme-mockup-frame mockup-${type}`}>

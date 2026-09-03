@@ -1,6 +1,8 @@
 import { Outlet } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { Zap, CheckCircle } from 'lucide-react';
+import { useSelector, useDispatch } from 'react-redux';
+import { Zap, CheckCircle, Sun, Moon } from 'lucide-react';
+import { toggleTheme } from '../../redux/uiSlice';
 import ToastContainer from '../common/Toast';
 import './Layout.css';
 
@@ -12,8 +14,42 @@ const FEATURES = [
 ];
 
 export default function AuthLayout() {
+  const dispatch = useDispatch();
+  const theme = useSelector((state) => state.ui.theme);
+
+  const handleThemeToggle = (e) => {
+    if (!document.startViewTransition) {
+      dispatch(toggleTheme());
+      return;
+    }
+    const btn = e.currentTarget;
+    const rect = btn.getBoundingClientRect();
+    const x = Math.round(rect.left + rect.width / 2);
+    const y = Math.round(rect.top + rect.height / 2);
+    const transition = document.startViewTransition(() => dispatch(toggleTheme()));
+    transition.ready.then(() => {
+      document.documentElement.animate(
+        { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(200vmax at ${x}px ${y}px)`] },
+        { duration: 1100, easing: 'cubic-bezier(0.45, 0, 0.35, 1)', pseudoElement: '::view-transition-new(root)' }
+      );
+    });
+  };
+
   return (
     <div className="auth-layout">
+      {/* Top right theme toggle */}
+      <motion.button
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.92 }}
+        onClick={handleThemeToggle}
+        className="auth-theme-toggle"
+        title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+        aria-label="Toggle theme"
+      >
+        {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+      </motion.button>
 
       {/* ===== Left branding panel ===== */}
       <div
@@ -162,7 +198,7 @@ export default function AuthLayout() {
             >
               <Zap size={18} style={{ color: '#ffffff' }} />
             </div>
-            <span style={{ fontWeight: 700, fontSize: '1.25rem', color: '#0F172A' }}>SprintFlow</span>
+            <span className="auth-mobile-logo-title">SprintFlow</span>
           </motion.div>
 
           <Outlet />

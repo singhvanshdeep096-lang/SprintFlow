@@ -6,50 +6,35 @@ import { Mail, Lock, ArrowRight } from 'lucide-react';
 import { loginAsync } from '../../redux/authSlice';
 import { useToast } from '../../hooks/useToast';
 import { useEffect, useState } from 'react';
+import './Auth.css';
 
 function AuthInput({ label, type = 'text', icon: Icon, placeholder, error, required, name, register, validation }) {
-  const [focused, setFocused] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const isPassword = type === 'password';
 
   return (
-    <div>
-      <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
-        {label}{required && <span style={{ color: '#EF4444', marginLeft: 3 }}>*</span>}
+    <div className="auth-input-group">
+      <label className="auth-input-label">
+        {label}{required && <span className="auth-input-required">*</span>}
       </label>
-      <div style={{ position: 'relative' }}>
+      <div className="auth-input-wrap">
         {Icon && (
-          <div style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#94A3B8', pointerEvents: 'none', display: 'flex' }}>
+          <div className="auth-input-icon-left">
             <Icon size={15} />
           </div>
         )}
         <input
           type={isPassword ? (showPass ? 'text' : 'password') : type}
           placeholder={placeholder}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
           {...register(name, validation)}
-          style={{
-            width: '100%',
-            padding: '11px 14px',
-            paddingLeft: Icon ? 42 : 14,
-            paddingRight: isPassword ? 42 : 14,
-            border: `1.5px solid ${error ? '#EF4444' : focused ? '#2563EB' : '#E2E8F0'}`,
-            borderRadius: 10,
-            fontSize: 14,
-            fontFamily: 'inherit',
-            color: '#0F172A',
-            background: '#FFFFFF',
-            outline: 'none',
-            boxShadow: focused ? (error ? '0 0 0 3px rgba(239,68,68,0.1)' : '0 0 0 3px rgba(37,99,235,0.1)') : 'none',
-            transition: 'all 0.18s ease',
-          }}
+          className={`auth-input-field ${Icon ? 'auth-input-field--has-left' : ''} ${isPassword ? 'auth-input-field--has-right' : ''} ${error ? 'auth-input-field--error' : ''}`}
         />
         {isPassword && (
           <button
             type="button"
             onClick={() => setShowPass(!showPass)}
-            style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', color: '#94A3B8', background: 'none', border: 'none', cursor: 'pointer', display: 'flex' }}
+            className="auth-input-pw-toggle"
+            aria-label={showPass ? 'Hide password' : 'Show password'}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               {showPass
@@ -61,7 +46,7 @@ function AuthInput({ label, type = 'text', icon: Icon, placeholder, error, requi
         )}
       </div>
       {error && (
-        <p style={{ fontSize: 12, color: '#EF4444', marginTop: 5, display: 'flex', alignItems: 'center', gap: 4 }}>
+        <p className="auth-input-error">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           {error}
         </p>
@@ -74,7 +59,7 @@ export default function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { success, error: toastError } = useToast();
-  const { loading, isAuthenticated, user, error: authErr } = useSelector((state) => state.auth);
+  const { loading, isAuthenticated, user } = useSelector((state) => state.auth);
   const [selectedRole, setSelectedRole] = useState('user'); // 'user' or 'admin'
 
   const { register, handleSubmit, setValue, formState: { errors } } = useForm({
@@ -125,62 +110,30 @@ export default function Login() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
     >
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 26, fontWeight: 800, color: '#0F172A', marginBottom: 6, letterSpacing: '-0.03em' }}>
+      <div className="auth-page-heading">
+        <h1 className="auth-page-title">
           Welcome back
         </h1>
-        <p style={{ fontSize: 14, color: '#64748B' }}>Sign in to your SprintFlow workspace</p>
+        <p className="auth-page-subtitle">Sign in to your SprintFlow workspace</p>
       </div>
 
       {/* Role Selection Tabs */}
-      <div style={{ marginBottom: 20 }}>
-        <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+      <div className="auth-role-tabs-wrap">
+        <label className="auth-role-tabs-label">
           Select Login Role
         </label>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, background: '#F1F5F9', padding: 4, borderRadius: 12 }}>
+        <div className="auth-role-tabs">
           <button
             type="button"
             onClick={() => selectRoleDemo('user')}
-            style={{
-              padding: '10px 12px',
-              borderRadius: 9,
-              fontSize: 13,
-              fontWeight: 700,
-              fontFamily: 'inherit',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 6,
-              background: selectedRole === 'user' ? '#FFFFFF' : 'transparent',
-              color: selectedRole === 'user' ? '#2563EB' : '#64748B',
-              boxShadow: selectedRole === 'user' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
-              transition: 'all 0.2s ease',
-            }}
+            className={`auth-role-tab ${selectedRole === 'user' ? 'auth-role-tab--active-user' : ''}`}
           >
             <span>👤 User Login</span>
           </button>
           <button
             type="button"
             onClick={() => selectRoleDemo('admin')}
-            style={{
-              padding: '10px 12px',
-              borderRadius: 9,
-              fontSize: 13,
-              fontWeight: 700,
-              fontFamily: 'inherit',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 6,
-              background: selectedRole === 'admin' ? '#FFFFFF' : 'transparent',
-              color: selectedRole === 'admin' ? '#DC2626' : '#64748B',
-              boxShadow: selectedRole === 'admin' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
-              transition: 'all 0.2s ease',
-            }}
+            className={`auth-role-tab ${selectedRole === 'admin' ? 'auth-role-tab--active-admin' : ''}`}
           >
             <span>🛡️ Admin Login</span>
           </button>
@@ -188,28 +141,10 @@ export default function Login() {
       </div>
 
       <motion.button
-        whileHover={{ scale: 1.01, boxShadow: '0 4px 16px rgba(0,0,0,0.1)' }}
+        whileHover={{ scale: 1.01 }}
         whileTap={{ scale: 0.99 }}
         type="button"
-        style={{
-          width: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 10,
-          padding: '11px 16px',
-          border: '1.5px solid #E2E8F0',
-          borderRadius: 10,
-          background: '#FFFFFF',
-          color: '#374151',
-          fontFamily: 'inherit',
-          fontSize: 14,
-          fontWeight: 600,
-          cursor: 'pointer',
-          marginBottom: 20,
-          transition: 'all 0.2s ease',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
-        }}
+        className="auth-google-btn"
       >
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
           <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 01-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
@@ -220,13 +155,13 @@ export default function Login() {
         Continue with Google
       </motion.button>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-        <div style={{ flex: 1, height: 1, background: '#E2E8F0' }} />
-        <span style={{ fontSize: 12, color: '#94A3B8', fontWeight: 500, whiteSpace: 'nowrap' }}>or continue with email</span>
-        <div style={{ flex: 1, height: 1, background: '#E2E8F0' }} />
+      <div className="auth-divider">
+        <div className="auth-divider-line" />
+        <span className="auth-divider-text">or continue with email</span>
+        <div className="auth-divider-line" />
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
         <AuthInput
           label="Email address"
           type="email"
@@ -251,10 +186,10 @@ export default function Login() {
             register={register}
             validation={{ required: 'Password is required', minLength: { value: 6, message: 'Min 6 characters' } }}
           />
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
+          <div className="auth-forgot-row">
             <Link
               to="/forgot-password"
-              style={{ fontSize: 12, color: '#2563EB', fontWeight: 600, textDecoration: 'none' }}
+              className="auth-forgot-link"
             >
               Forgot password?
             </Link>
@@ -264,43 +199,21 @@ export default function Login() {
         <motion.button
           type="submit"
           disabled={loading}
-          whileHover={!loading ? { scale: 1.01, boxShadow: '0 8px 24px rgba(37,99,235,0.35)' } : {}}
+          whileHover={!loading ? { scale: 1.01 } : {}}
           whileTap={!loading ? { scale: 0.98 } : {}}
-          style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 8,
-            padding: '13px 20px',
-            background: loading ? '#93C5FD' : 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
-            color: '#FFFFFF',
-            border: 'none',
-            borderRadius: 10,
-            fontSize: 15,
-            fontWeight: 700,
-            fontFamily: 'inherit',
-            cursor: loading ? 'not-allowed' : 'pointer',
-            boxShadow: '0 4px 14px rgba(37,99,235,0.3)',
-            transition: 'all 0.2s ease',
-            marginTop: 4,
-          }}
+          className="auth-submit-btn"
         >
           {loading ? (
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
-              style={{ width: 18, height: 18, border: '2px solid rgba(255,255,255,0.4)', borderTopColor: 'white', borderRadius: '50%' }}
-            />
+            <div className="auth-submit-spinner" />
           ) : (
             <>Sign In <ArrowRight size={16} /></>
           )}
         </motion.button>
       </form>
 
-      <p style={{ textAlign: 'center', fontSize: 14, color: '#64748B', marginTop: 20 }}>
+      <p className="auth-switch">
         Don't have an account?{' '}
-        <Link to="/register" style={{ color: '#2563EB', fontWeight: 700, textDecoration: 'none' }}>
+        <Link to="/register">
           Sign up free
         </Link>
       </p>
@@ -309,16 +222,7 @@ export default function Login() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.6 }}
-        style={{
-          marginTop: 20,
-          padding: '12px 16px',
-          background: 'linear-gradient(135deg, #EFF6FF, #DBEAFE)',
-          border: '1px solid #BFDBFE',
-          borderRadius: 10,
-          textAlign: 'center',
-          fontSize: 13,
-          color: '#1D4ED8',
-        }}
+        className="auth-demo-banner"
       >
         <span style={{ fontWeight: 700 }}>✦ Demo Mode</span> — Credentials pre-filled. Click Sign In to connect.
       </motion.div>

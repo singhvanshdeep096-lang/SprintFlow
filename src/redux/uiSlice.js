@@ -1,11 +1,12 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const storedTheme = localStorage.getItem('sf-theme');
+const initialTheme = storedTheme === 'dark' || storedTheme === 'system' ? storedTheme : 'light';
 
 const initialState = {
   sidebarCollapsed: false,
   mobileSidebarOpen: false,
-  theme: storedTheme === 'dark' ? 'dark' : 'light',
+  theme: initialTheme,
   toasts: [],
   activeModal: null,
 };
