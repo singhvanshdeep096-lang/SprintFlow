@@ -11,9 +11,7 @@ import PageTransition from '../../components/common/PageTransition';
 import Avatar from '../../components/common/Avatar';
 import Button from '../../components/common/Button';
 import Drawer from '../../components/common/Drawer/Drawer';
-import Dropdown from '../../components/common/Dropdown/Dropdown';
-import EmptyState from '../../components/common/EmptyState/EmptyState';
-import { updateTaskStatusAsync, addTaskAsync, openTaskDrawer, closeTaskDrawer } from '../../redux/taskSlice';
+import { updateTaskStatusAsync, addTaskAsync, openTaskDrawer, closeTaskDrawer, openCreateTaskDrawer } from '../../redux/taskSlice';
 import { KANBAN_COLUMNS, PRIORITY_CONFIG, PROJECT_STATUS_CONFIG } from '../../constants';
 import { useToast } from '../../hooks/useToast';
 import TaskDetail from '../task/TaskDetail';
@@ -211,6 +209,10 @@ function KanbanColumn({ column, tasks, members, projectId, onAddTask, onOpenTask
   // Sum estimated story points
   const points = tasks.reduce((sum, t) => sum + (t.estimatedHours || 3), 0);
 
+  const handleOpenCreateDrawer = () => {
+    dispatch(openCreateTaskDrawer({ projectId, status: column.status }));
+  };
+
   return (
     <div className="kanban-col">
 
@@ -226,9 +228,9 @@ function KanbanColumn({ column, tasks, members, projectId, onAddTask, onOpenTask
             {points} pts
           </span>
           <button
-            onClick={() => setAddingTask(true)}
+            onClick={handleOpenCreateDrawer}
             className="kanban-col-add-icon-btn"
-            title="Add issue"
+            title={`Add issue to ${column.title}`}
           >
             <Plus size={15} />
           </button>
@@ -276,7 +278,7 @@ function KanbanColumn({ column, tasks, members, projectId, onAddTask, onOpenTask
       {/* Bottom Add Task Button */}
       {!addingTask && (
         <button
-          onClick={() => setAddingTask(true)}
+          onClick={handleOpenCreateDrawer}
           className="kanban-col-add-bottom-btn"
         >
           <Plus size={14} /> Create issue
@@ -499,7 +501,7 @@ export default function Board() {
           </button>
           <button
             className="sprint-action-btn-primary"
-            onClick={() => dispatch(addTaskAsync({ title: 'New Board Issue', status: 'todo', priority: 'high', projectId: currentProject?.id }))}
+            onClick={() => dispatch(openCreateTaskDrawer({ projectId: currentProject?.id, status: 'todo' }))}
           >
             <Plus size={14} /> + New Issue
           </button>

@@ -26,6 +26,8 @@ const initialState = {
   list: [],
   selected: null,
   isDrawerOpen: false,
+  isCreateDrawerOpen: false,
+  createDrawerDefaults: null,
   loading: false,
   error: null,
   filter: { status: 'all', priority: 'all', assignee: 'all', search: '' },
@@ -48,6 +50,14 @@ const taskSlice = createSlice({
     closeTaskDrawer: (state) => {
       state.isDrawerOpen = false;
       state.selected = null;
+    },
+    openCreateTaskDrawer: (state, action) => {
+      state.isCreateDrawerOpen = true;
+      state.createDrawerDefaults = action.payload || null;
+    },
+    closeCreateTaskDrawer: (state) => {
+      state.isCreateDrawerOpen = false;
+      state.createDrawerDefaults = null;
     },
     addTask: (state, action) => {
       state.list.unshift(action.payload);
@@ -116,6 +126,7 @@ const taskSlice = createSlice({
 
 export const {
   setTasks, selectTask, openTaskDrawer, closeTaskDrawer,
+  openCreateTaskDrawer, closeCreateTaskDrawer,
   addTask, updateTask, updateTaskStatus, deleteTask, setFilter, setLoading,
 } = taskSlice.actions;
 

@@ -1,0 +1,518 @@
+/* =====================================================
+   CreateTaskDrawer — plain CSS (Light & Dark Mode)
+   ===================================================== */
+
+.ctd-form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  padding: 20px 24px 36px 24px;
+}
+
+.ctd-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ctd-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ctd-field-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-surface-600, #475569);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.ctd-required-star {
+  color: #EF4444;
+  font-size: 0.85rem;
+}
+
+.ctd-field-sublabel {
+  font-size: 0.72rem;
+  color: var(--color-surface-400, #94A3B8);
+}
+
+.ctd-error-hint {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: #EF4444;
+  font-weight: 500;
+}
+
+/* Title Input */
+.ctd-title-input {
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 12px 16px;
+  border-radius: 10px;
+}
+
+.ctd-input-error {
+  border-color: #EF4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+}
+
+/* Grid layout with generous spacing */
+.ctd-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 640px) {
+  .ctd-grid-2 {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}
+
+/* Project Selector Banner */
+.ctd-project-row {
+  background: var(--color-surface-50, #F8FAFC);
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--color-surface-200, #E2E8F0);
+}
+
+.ctd-project-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+/* Selector Button */
+.ctd-dropdown-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.ctd-selector-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  background: #FFFFFF;
+  border: 1.5px solid var(--color-surface-200, #E2E8F0);
+  border-radius: 10px;
+  font-size: 0.875rem;
+  color: var(--color-surface-800, #1E293B);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+  text-align: left;
+}
+
+.ctd-selector-btn:hover {
+  border-color: #CBD5E1;
+}
+
+.ctd-chevron-icon {
+  margin-left: auto;
+  color: var(--color-surface-400, #94A3B8);
+}
+
+/* Dropdown Menu */
+.ctd-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #FFFFFF;
+  border: 1px solid var(--color-surface-200, #E2E8F0);
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+  z-index: 50;
+  overflow: hidden;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.ctd-dropdown-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  color: var(--color-surface-700, #334155);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+  font-family: inherit;
+  text-align: left;
+}
+
+.ctd-dropdown-option:hover {
+  background: var(--color-surface-50, #F8FAFC);
+}
+
+.ctd-dropdown-option.active {
+  background: #EFF6FF;
+  color: #2563EB;
+  font-weight: 600;
+}
+
+/* Badge Buttons for Status and Priority */
+.ctd-badge-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+  font-family: inherit;
+}
+
+.ctd-badge-btn:hover {
+  opacity: 0.85;
+}
+
+.ctd-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+/* Description Textarea */
+.ctd-desc-wrap {
+  position: relative;
+}
+
+.ctd-textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1.5px solid var(--color-surface-200, #E2E8F0);
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-family: inherit;
+  color: var(--color-surface-800, #1E293B);
+  background: #FFFFFF;
+  line-height: 1.65;
+  resize: vertical;
+  min-height: 130px;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.ctd-textarea:focus {
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.ctd-textarea::placeholder {
+  color: var(--color-surface-400, #94A3B8);
+}
+
+/* User buttons */
+.ctd-user-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  background: #FFFFFF;
+  border: 1.5px solid var(--color-surface-200, #E2E8F0);
+  border-radius: 10px;
+  font-size: 0.85rem;
+  color: var(--color-surface-800, #1E293B);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.ctd-user-btn:hover {
+  border-color: #CBD5E1;
+}
+
+.ctd-unassigned-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 9999px;
+  background: var(--color-surface-200, #E2E8F0);
+  color: var(--color-surface-500, #64748B);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ctd-user-name {
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+
+.ctd-user-name-muted {
+  font-size: 0.85rem;
+  color: var(--color-surface-400, #94A3B8);
+}
+
+.ctd-readonly-user-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--color-surface-50, #F8FAFC);
+  border: 1px solid var(--color-surface-200, #E2E8F0);
+  border-radius: 10px;
+}
+
+/* Inputs with icons / wrappers */
+.ctd-date-input {
+  font-size: 0.85rem;
+  padding: 10px 14px;
+  border-radius: 10px;
+}
+
+.ctd-hours-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.ctd-hours-input {
+  font-size: 0.85rem;
+  padding: 10px 52px 10px 14px;
+  border-radius: 10px;
+}
+
+.ctd-hours-suffix {
+  position: absolute;
+  right: 14px;
+  font-size: 0.78rem;
+  color: var(--color-surface-400, #94A3B8);
+  font-weight: 500;
+  pointer-events: none;
+}
+
+/* Label Presets & Tags */
+.ctd-labels-preset-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.ctd-preset-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  background: var(--color-surface-100, #F1F5F9);
+  color: var(--color-surface-600, #475569);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.ctd-preset-tag:hover {
+  background: var(--color-surface-200, #E2E8F0);
+}
+
+.ctd-preset-tag.active {
+  background: #EFF6FF;
+  color: #1D4ED8;
+  border-color: #93C5FD;
+  font-weight: 600;
+}
+
+.ctd-custom-tag-row {
+  margin-top: 4px;
+}
+
+.ctd-custom-tag-input {
+  font-size: 0.85rem;
+  padding: 9px 14px;
+  border-radius: 10px;
+}
+
+/* Subtasks */
+.ctd-subtasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--color-surface-50, #F8FAFC);
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--color-surface-200, #E2E8F0);
+}
+
+.ctd-subtask-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  background: #FFFFFF;
+  border-radius: 8px;
+  border: 1px solid var(--color-surface-100, #F1F5F9);
+  font-size: 0.85rem;
+}
+
+.ctd-subtask-bullet {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: #2563EB;
+}
+
+.ctd-subtask-text {
+  flex: 1;
+  color: var(--color-surface-700, #334155);
+}
+
+.ctd-subtask-del-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--color-surface-400, #94A3B8);
+  display: flex;
+  align-items: center;
+  padding: 3px;
+  border-radius: 4px;
+  transition: all 0.12s ease;
+}
+
+.ctd-subtask-del-btn:hover {
+  color: #EF4444;
+  background: #FEF2F2;
+}
+
+.ctd-add-subtask-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.ctd-subtask-input {
+  font-size: 0.85rem;
+  padding: 9px 38px 9px 14px;
+  border-radius: 10px;
+}
+
+.ctd-subtask-add-btn {
+  position: absolute;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  background: #2563EB;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.ctd-subtask-add-btn:hover {
+  opacity: 0.9;
+}
+
+/* Footer Buttons */
+.ctd-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  margin-top: 16px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-surface-200, #E2E8F0);
+}
+
+/* =====================================================
+   DARK MODE OVERRIDES
+   ===================================================== */
+html.dark .ctd-field-label {
+  color: #8B949E;
+}
+
+html.dark .ctd-project-row,
+html.dark .ctd-readonly-user-box,
+html.dark .ctd-subtasks-list {
+  background: #0D1117 !important;
+  border-color: #21262D !important;
+}
+
+html.dark .ctd-subtask-item {
+  background: #161B22 !important;
+  border-color: #30363D !important;
+}
+
+html.dark .ctd-subtask-text {
+  color: #E6EDF3 !important;
+}
+
+html.dark .ctd-selector-btn,
+html.dark .ctd-user-btn,
+html.dark .ctd-textarea {
+  background: #0D1117 !important;
+  border-color: #30363D !important;
+  color: #F0F6FC !important;
+}
+
+html.dark .ctd-dropdown-menu {
+  background: #161B22 !important;
+  border-color: #30363D !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6) !important;
+}
+
+html.dark .ctd-dropdown-option {
+  color: #E6EDF3 !important;
+}
+
+html.dark .ctd-dropdown-option:hover {
+  background: #21262D !important;
+}
+
+html.dark .ctd-dropdown-option.active {
+  background: rgba(37, 99, 235, 0.2) !important;
+  color: #60A5FA !important;
+}
+
+html.dark .ctd-preset-tag {
+  background: #21262D !important;
+  color: #8B949E !important;
+}
+
+html.dark .ctd-preset-tag:hover {
+  background: #30363D !important;
+  color: #F0F6FC !important;
+}
+
+html.dark .ctd-preset-tag.active {
+  background: rgba(37, 99, 235, 0.25) !important;
+  color: #60A5FA !important;
+  border-color: rgba(96, 165, 250, 0.4) !important;
+}
+
+html.dark .ctd-footer {
+  border-top-color: #21262D !important;
+}

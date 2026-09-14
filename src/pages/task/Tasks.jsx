@@ -9,7 +9,7 @@ import Tabs from '../../components/common/Tabs/Tabs';
 import Drawer from '../../components/common/Drawer/Drawer';
 import EmptyState from '../../components/common/EmptyState/EmptyState';
 import TaskDetail from './TaskDetail';
-import { openTaskDrawer, closeTaskDrawer, addTaskAsync } from '../../redux/taskSlice';
+import { openTaskDrawer, closeTaskDrawer, openCreateTaskDrawer } from '../../redux/taskSlice';
 import { PRIORITY_CONFIG, STATUS_CONFIG } from '../../constants';
 import userService from '../../services/user.service';
 import './Tasks.css';
@@ -131,7 +131,7 @@ export default function Tasks() {
         <Button
           variant="primary"
           icon={<Plus size={16} />}
-          onClick={() => dispatch(addTaskAsync({ title: 'New Task', status: 'todo', priority: 'medium', projectId: projects[0]?.id || 'proj-1' }))}
+          onClick={() => dispatch(openCreateTaskDrawer({ projectId: selectedProjectFilter !== 'all' ? selectedProjectFilter : projects[0]?.id }))}
         >
           New Task
         </Button>

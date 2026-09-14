@@ -5,6 +5,7 @@ import { AnimatePresence } from 'motion/react';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import ToastContainer from '../common/Toast';
+import CreateTaskDrawer from '../../pages/task/CreateTaskDrawer';
 import { fetchWorkspaces } from '../../redux/workspaceSlice';
 import { fetchProjects } from '../../redux/projectSlice';
 import { fetchTasks } from '../../redux/taskSlice';
@@ -51,6 +52,7 @@ export default function AppLayout() {
           </AnimatePresence>
         </main>
       </div>
+      <CreateTaskDrawer />
       <ToastContainer />
     </div>
   );

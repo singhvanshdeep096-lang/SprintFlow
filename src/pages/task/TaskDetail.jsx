@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useDispatch } from 'react-redux';
 import {
   Flag, Calendar, User, Tag, MessageSquare, CheckSquare,
-  ChevronDown, Send, Clock, CheckCircle2
+  ChevronDown, Send, Clock, CheckCircle2, Edit2, Check, X
 } from 'lucide-react';
 import Avatar from '../../components/common/Avatar';
 import { updateTaskAsync, updateTaskStatusAsync } from '../../redux/taskSlice';
@@ -158,6 +158,15 @@ export default function TaskDetail({ task }) {
   const [localSubtasks, setLocalSubtasks] = useState(task.subtasks || []);
   const [members, setMembers]           = useState([]);
   const [taskComments, setTaskComments] = useState([]);
+  const [isEditingDesc, setIsEditingDesc] = useState(false);
+  const [descDraft, setDescDraft]       = useState(task.description || '');
+
+  useEffect(() => {
+    setLocalTask(task);
+    setLocalSubtasks(task.subtasks || []);
+    setDescDraft(task.description || '');
+    setIsEditingDesc(false);
+  }, [task]);
 
   useEffect(() => {
     userService.getUsers().then((data) => setMembers(data)).catch(() => {});
@@ -178,6 +187,13 @@ export default function TaskDetail({ task }) {
   const handlePriorityChange = (priority) => {
     dispatch(updateTaskAsync({ id: task.id, data: { priority } }));
     setLocalTask((prev) => ({ ...prev, priority }));
+  };
+
+  const handleSaveDesc = () => {
+    dispatch(updateTaskAsync({ id: task.id, data: { description: descDraft } }));
+    setLocalTask((prev) => ({ ...prev, description: descDraft }));
+    setIsEditingDesc(false);
+    success('Description updated', 'Issue description has been saved.');
   };
 
   const toggleSubtask = (subtaskId) => {
@@ -210,10 +226,61 @@ export default function TaskDetail({ task }) {
 
         {/* Description */}
         <div>
-          <p className="td-section-label">Description</p>
-          <div className="td-desc-box">
-            {localTask.description || <span className="td-desc-empty">No description provided.</span>}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <p className="td-section-label" style={{ marginBottom: 0 }}>Description</p>
+            {!isEditingDesc ? (
+              <button
+                type="button"
+                onClick={() => setIsEditingDesc(true)}
+                style={{ background: 'transparent', border: 'none', color: '#2563EB', fontSize: 11, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+              >
+                <Edit2 size={11} /> Edit
+              </button>
+            ) : null}
           </div>
+
+          {isEditingDesc ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <textarea
+                value={descDraft}
+                onChange={(e) => setDescDraft(e.target.value)}
+                placeholder="Add detailed description..."
+                rows={4}
+                className="input-base"
+                style={{ width: '100%', resize: 'vertical', fontSize: 13, minHeight: 90 }}
+                autoFocus
+              />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  onClick={() => { setDescDraft(localTask.description || ''); setIsEditingDesc(false); }}
+                  style={{ padding: '4px 10px', fontSize: 12, borderRadius: 6, border: '1px solid var(--color-surface-200)', background: 'transparent', cursor: 'pointer', color: 'var(--color-surface-600)' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveDesc}
+                  style={{ padding: '4px 12px', fontSize: 12, borderRadius: 6, border: 'none', background: '#2563EB', color: '#fff', cursor: 'pointer', fontWeight: 500 }}
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div
+              className="td-desc-box"
+              onClick={() => setIsEditingDesc(true)}
+              style={{ cursor: 'pointer' }}
+              title="Click to edit description"
+            >
+              {localTask.description ? (
+                <span>{localTask.description}</span>
+              ) : (
+                <span className="td-desc-empty">No description provided. Click to add one.</span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Assignee / Reporter / Date / Time */}

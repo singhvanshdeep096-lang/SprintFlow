@@ -8,6 +8,7 @@ import Dropdown from '../common/Dropdown';
 import { toggleTheme, toggleMobileSidebar } from '../../redux/uiSlice';
 import { logoutAsync } from '../../redux/authSlice';
 import { markAsReadAsync } from '../../redux/notificationSlice';
+import { openCreateTaskDrawer } from '../../redux/taskSlice';
 import { useToast } from '../../hooks/useToast';
 import './Layout.css';
 
@@ -178,7 +179,7 @@ export default function Navbar() {
         <motion.button
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
-          onClick={() => navigate('/projects')}
+          onClick={() => dispatch(openCreateTaskDrawer())}
           className="navbar-create-btn"
         >
           <Plus size={15} />
