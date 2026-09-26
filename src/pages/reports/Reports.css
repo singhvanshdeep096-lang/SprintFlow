@@ -3,13 +3,25 @@
    ===================================================== */
 
 .reports-page {
-  padding: 32px;
+  padding: 20px 16px 40px;
   width: 100%;
-  max-width: 1600px;
+  max-width: 1800px;
   margin-inline: auto;
   display: flex;
   flex-direction: column;
   gap: 28px;
+}
+
+@media (min-width: 1024px) {
+  .reports-page {
+    padding: 28px 28px 48px;
+  }
+}
+
+@media (min-width: 1600px) {
+  .reports-page {
+    padding: 36px 40px 60px;
+  }
 }
 
 /* --- Header Section --- */

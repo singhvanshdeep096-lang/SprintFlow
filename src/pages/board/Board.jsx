@@ -503,7 +503,7 @@ export default function Board() {
             className="sprint-action-btn-primary"
             onClick={() => dispatch(openCreateTaskDrawer({ projectId: currentProject?.id, status: 'todo' }))}
           >
-            <Plus size={14} /> + New Issue
+            <Plus size={14} /> New Issue
           </button>
         </div>
       </div>

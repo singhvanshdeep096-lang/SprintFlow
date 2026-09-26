@@ -3,13 +3,27 @@
    ===================================================== */
 
 .dash-page {
-  padding: 32px 32px 48px;
+  padding: 20px 16px 40px;
   width: 100%;
-  max-width: 1600px;
+  max-width: 1800px;
   margin-inline: auto;
   display: flex;
   flex-direction: column;
-  gap: 40px;
+  gap: 28px;
+}
+
+@media (min-width: 1024px) {
+  .dash-page {
+    padding: 28px 28px 48px;
+    gap: 36px;
+  }
+}
+
+@media (min-width: 1600px) {
+  .dash-page {
+    padding: 36px 40px 60px;
+    gap: 40px;
+  }
 }
 
 /* Header */
@@ -17,7 +31,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
 @media (min-width: 640px) {
@@ -29,49 +43,59 @@
 }
 
 .dash-header-title {
-  font-size: 2.25rem;
+  font-size: 2rem;
   font-weight: 700;
   color: var(--color-surface-900);
   line-height: 1.2;
   letter-spacing: -0.03em;
 }
 
+@media (min-width: 1280px) {
+  .dash-header-title {
+    font-size: 2.25rem;
+  }
+}
+
 .dash-header-subtitle {
   font-size: 0.9375rem;
   font-weight: 500;
   color: var(--color-surface-500);
-  margin-top: 8px;
+  margin-top: 6px;
 }
 
 .dash-header-actions {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
 /* Stat card grid */
 .dash-stats-grid {
   display: grid;
   grid-template-columns: repeat(1, 1fr);
-  gap: 24px;
+  gap: 16px;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 580px) {
   .dash-stats-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
   }
 }
 
-@media (min-width: 768px) {
+@media (min-width: 900px) {
   .dash-stats-grid {
     grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
   }
 }
 
-@media (min-width: 1280px) {
+@media (min-width: 1500px) {
   .dash-stats-grid {
     grid-template-columns: repeat(6, 1fr);
+    gap: 20px;
   }
 }
 

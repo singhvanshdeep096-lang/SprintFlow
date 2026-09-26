@@ -74,7 +74,7 @@ function NotificationPreview({ notifications, onViewAll, onNotificationClick }) 
   );
 }
 
-export default function Navbar() {
+export default function Navbar({ isMobile }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { success } = useToast();
@@ -124,7 +124,10 @@ export default function Navbar() {
       animate={{ y: 0 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
       className="navbar"
-      style={{ left: collapsed ? '70px' : '256px' }}
+      style={{
+        left: isMobile ? 0 : (collapsed ? '70px' : '256px'),
+        transition: 'left 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
+      }}
     >
       {/* Mobile menu */}
       <button

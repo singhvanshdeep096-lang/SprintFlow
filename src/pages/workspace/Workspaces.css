@@ -3,10 +3,22 @@
    ===================================================== */
 
 .ws-page {
-  padding: 24px;
+  padding: 20px 16px 40px;
   width: 100%;
-  max-width: 1700px;
+  max-width: 1800px;
   margin-inline: auto;
+}
+
+@media (min-width: 1024px) {
+  .ws-page {
+    padding: 28px 28px 48px;
+  }
+}
+
+@media (min-width: 1600px) {
+  .ws-page {
+    padding: 36px 40px 60px;
+  }
 }
 
 /* Banner */
@@ -97,10 +109,11 @@
 .ws-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 20px;
+  gap: 16px;
 }
-@media (min-width: 768px)  { .ws-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 1280px) { .ws-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 640px)  { .ws-grid { grid-template-columns: repeat(2, 1fr); gap: 18px; } }
+@media (min-width: 1100px) { .ws-grid { grid-template-columns: repeat(3, 1fr); gap: 20px; } }
+@media (min-width: 1600px) { .ws-grid { grid-template-columns: repeat(4, 1fr); gap: 24px; } }
 
 /* Workspace card */
 .ws-card {

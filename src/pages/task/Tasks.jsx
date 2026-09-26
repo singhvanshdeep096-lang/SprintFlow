@@ -180,32 +180,34 @@ export default function Tasks() {
             size="sm"
           />
         ) : (
-          <table className="tasks-table">
-            <thead>
-              <tr>
-                {['Task / Project', 'Status', 'Priority', 'Assignee', 'Due Date', 'Labels'].map((h, i) => (
-                  <th
-                    key={h}
-                    className={`tasks-th${i === 0 ? ' tasks-th--first' : i === 5 ? ' tasks-th--last' : ''}`}
-                  >
-                    {h}
-                  </th>
+          <div className="tasks-table-wrap">
+            <table className="tasks-table">
+              <thead>
+                <tr>
+                  {['Task / Project', 'Status', 'Priority', 'Assignee', 'Due Date', 'Labels'].map((h, i) => (
+                    <th
+                      key={h}
+                      className={`tasks-th${i === 0 ? ' tasks-th--first' : i === 5 ? ' tasks-th--last' : ''}`}
+                    >
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((task, i) => (
+                  <TaskRow
+                    key={task.id}
+                    task={task}
+                    members={members}
+                    projects={projects}
+                    delay={i * 0.03}
+                    onOpen={(t) => dispatch(openTaskDrawer(t))}
+                  />
                 ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((task, i) => (
-                <TaskRow
-                  key={task.id}
-                  task={task}
-                  members={members}
-                  projects={projects}
-                  delay={i * 0.03}
-                  onOpen={(t) => dispatch(openTaskDrawer(t))}
-                />
-              ))}
-            </tbody>
-          </table>
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
