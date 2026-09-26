@@ -92,11 +92,11 @@ function ActivityItem({ activity, members, delay }) {
       <Avatar name={member?.name || 'User'} size="md" color={member?.color} style={{ marginTop: 2, flexShrink: 0 }} />
       <div className="dash-activity-body">
         <p className="dash-activity-text">
-          <span style={{ fontWeight: 700, color: '#0F172A' }}>{member?.name || 'User'}</span>{' '}
+          <span className="dash-activity-user">{member?.name || 'User'}</span>{' '}
           <span style={{ fontWeight: 600, color: actionColors[activity.action] || '#475569' }}>{activity.action}</span>{' '}
-          <span style={{ fontWeight: 600, color: '#1E293B' }}>{activity.target}</span>
+          <span className="dash-activity-target">"{activity.target}"</span>
           {activity.from && activity.to && (
-            <span style={{ color: '#64748B' }}> from <span style={{ fontWeight: 600 }}>{activity.from}</span> to <span style={{ fontWeight: 600 }}>{activity.to}</span></span>
+            <span className="dash-activity-fromto"> from <span className="dash-activity-status">{activity.from}</span> to <span className="dash-activity-status">{activity.to}</span></span>
           )}
         </p>
         <p className="dash-activity-time">{formatTime(activity.createdAt)}</p>

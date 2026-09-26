@@ -48,17 +48,19 @@ export default function AppLayout() {
   const sidebarWidth = isMobile ? 0 : (collapsed ? 70 : 256);
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--color-surface-50, #F8FAFC)', width: '100%', overflowX: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--color-surface-50, #F8FAFC)', width: '100%', position: 'relative', overflowX: 'hidden' }}>
       <Sidebar isMobile={isMobile} />
       <div
         style={{
-          flex: 1,
           display: 'flex',
           flexDirection: 'column',
+          minHeight: '100vh',
           marginLeft: sidebarWidth,
-          transition: 'margin-left 0.35s cubic-bezier(0.4,0,0.2,1)',
-          minWidth: 0,
           width: isMobile ? '100%' : `calc(100% - ${sidebarWidth}px)`,
+          maxWidth: isMobile ? '100%' : `calc(100% - ${sidebarWidth}px)`,
+          minWidth: 0,
+          boxSizing: 'border-box',
+          transition: 'margin-left 0.35s cubic-bezier(0.4,0,0.2,1), width 0.35s cubic-bezier(0.4,0,0.2,1), max-width 0.35s cubic-bezier(0.4,0,0.2,1)',
         }}
       >
         <Navbar isMobile={isMobile} />
@@ -69,6 +71,8 @@ export default function AppLayout() {
             overflowY: 'auto',
             overflowX: 'auto',
             minWidth: 0,
+            width: '100%',
+            boxSizing: 'border-box',
             display: 'flex',
             flexDirection: 'column',
           }}

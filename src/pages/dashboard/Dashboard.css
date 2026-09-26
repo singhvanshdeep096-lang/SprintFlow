@@ -217,12 +217,21 @@
 .dash-two-col {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 32px;
+  gap: 20px;
+  min-width: 0;
 }
 
 @media (min-width: 1024px) {
   .dash-two-col {
-    grid-template-columns: 7fr 3fr;
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+    gap: 20px;
+  }
+}
+
+@media (min-width: 1400px) {
+  .dash-two-col {
+    grid-template-columns: minmax(0, 7fr) minmax(300px, 3fr);
+    gap: 28px;
   }
 }
 
@@ -437,7 +446,8 @@
 .dash-sidebar-stack {
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 20px;
+  min-width: 0;
 }
 
 /* Widget title row */
@@ -583,6 +593,35 @@ html.dark .dash-bar-label {
 
 html.dark .dash-activity-row:hover {
   background-color: #161B22 !important;
+}
+
+.dash-activity-user {
+  font-weight: 700;
+  color: var(--color-surface-900, #0F172A);
+}
+.dash-activity-target {
+  font-weight: 600;
+  color: var(--color-surface-800, #1E293B);
+}
+.dash-activity-fromto {
+  color: var(--color-surface-500, #64748B);
+}
+.dash-activity-status {
+  font-weight: 600;
+  color: var(--color-surface-700, #334155);
+}
+
+html.dark .dash-activity-user {
+  color: #F8FAFC !important;
+}
+html.dark .dash-activity-target {
+  color: #E2E8F0 !important;
+}
+html.dark .dash-activity-fromto {
+  color: #94A3B8 !important;
+}
+html.dark .dash-activity-status {
+  color: #CBD5E1 !important;
 }
 
 html.dark .dash-action-btn {

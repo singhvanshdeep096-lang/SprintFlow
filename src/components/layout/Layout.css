@@ -608,13 +608,26 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   color: var(--color-surface-500, #64748B);
   cursor: pointer;
-  z-index: 10;
-  transition: color 0.15s ease, border-color 0.15s ease;
+  z-index: 40;
+  transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
 }
 
 .sidebar-collapse-btn:hover {
   color: #2563EB;
   border-color: #93C5FD;
+}
+
+html.dark .sidebar-collapse-btn {
+  background: #1E293B !important;
+  border-color: #334155 !important;
+  color: #94A3B8 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4) !important;
+}
+
+html.dark .sidebar-collapse-btn:hover {
+  background: #334155 !important;
+  color: #60A5FA !important;
+  border-color: #3B82F6 !important;
 }
 
 /* ========== AuthLayout ========== */
