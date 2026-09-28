@@ -1,17 +1,25 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   Plus, MessageSquare, Paperclip, Flag, Calendar,
-  CheckSquare, User, Search, AlertTriangle, ShieldAlert,
-  SlidersHorizontal, CheckCircle2, Zap, ChevronDown, FolderKanban, Layers
+  CheckSquare, User, Search, AlertTriangle,
+  SlidersHorizontal, CheckCircle2, Zap, ChevronDown, FolderKanban, Layers,
+  Check, X
 } from 'lucide-react';
 import PageTransition from '../../components/common/PageTransition';
 import Avatar from '../../components/common/Avatar';
 import Button from '../../components/common/Button';
 import Drawer from '../../components/common/Drawer/Drawer';
-import { updateTaskStatusAsync, addTaskAsync, openTaskDrawer, closeTaskDrawer, openCreateTaskDrawer } from '../../redux/taskSlice';
+import {
+  updateTaskStatusAsync,
+  updateTaskAsync,
+  addTaskAsync,
+  openTaskDrawer,
+  closeTaskDrawer,
+  openCreateTaskDrawer
+} from '../../redux/taskSlice';
 import { KANBAN_COLUMNS, PRIORITY_CONFIG, PROJECT_STATUS_CONFIG } from '../../constants';
 import { useToast } from '../../hooks/useToast';
 import TaskDetail from '../task/TaskDetail';
@@ -32,8 +40,193 @@ function PriorityBadge({ priority }) {
   );
 }
 
+/* ---- Card Assignee Picker & Popover Dropdown ---- */
+function CardAssigneePicker({ task, assignee, members, currentUser, onUpdateAssignee }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const pickerRef = useRef(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleOutsideClick = (e) => {
+      if (pickerRef.current && !pickerRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setIsOpen(false);
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen]);
+
+  const handleToggle = (e) => {
+    e.stopPropagation();
+    setIsOpen((prev) => !prev);
+    setSearch('');
+  };
+
+  const handleSelect = (e, memberId) => {
+    e.stopPropagation();
+    if (onUpdateAssignee) {
+      onUpdateAssignee(task.id, memberId);
+    }
+    setIsOpen(false);
+  };
+
+  const isAssignedToCurrent = currentUser?.id && task.assigneeId === currentUser.id;
+
+  const filteredMembers = (members || []).filter(
+    (m) =>
+      m.name?.toLowerCase().includes(search.toLowerCase()) ||
+      (m.role && m.role.toLowerCase().includes(search.toLowerCase())) ||
+      (m.email && m.email.toLowerCase().includes(search.toLowerCase()))
+  );
+
+  return (
+    <div
+      className={`kc-assignee-picker ${isOpen ? 'open' : ''}`}
+      ref={pickerRef}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <button
+        type="button"
+        className="kc-assignee-trigger"
+        onClick={handleToggle}
+        title={assignee ? `Assignee: ${assignee.name} (Click to change)` : 'Unassigned (Click to assign)'}
+      >
+        {assignee ? (
+          <div className="kc-assignee-avatar-wrap">
+            <Avatar name={assignee.name} size="xs" color={assignee.color} />
+            <span className="kc-assignee-change-hint">
+              <ChevronDown size={8} />
+            </span>
+          </div>
+        ) : (
+          <div className="kc-unassigned-avatar-wrap">
+            <User size={11} />
+            <span className="kc-assignee-plus">+</span>
+          </div>
+        )}
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: -4 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -4 }}
+            transition={{ duration: 0.14 }}
+            className="kc-assignee-menu"
+          >
+            <div className="kc-assignee-menu-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <User size={12} style={{ color: '#2563EB' }} />
+                <span>Change Assignee</span>
+              </div>
+              <button
+                type="button"
+                className="kc-assignee-menu-close"
+                onClick={(e) => { e.stopPropagation(); setIsOpen(false); }}
+              >
+                <X size={12} />
+              </button>
+            </div>
+
+            {/* Quick "Assign to Me" Button (User can get a task) */}
+            {currentUser && (
+              <div className="kc-assignee-quick-claim">
+                {!isAssignedToCurrent ? (
+                  <button
+                    type="button"
+                    className="kc-claim-btn"
+                    onClick={(e) => handleSelect(e, currentUser.id)}
+                  >
+                    <Zap size={12} className="kc-claim-icon" />
+                    <span>Assign to me</span>
+                  </button>
+                ) : (
+                  <div className="kc-already-claimed-tag">
+                    <CheckCircle2 size={12} />
+                    <span>Assigned to you</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Search if more than 3 members */}
+            {members && members.length > 3 && (
+              <div className="kc-assignee-search-wrap">
+                <Search size={11} className="kc-assignee-search-icon" />
+                <input
+                  type="text"
+                  placeholder="Filter team..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                  className="kc-assignee-search-input"
+                  autoFocus
+                />
+              </div>
+            )}
+
+            <div className="kc-assignee-list">
+              {/* Unassigned option */}
+              <button
+                type="button"
+                className={`kc-assignee-item ${!task.assigneeId ? 'active' : ''}`}
+                onClick={(e) => handleSelect(e, null)}
+              >
+                <div className="kc-unassigned-mini-avatar">
+                  <User size={11} />
+                </div>
+                <div className="kc-assignee-item-details">
+                  <span className="kc-assignee-item-name">Unassigned</span>
+                  <span className="kc-assignee-item-sub">Remove current assignee</span>
+                </div>
+                {!task.assigneeId && <Check size={13} className="kc-assignee-check" />}
+              </button>
+
+              {/* Members */}
+              {filteredMembers.map((m) => {
+                const isSelected = m.id === task.assigneeId;
+                const isMe = m.id === currentUser?.id;
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    className={`kc-assignee-item ${isSelected ? 'active' : ''}`}
+                    onClick={(e) => handleSelect(e, m.id)}
+                  >
+                    <Avatar name={m.name} size="xs" color={m.color} />
+                    <div className="kc-assignee-item-details">
+                      <span className="kc-assignee-item-name">
+                        {m.name} {isMe && <span className="kc-you-badge">You</span>}
+                      </span>
+                      <span className="kc-assignee-item-sub">{m.role || m.email || 'Team Member'}</span>
+                    </div>
+                    {isSelected && <Check size={13} className="kc-assignee-check" />}
+                  </button>
+                );
+              })}
+
+              {filteredMembers.length === 0 && (
+                <div className="kc-assignee-empty">No members found</div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 /* ---- Individual Task Card Component ---- */
-function TaskCard({ task, members, onOpen, delay }) {
+function TaskCard({ task, members, currentUser, onOpen, onUpdateAssignee, delay }) {
   const assignee  = members.find((m) => m.id === task.assigneeId);
   const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'done';
 
@@ -125,16 +318,14 @@ function TaskCard({ task, members, onOpen, delay }) {
           )}
         </div>
 
-        {/* Assignee Avatar at bottom-right */}
-        <div>
-          {assignee ? (
-            <Avatar name={assignee.name} size="xs" color={assignee.color} />
-          ) : (
-            <div style={{ width: 20, height: 20, borderRadius: 9999, background: 'var(--color-surface-200)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <User size={10} style={{ color: 'var(--color-surface-400)' }} />
-            </div>
-          )}
-        </div>
+        {/* Interactive Assignee Picker at bottom-right */}
+        <CardAssigneePicker
+          task={task}
+          assignee={assignee}
+          members={members}
+          currentUser={currentUser}
+          onUpdateAssignee={onUpdateAssignee}
+        />
       </div>
     </motion.div>
   );
@@ -186,7 +377,7 @@ function AddTaskInline({ columnStatus, projectId, onAdd, onCancel }) {
 }
 
 /* ---- Kanban Column Component ---- */
-function KanbanColumn({ column, tasks, members, projectId, onAddTask, onOpenTask }) {
+function KanbanColumn({ column, tasks, members, currentUser, projectId, onAddTask, onOpenTask, onUpdateAssignee }) {
   const [addingTask, setAddingTask] = useState(false);
   const dispatch = useDispatch();
   const [dragOver, setDragOver]     = useState(false);
@@ -206,9 +397,6 @@ function KanbanColumn({ column, tasks, members, projectId, onAddTask, onOpenTask
     e.dataTransfer.setData('taskId', task.id);
   };
 
-  // Sum estimated story points
-  const points = tasks.reduce((sum, t) => sum + (t.estimatedHours || 3), 0);
-
   const handleOpenCreateDrawer = () => {
     dispatch(openCreateTaskDrawer({ projectId, status: column.status }));
   };
@@ -224,9 +412,6 @@ function KanbanColumn({ column, tasks, members, projectId, onAddTask, onOpenTask
           <span className="kanban-col-count-pill">{tasks.length}</span>
         </div>
         <div className="kanban-col-header-right">
-          <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-surface-400)', marginRight: 4 }}>
-            {points} pts
-          </span>
           <button
             onClick={handleOpenCreateDrawer}
             className="kanban-col-add-icon-btn"
@@ -244,14 +429,21 @@ function KanbanColumn({ column, tasks, members, projectId, onAddTask, onOpenTask
         onDrop={handleDrop}
         className={`kanban-col-dropzone ${dragOver ? 'kanban-col-dropzone--active' : ''}`}
       >
-        <AnimatePresence mode="popLayout">
+        <AnimatePresence>
           {tasks.map((task, i) => (
             <div
               key={task.id}
               draggable
               onDragStart={(e) => handleDragStart(e, task)}
             >
-              <TaskCard task={task} members={members} onOpen={onOpenTask} delay={i * 0.03} />
+              <TaskCard
+                task={task}
+                members={members}
+                currentUser={currentUser}
+                onOpen={onOpenTask}
+                onUpdateAssignee={onUpdateAssignee}
+                delay={i * 0.03}
+              />
             </div>
           ))}
         </AnimatePresence>
@@ -275,15 +467,6 @@ function KanbanColumn({ column, tasks, members, projectId, onAddTask, onOpenTask
         )}
       </div>
 
-      {/* Bottom Add Task Button */}
-      {!addingTask && (
-        <button
-          onClick={handleOpenCreateDrawer}
-          className="kanban-col-add-bottom-btn"
-        >
-          <Plus size={14} /> Create issue
-        </button>
-      )}
     </div>
   );
 }
@@ -299,6 +482,7 @@ export default function Board() {
   const tasks    = useSelector((state) => state.tasks.list);
   const selectedTask = useSelector((state) => state.tasks.selected);
   const isDrawerOpen = useSelector((state) => state.tasks.isDrawerOpen);
+  const { success, error: toastError } = useToast();
 
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [search, setSearch]                 = useState('');
@@ -371,13 +555,29 @@ export default function Board() {
 
   const getColumnTasks = (status) => filteredTasks.filter((t) => t.status === status);
 
-  const totalPoints = projectTasks.reduce((sum, t) => sum + (t.estimatedHours || 3), 0);
   const doneTasks   = projectTasks.filter((t) => t.status === 'done').length;
   const progressPct = projectTasks.length > 0 ? Math.round((doneTasks / projectTasks.length) * 100) : 0;
 
   const handleAddTask     = (taskData) => dispatch(addTaskAsync({ ...taskData, projectId: currentProject?.id }));
   const handleOpenTask    = (task) => dispatch(openTaskDrawer(task));
   const handleCloseDrawer = () => dispatch(closeTaskDrawer());
+
+  const handleUpdateAssignee = async (taskId, newAssigneeId) => {
+    try {
+      await dispatch(updateTaskAsync({ id: taskId, data: { assigneeId: newAssigneeId || null } })).unwrap();
+      const allAvailable = projectMembers.length > 0 ? projectMembers : allUsers;
+      const target = allAvailable.find((u) => u.id === newAssigneeId);
+      if (newAssigneeId === currentUser?.id) {
+        success('Task Claimed', 'You have been assigned to this task.');
+      } else if (newAssigneeId) {
+        success('Assignee Updated', `Task assigned to ${target?.name || 'team member'}.`);
+      } else {
+        success('Assignee Removed', 'Task is now unassigned.');
+      }
+    } catch (err) {
+      toastError('Update Failed', err.message || 'Could not update task assignee');
+    }
+  };
 
   // Empty state if no assigned projects exist
   if (projects.length === 0) {
@@ -477,18 +677,9 @@ export default function Board() {
               <span className="sprint-stat-val sprint-stat-val--highlight">{progressPct}% ({doneTasks}/{projectTasks.length})</span>
             </div>
             <div className="sprint-stat-box">
-              <span className="sprint-stat-label">Story Points</span>
-              <span className="sprint-stat-val">{totalPoints} pts</span>
-            </div>
-            <div className="sprint-stat-box">
               <span className="sprint-stat-label">Team Members</span>
               <span className="sprint-stat-val">{projectMembers.length} active</span>
             </div>
-          </div>
-
-          <div className="sprint-health-banner">
-            <ShieldAlert size={13} />
-            <span>Sprint Health: {progressPct >= 50 ? '92% On Track' : '85% In Progress'}</span>
           </div>
         </div>
 
@@ -573,10 +764,12 @@ export default function Board() {
               key={column.id}
               column={column}
               tasks={getColumnTasks(column.status)}
-              members={projectMembers}
+              members={projectMembers.length > 0 ? projectMembers : allUsers}
+              currentUser={currentUser}
               projectId={currentProject?.id}
               onAddTask={handleAddTask}
               onOpenTask={handleOpenTask}
+              onUpdateAssignee={handleUpdateAssignee}
             />
           ))}
         </div>

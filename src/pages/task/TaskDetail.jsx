@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   Flag, Calendar, User, Tag, MessageSquare, CheckSquare,
-  ChevronDown, Send, Clock, CheckCircle2, Edit2, Check, X
+  ChevronDown, Send, Clock, CheckCircle2, Edit2, Check, X,
+  Zap, Search
 } from 'lucide-react';
 import Avatar from '../../components/common/Avatar';
 import { updateTaskAsync, updateTaskStatusAsync } from '../../redux/taskSlice';
@@ -149,6 +150,161 @@ function CommentItem({ comment, members, delay }) {
   );
 }
 
+/* ---- Inline Assignee dropdown ---- */
+function AssigneeSelect({ value, members, currentUser, onChange }) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const selectRef = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleOutsideClick = (e) => {
+      if (selectRef.current && !selectRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [open]);
+
+  const currentAssignee = members.find((m) => m.id === value);
+  const isAssignedToCurrent = currentUser?.id && value === currentUser.id;
+
+  const filteredMembers = members.filter(
+    (m) =>
+      m.name?.toLowerCase().includes(search.toLowerCase()) ||
+      (m.role && m.role.toLowerCase().includes(search.toLowerCase())) ||
+      (m.email && m.email.toLowerCase().includes(search.toLowerCase()))
+  );
+
+  return (
+    <div style={{ position: 'relative' }} ref={selectRef}>
+      {currentAssignee ? (
+        <button
+          type="button"
+          onClick={() => { setOpen(!open); setSearch(''); }}
+          className="td-person-card td-person-card--interactive"
+          title="Click to change assignee"
+        >
+          <Avatar name={currentAssignee.name} size="sm" color={currentAssignee.color} />
+          <div style={{ flex: 1, textAlign: 'left' }}>
+            <p className="td-person-name">
+              {currentAssignee.name} {isAssignedToCurrent && <span className="kc-you-badge">You</span>}
+            </p>
+            <p className="td-person-role">{currentAssignee.role || 'Team Member'}</p>
+          </div>
+          <ChevronDown size={14} className={`td-chevron ${open ? 'open' : ''}`} />
+        </button>
+      ) : (
+        <div style={{ display: 'flex', gap: 6, width: '100%' }}>
+          <button
+            type="button"
+            onClick={() => { setOpen(!open); setSearch(''); }}
+            className="td-unassigned-btn"
+            style={{ flex: 1 }}
+          >
+            <User size={13} /> Unassigned
+            <ChevronDown size={12} style={{ marginLeft: 'auto' }} />
+          </button>
+          {currentUser && (
+            <button
+              type="button"
+              className="td-quick-claim-btn"
+              onClick={() => onChange(currentUser.id)}
+              title="Claim task (Assign to me)"
+            >
+              <Zap size={11} /> Claim
+            </button>
+          )}
+        </div>
+      )}
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            className="td-dropdown td-assignee-dropdown"
+          >
+            {currentUser && !isAssignedToCurrent && (
+              <button
+                type="button"
+                className="kc-claim-btn"
+                style={{ margin: '6px 8px', width: 'calc(100% - 16px)' }}
+                onClick={() => { onChange(currentUser.id); setOpen(false); }}
+              >
+                <Zap size={12} className="kc-claim-icon" />
+                <span>Assign to me ({currentUser.name})</span>
+              </button>
+            )}
+
+            {members.length > 3 && (
+              <div className="kc-assignee-search-wrap" style={{ margin: '4px 8px 6px' }}>
+                <Search size={11} className="kc-assignee-search-icon" />
+                <input
+                  type="text"
+                  placeholder="Filter team..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="kc-assignee-search-input"
+                  autoFocus
+                />
+              </div>
+            )}
+
+            <div style={{ maxHeight: 200, overflowY: 'auto' }}>
+              <button
+                type="button"
+                className={`td-dropdown-item ${!value ? 'active' : ''}`}
+                onClick={() => { onChange(null); setOpen(false); }}
+              >
+                <div className="kc-unassigned-mini-avatar" style={{ marginRight: 8 }}>
+                  <User size={11} />
+                </div>
+                <div style={{ flex: 1, textAlign: 'left' }}>
+                  <div style={{ fontSize: 12, fontWeight: 500 }}>Unassigned</div>
+                  <div style={{ fontSize: 10, color: 'var(--color-surface-400)' }}>Clear assignee</div>
+                </div>
+                {!value && <Check size={13} style={{ color: '#2563EB', marginLeft: 'auto' }} />}
+              </button>
+
+              {filteredMembers.map((m) => {
+                const isSelected = m.id === value;
+                const isMe = m.id === currentUser?.id;
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    className={`td-dropdown-item ${isSelected ? 'active' : ''}`}
+                    onClick={() => { onChange(m.id); setOpen(false); }}
+                  >
+                    <Avatar name={m.name} size="xs" color={m.color} style={{ marginRight: 8 }} />
+                    <div style={{ flex: 1, textAlign: 'left' }}>
+                      <div style={{ fontSize: 12, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        {m.name} {isMe && <span className="kc-you-badge">You</span>}
+                      </div>
+                      <div style={{ fontSize: 10, color: 'var(--color-surface-400)' }}>{m.role || m.email || 'Member'}</div>
+                    </div>
+                    {isSelected && <Check size={13} style={{ color: '#2563EB', marginLeft: 'auto' }} />}
+                  </button>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 /* ---- Main TaskDetail component ---- */
 export default function TaskDetail({ task }) {
   const dispatch = useDispatch();
@@ -178,10 +334,25 @@ export default function TaskDetail({ task }) {
   const assignee = members.find((m) => m.id === localTask.assigneeId);
   const reporter = members.find((m) => m.id === localTask.reporterId);
 
+  const currentUser = useSelector((state) => state.auth.user);
+
   const handleStatusChange = (status) => {
     dispatch(updateTaskStatusAsync({ taskId: task.id, status }));
     setLocalTask((prev) => ({ ...prev, status }));
     success('Status updated', `Task moved to ${STATUS_CONFIG[status]?.label}`);
+  };
+
+  const handleAssigneeChange = (newAssigneeId) => {
+    dispatch(updateTaskAsync({ id: task.id, data: { assigneeId: newAssigneeId || null } }));
+    setLocalTask((prev) => ({ ...prev, assigneeId: newAssigneeId || null }));
+    const target = members.find((m) => m.id === newAssigneeId);
+    if (newAssigneeId === currentUser?.id) {
+      success('Task Claimed', 'You have been assigned to this task.');
+    } else if (newAssigneeId) {
+      success('Assignee Updated', `Task assigned to ${target?.name || 'team member'}.`);
+    } else {
+      success('Assignee Removed', 'Task is now unassigned.');
+    }
   };
 
   const handlePriorityChange = (priority) => {
@@ -287,17 +458,12 @@ export default function TaskDetail({ task }) {
         <div className="td-meta-grid">
           <div>
             <p className="td-section-label"><User size={11} />Assignee</p>
-            {assignee ? (
-              <div className="td-person-card">
-                <Avatar name={assignee.name} size="sm" color={assignee.color} />
-                <div>
-                  <p className="td-person-name">{assignee.name}</p>
-                  <p className="td-person-role">{assignee.role}</p>
-                </div>
-              </div>
-            ) : (
-              <button className="td-unassigned-btn"><User size={13} />Unassigned</button>
-            )}
+            <AssigneeSelect
+              value={localTask.assigneeId}
+              members={members}
+              currentUser={currentUser}
+              onChange={handleAssigneeChange}
+            />
           </div>
 
           <div>
