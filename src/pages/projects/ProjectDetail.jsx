@@ -130,7 +130,7 @@ export default function ProjectDetail() {
       </motion.button>
 
       {/* Header card */}
-      <div className="card p-6" style={{ marginBottom: 24 }}>
+      <div className="card pd-header-card">
         <div className="pd-header-top">
           <div className="pd-header-left">
             <div
@@ -139,8 +139,8 @@ export default function ProjectDetail() {
             >
               {project.icon || '⚡'}
             </div>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div className="pd-header-info">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                 <h1 className="pd-name">{project.name}</h1>
                 {isAdmin && (
                   <span className="projects-role-badge admin" style={{ fontSize: 10 }}>
@@ -158,7 +158,7 @@ export default function ProjectDetail() {
                 </span>
                 {project.tags?.map((tag) => (
                   <span key={tag} className="pd-tag">
-                    <Tag size={9} />{tag}
+                    <Tag size={10} />{tag}
                   </span>
                 ))}
               </div>
@@ -224,10 +224,10 @@ export default function ProjectDetail() {
 
       {/* Team + Timeline */}
       <div className="pd-bottom-grid">
-        <div className="card p-5">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <h2 className="pd-section-title" style={{ marginBottom: 0 }}>
-              <Users size={15} /> Assigned Team Members ({members.length})
+        <div className="card pd-section-card">
+          <div className="pd-section-header">
+            <h2 className="pd-section-title">
+              <Users size={16} /> Assigned Team Members ({members.length})
             </h2>
             {isAdmin && (
               <button
@@ -240,40 +240,57 @@ export default function ProjectDetail() {
           </div>
           
           <div className="pd-member-stack">
-            {members.map((m, i) => (
-              <motion.div
-                key={m.id}
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className="pd-member-row"
-              >
-                <Avatar name={m.name} size="md" color={m.color} />
-                <div style={{ flex: 1 }}>
-                  <p className="pd-member-name">{m.name}</p>
-                  <p className="pd-member-role">{m.role || m.department || 'Team Member'}</p>
-                </div>
-                {isAdmin && (
-                  <span className="pd-member-access-tag">Assigned Access</span>
-                )}
-              </motion.div>
-            ))}
+            {members.length === 0 ? (
+              <p className="pd-empty-hint">No members assigned yet.</p>
+            ) : (
+              members.map((m, i) => (
+                <motion.div
+                  key={m.id}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  className="pd-member-row"
+                >
+                  <Avatar name={m.name} size="md" color={m.color} />
+                  <div className="pd-member-info">
+                    <p className="pd-member-name">{m.name}</p>
+                    <p className="pd-member-role">{m.role || m.department || 'Team Member'}</p>
+                  </div>
+                  {isAdmin && (
+                    <span className="pd-member-access-tag">Assigned Access</span>
+                  )}
+                </motion.div>
+              ))
+            )}
           </div>
         </div>
 
-        <div className="card p-5">
-          <h2 className="pd-section-title"><Calendar size={15} />Timeline & Delivery</h2>
+        <div className="card pd-section-card">
+          <div className="pd-section-header">
+            <h2 className="pd-section-title">
+              <Calendar size={16} /> Timeline & Delivery
+            </h2>
+          </div>
           <div className="pd-timeline-stack">
             {[
-              { label: 'Project Status', value: statusCfg.label },
-              { label: 'Start Date',     value: project.startDate     || 'N/A' },
-              { label: 'Target Due Date',value: project.dueDate       || 'N/A' },
-              { label: 'Total Tasks',    value: `${project.taskCount  || 0} tasks` },
-              { label: 'Completed',      value: `${project.completedTasks || 0} tasks` },
-            ].map(({ label, value }) => (
+              { label: 'Project Status', value: statusCfg.label, isStatus: true },
+              { label: 'Start Date',     value: project.startDate     || 'Not set' },
+              { label: 'Target Due Date',value: project.dueDate       || 'Not set' },
+              { label: 'Total Tasks',    value: `${project.taskCount  || 0} ${project.taskCount === 1 ? 'task' : 'tasks'}` },
+              { label: 'Completed',      value: `${project.completedTasks || 0} ${project.completedTasks === 1 ? 'task' : 'tasks'}` },
+            ].map(({ label, value, isStatus }) => (
               <div key={label} className="pd-timeline-row">
                 <span className="pd-timeline-label">{label}</span>
-                <span className="pd-timeline-value">{value}</span>
+                {isStatus ? (
+                  <span
+                    className="pd-status-pill"
+                    style={{ backgroundColor: statusCfg.bg, color: statusCfg.color }}
+                  >
+                    {value}
+                  </span>
+                ) : (
+                  <span className="pd-timeline-value">{value}</span>
+                )}
               </div>
             ))}
           </div>

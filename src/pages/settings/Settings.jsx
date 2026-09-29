@@ -4,11 +4,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   Globe, Bell, Shield, Palette,
   Moon, Sun, Monitor, ChevronDown, Check,
-  Smartphone, Laptop, ShieldCheck, KeyRound
+  Smartphone, Laptop, ShieldCheck
 } from 'lucide-react';
 import PageTransition from '../../components/common/PageTransition';
 import Tabs from '../../components/common/Tabs/Tabs';
-import { toggleTheme, setTheme } from '../../redux/uiSlice';
+import Button from '../../components/common/Button';
+import { setTheme } from '../../redux/uiSlice';
 import { useToast } from '../../hooks/useToast';
 import './Settings.css';
 

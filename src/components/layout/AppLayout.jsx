@@ -5,6 +5,7 @@ import { AnimatePresence } from 'motion/react';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import ToastContainer from '../common/Toast';
+import ErrorBoundary from '../common/ErrorBoundary/ErrorBoundary';
 import CreateTaskDrawer from '../../pages/task/CreateTaskDrawer';
 import { fetchWorkspaces } from '../../redux/workspaceSlice';
 import { fetchProjects } from '../../redux/projectSlice';
@@ -77,9 +78,11 @@ export default function AppLayout() {
             flexDirection: 'column',
           }}
         >
-          <AnimatePresence mode="wait">
-            <Outlet />
-          </AnimatePresence>
+          <ErrorBoundary>
+            <AnimatePresence mode="wait">
+              <Outlet />
+            </AnimatePresence>
+          </ErrorBoundary>
         </main>
       </div>
       <CreateTaskDrawer />
