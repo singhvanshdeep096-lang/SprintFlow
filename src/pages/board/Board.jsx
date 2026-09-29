@@ -22,6 +22,7 @@ import {
 } from '../../redux/taskSlice';
 import { KANBAN_COLUMNS, PRIORITY_CONFIG, PROJECT_STATUS_CONFIG } from '../../constants';
 import { useToast } from '../../hooks/useToast';
+import useDebounce from '../../hooks/useDebounce';
 import TaskDetail from '../task/TaskDetail';
 import userService from '../../services/user.service';
 import './Board.css';
@@ -44,6 +45,7 @@ function PriorityBadge({ priority }) {
 function CardAssigneePicker({ task, assignee, members, currentUser, onUpdateAssignee }) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 200);
   const pickerRef = useRef(null);
 
   useEffect(() => {
@@ -80,12 +82,15 @@ function CardAssigneePicker({ task, assignee, members, currentUser, onUpdateAssi
 
   const isAssignedToCurrent = currentUser?.id && task.assigneeId === currentUser.id;
 
-  const filteredMembers = (members || []).filter(
-    (m) =>
-      m.name?.toLowerCase().includes(search.toLowerCase()) ||
-      (m.role && m.role.toLowerCase().includes(search.toLowerCase())) ||
-      (m.email && m.email.toLowerCase().includes(search.toLowerCase()))
-  );
+  const filteredMembers = (members || []).filter((m) => {
+    const query = debouncedSearch.toLowerCase().trim();
+    if (!query) return true;
+    return (
+      m.name?.toLowerCase().includes(query) ||
+      (m.role && m.role.toLowerCase().includes(query)) ||
+      (m.email && m.email.toLowerCase().includes(query))
+    );
+  });
 
   return (
     <div
@@ -486,6 +491,7 @@ export default function Board() {
 
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [search, setSearch]                 = useState('');
+  const debouncedSearch = useDebounce(search, 300);
   const [assigneeFilter, setAssigneeFilter] = useState('all');
   const [activeTab, setActiveTab]           = useState('all');
   const [allUsers, setAllUsers]             = useState([]);
@@ -544,14 +550,17 @@ export default function Board() {
 
   // Filter tasks based on search, assignee, and activeTab
   const filteredTasks = useMemo(() => {
+    const query = debouncedSearch.toLowerCase().trim();
     return projectTasks.filter((t) => {
-      const matchSearch   = t.title.toLowerCase().includes(search.toLowerCase()) ||
-                            t.id?.toLowerCase().includes(search.toLowerCase());
+      const matchSearch   = !query ||
+                            t.title.toLowerCase().includes(query) ||
+                            t.id?.toLowerCase().includes(query) ||
+                            t.description?.toLowerCase().includes(query);
       const matchAssignee = assigneeFilter === 'all' || t.assigneeId === assigneeFilter;
       const matchTab      = activeTab === 'all' || (activeTab === 'my' && t.assigneeId === currentUser?.id);
       return matchSearch && matchAssignee && matchTab;
     });
-  }, [projectTasks, search, assigneeFilter, activeTab, currentUser]);
+  }, [projectTasks, debouncedSearch, assigneeFilter, activeTab, currentUser]);
 
   const getColumnTasks = (status) => filteredTasks.filter((t) => t.status === status);
 

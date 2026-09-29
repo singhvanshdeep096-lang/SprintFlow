@@ -10,6 +10,7 @@ import {
 import api from '../../services/api';
 import projectService from '../../services/project.service';
 import { useToast } from '../../hooks/useToast';
+import useDebounce from '../../hooks/useDebounce';
 import Avatar from '../../components/common/Avatar';
 import { PROJECT_STATUS_CONFIG } from '../../constants';
 import './AdminDashboard.css';
@@ -42,6 +43,7 @@ export default function AdminDashboard() {
 
   const [projects, setProjects] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebounce(searchQuery, 300);
   const [roleFilter, setRoleFilter] = useState('all');
 
   const fetchAdminData = async () => {
@@ -102,9 +104,11 @@ export default function AdminDashboard() {
   };
 
   const filteredUsers = users.filter(u => {
-    const matchesSearch = u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          (u.department && u.department.toLowerCase().includes(searchQuery.toLowerCase()));
+    const query = debouncedSearch.toLowerCase().trim();
+    const matchesSearch = !query ||
+                          u.name.toLowerCase().includes(query) ||
+                          u.email.toLowerCase().includes(query) ||
+                          (u.department && u.department.toLowerCase().includes(query));
     const matchesRole = roleFilter === 'all' || (u.role && u.role.toLowerCase() === roleFilter.toLowerCase());
     return matchesSearch && matchesRole;
   });

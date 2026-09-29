@@ -18,6 +18,7 @@ import EmptyState from '../../components/common/EmptyState/EmptyState';
 import { addWorkspaceAsync, updateWorkspaceAsync, deleteWorkspaceAsync } from '../../redux/workspaceSlice';
 import { useToast } from '../../hooks/useToast';
 import { useModal } from '../../hooks/useModal';
+import useDebounce from '../../hooks/useDebounce';
 import userService from '../../services/user.service';
 import './Workspaces.css';
 
@@ -238,6 +239,7 @@ export default function Workspaces() {
   const { success } = useToast();
   const workspaces  = useSelector((state) => state.workspaces.list);
   const [search, setSearch]         = useState('');
+  const debouncedSearch = useDebounce(search, 300);
   const [submitting, setSubmitting] = useState(false);
   const [members, setMembers]       = useState([]);
   const createModal = useModal();
@@ -248,10 +250,14 @@ export default function Workspaces() {
     userService.getUsers().then((data) => setMembers(data)).catch(() => {});
   }, []);
 
-  const filtered = workspaces.filter(
-    (w) => w.name.toLowerCase().includes(search.toLowerCase()) ||
-           w.description?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = workspaces.filter((w) => {
+    const query = debouncedSearch.toLowerCase().trim();
+    if (!query) return true;
+    return (
+      w.name.toLowerCase().includes(query) ||
+      w.description?.toLowerCase().includes(query)
+    );
+  });
 
   const totalProjects = workspaces.reduce((sum, w) => sum + (w.projectCount || 0), 0);
   const totalMembers  = members.length;

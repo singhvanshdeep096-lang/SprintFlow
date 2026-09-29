@@ -10,6 +10,7 @@ import Avatar from '../../components/common/Avatar';
 import { updateTaskAsync, updateTaskStatusAsync } from '../../redux/taskSlice';
 import { PRIORITY_CONFIG, STATUS_CONFIG } from '../../constants';
 import { useToast } from '../../hooks/useToast';
+import useDebounce from '../../hooks/useDebounce';
 import userService from '../../services/user.service';
 import taskService from '../../services/task.service';
 import './Tasks.css';
@@ -154,6 +155,7 @@ function CommentItem({ comment, members, delay }) {
 function AssigneeSelect({ value, members, currentUser, onChange }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 200);
   const selectRef = useRef(null);
 
   useEffect(() => {
@@ -177,12 +179,15 @@ function AssigneeSelect({ value, members, currentUser, onChange }) {
   const currentAssignee = members.find((m) => m.id === value);
   const isAssignedToCurrent = currentUser?.id && value === currentUser.id;
 
-  const filteredMembers = members.filter(
-    (m) =>
-      m.name?.toLowerCase().includes(search.toLowerCase()) ||
-      (m.role && m.role.toLowerCase().includes(search.toLowerCase())) ||
-      (m.email && m.email.toLowerCase().includes(search.toLowerCase()))
-  );
+  const filteredMembers = members.filter((m) => {
+    const query = debouncedSearch.toLowerCase().trim();
+    if (!query) return true;
+    return (
+      m.name?.toLowerCase().includes(query) ||
+      (m.role && m.role.toLowerCase().includes(query)) ||
+      (m.email && m.email.toLowerCase().includes(query))
+    );
+  });
 
   return (
     <div style={{ position: 'relative' }} ref={selectRef}>

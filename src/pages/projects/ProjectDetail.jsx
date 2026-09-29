@@ -14,6 +14,7 @@ import { PROJECT_STATUS_CONFIG, PRIORITY_CONFIG } from '../../constants';
 import { updateProjectAsync } from '../../redux/projectSlice';
 import { useToast } from '../../hooks/useToast';
 import { useModal } from '../../hooks/useModal';
+import useDebounce from '../../hooks/useDebounce';
 import userService from '../../services/user.service';
 import './ProjectDetail.css';
 
@@ -28,6 +29,7 @@ export default function ProjectDetail() {
   const tasks = useSelector((state) => state.tasks.list);
   const [allMembers, setAllMembers] = useState([]);
   const [memberSearch, setMemberSearch] = useState('');
+  const debouncedMemberSearch = useDebounce(memberSearch, 300);
   const [updatingMembers, setUpdatingMembers] = useState(false);
 
   const manageMembersModal = useModal();
@@ -112,10 +114,15 @@ export default function ProjectDetail() {
     }
   };
 
-  const filteredDirectory = allMembers.filter(
-    (m) => m.name.toLowerCase().includes(memberSearch.toLowerCase()) ||
-           m.email.toLowerCase().includes(memberSearch.toLowerCase())
-  );
+  const filteredDirectory = allMembers.filter((m) => {
+    const query = debouncedMemberSearch.toLowerCase().trim();
+    if (!query) return true;
+    return (
+      m.name.toLowerCase().includes(query) ||
+      m.email.toLowerCase().includes(query) ||
+      (m.role && m.role.toLowerCase().includes(query))
+    );
+  });
 
   return (
     <PageTransition className="pd-page">

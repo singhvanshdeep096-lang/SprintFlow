@@ -11,6 +11,7 @@ import EmptyState from '../../components/common/EmptyState/EmptyState';
 import TaskDetail from './TaskDetail';
 import { openTaskDrawer, closeTaskDrawer, openCreateTaskDrawer } from '../../redux/taskSlice';
 import { PRIORITY_CONFIG, STATUS_CONFIG } from '../../constants';
+import useDebounce from '../../hooks/useDebounce';
 import userService from '../../services/user.service';
 import './Tasks.css';
 
@@ -94,6 +95,7 @@ export default function Tasks() {
   const selectedTask  = useSelector((state) => state.tasks.selected);
   const isDrawerOpen  = useSelector((state) => state.tasks.isDrawerOpen);
   const [search, setSearch]                 = useState('');
+  const debouncedSearch = useDebounce(search, 300);
   const [selectedProjectFilter, setSelectedProjectFilter] = useState('all');
   const [activeTab, setActiveTab]           = useState('all');
   const [members, setMembers]               = useState([]);
@@ -115,9 +117,12 @@ export default function Tasks() {
   ];
 
   const filtered = projectFilteredTasks.filter((t) => {
-    const matchTab    = activeTab === 'all' || t.status === activeTab;
-    const matchSearch = t.title.toLowerCase().includes(search.toLowerCase()) ||
-                        t.id?.toLowerCase().includes(search.toLowerCase());
+    const matchTab = activeTab === 'all' || t.status === activeTab;
+    const query = debouncedSearch.toLowerCase().trim();
+    const matchSearch = !query ||
+      t.title.toLowerCase().includes(query) ||
+      t.id?.toLowerCase().includes(query) ||
+      t.description?.toLowerCase().includes(query);
     return matchTab && matchSearch;
   });
 

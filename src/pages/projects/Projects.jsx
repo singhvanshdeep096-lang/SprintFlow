@@ -19,6 +19,7 @@ import { addProjectAsync, updateProjectAsync, deleteProjectAsync } from '../../r
 import { PROJECT_STATUS_CONFIG, PRIORITY_CONFIG } from '../../constants';
 import { useToast } from '../../hooks/useToast';
 import { useModal } from '../../hooks/useModal';
+import useDebounce from '../../hooks/useDebounce';
 import userService from '../../services/user.service';
 import './Projects.css';
 
@@ -336,6 +337,7 @@ export default function Projects() {
   const currentUser = useSelector((state) => state.auth.user);
   const projects = useSelector((state) => state.projects.list);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 300);
   const [statusFilter, setStatusFilter] = useState('all');
   const [view, setView] = useState('grid');
   const [submitting, setSubmitting] = useState(false);
@@ -351,7 +353,11 @@ export default function Projects() {
   }, []);
 
   const filtered = projects.filter((p) => {
-    const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
+    const query = debouncedSearch.toLowerCase().trim();
+    const matchSearch = !query ||
+      p.name.toLowerCase().includes(query) ||
+      p.description?.toLowerCase().includes(query) ||
+      p.tags?.some((t) => t.toLowerCase().includes(query));
     const matchStatus = statusFilter === 'all' || p.status === statusFilter;
     return matchSearch && matchStatus;
   });

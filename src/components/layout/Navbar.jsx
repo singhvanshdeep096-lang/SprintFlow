@@ -1,10 +1,14 @@
-import { useState } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Bell, Search, Plus, Sun, Moon, ChevronDown, User, Settings, LogOut, Menu, X } from 'lucide-react';
+import {
+  Bell, Search, Plus, Sun, Moon, ChevronDown, User, Settings, LogOut, Menu, X,
+  FolderKanban, CheckSquare, Building2, ArrowRight
+} from 'lucide-react';
 import Avatar from '../common/Avatar';
 import Dropdown from '../common/Dropdown';
+import useDebounce from '../../hooks/useDebounce';
 import { toggleTheme, toggleMobileSidebar } from '../../redux/uiSlice';
 import { logoutAsync } from '../../redux/authSlice';
 import { markAsReadAsync } from '../../redux/notificationSlice';
@@ -80,11 +84,77 @@ export default function Navbar({ isMobile }) {
   const { success } = useToast();
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
+  const debouncedSearch = useDebounce(searchValue, 300);
+  const searchWrapRef = useRef(null);
+
   const user = useSelector((state) => state.auth.user);
   const theme = useSelector((state) => state.ui.theme);
   const collapsed = useSelector((state) => state.ui.sidebarCollapsed);
   const unreadCount = useSelector((state) => state.notifications.unreadCount);
   const notifications = useSelector((state) => state.notifications.list);
+  const tasks = useSelector((state) => state.tasks.list);
+  const projects = useSelector((state) => state.projects.list);
+  const workspaces = useSelector((state) => state.workspaces.list);
+
+  // Keyboard shortcut Ctrl+K / Cmd+K to toggle search
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchOpen((prev) => !prev);
+      } else if (e.key === 'Escape' && searchOpen) {
+        setSearchOpen(false);
+        setSearchValue('');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [searchOpen]);
+
+  // Click outside search area to close
+  useEffect(() => {
+    if (!searchOpen) return;
+    const handleClickOutside = (e) => {
+      if (searchWrapRef.current && !searchWrapRef.current.contains(e.target)) {
+        setSearchOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [searchOpen]);
+
+  // Debounced search results
+  const searchResults = useMemo(() => {
+    const q = debouncedSearch.toLowerCase().trim();
+    if (!q) return null;
+
+    const matchedTasks = tasks
+      .filter((t) => t.title.toLowerCase().includes(q) || t.id.toLowerCase().includes(q))
+      .slice(0, 3);
+    const matchedProjects = projects
+      .filter((p) => p.name.toLowerCase().includes(q) || p.description?.toLowerCase().includes(q))
+      .slice(0, 3);
+    const matchedWorkspaces = workspaces
+      .filter((w) => w.name.toLowerCase().includes(q))
+      .slice(0, 2);
+
+    const total = matchedTasks.length + matchedProjects.length + matchedWorkspaces.length;
+    return { tasks: matchedTasks, projects: matchedProjects, workspaces: matchedWorkspaces, total };
+  }, [debouncedSearch, tasks, projects, workspaces]);
+
+  const handleSelectResult = (path) => {
+    navigate(path);
+    setSearchOpen(false);
+    setSearchValue('');
+  };
+
+  const handleSearchKeyDown = (e) => {
+    if (e.key === 'Enter' && searchValue.trim()) {
+      navigate(`/tasks`);
+      setSearchOpen(false);
+      setSearchValue('');
+    }
+  };
 
   const handleNotificationClick = (notif) => {
     if (!notif.isRead) {
@@ -138,7 +208,7 @@ export default function Navbar({ isMobile }) {
       </button>
 
       {/* Search area */}
-      <div className="navbar-search-area">
+      <div className="navbar-search-area" ref={searchWrapRef} style={{ position: 'relative' }}>
         <AnimatePresence mode="wait">
           {searchOpen ? (
             <motion.div
@@ -155,11 +225,83 @@ export default function Navbar({ isMobile }) {
                 autoFocus
                 value={searchValue}
                 onChange={(e) => setSearchValue(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
                 placeholder="Search tasks, projects, workspaces..."
               />
-              <button onClick={() => { setSearchOpen(false); setSearchValue(''); }}>
+              <button
+                type="button"
+                onClick={() => { setSearchOpen(false); setSearchValue(''); }}
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 2 }}
+              >
                 <X size={16} style={{ color: 'var(--color-surface-400)' }} />
               </button>
+
+              {/* Debounced live results dropdown */}
+              {debouncedSearch.trim() && searchResults && (
+                <div className="navbar-search-dropdown card">
+                  {searchResults.total === 0 ? (
+                    <div className="navbar-search-empty">
+                      No results for "{debouncedSearch}"
+                    </div>
+                  ) : (
+                    <div className="navbar-search-results-list">
+                      {searchResults.tasks.length > 0 && (
+                        <div className="navbar-search-group">
+                          <span className="navbar-search-group-title">Tasks</span>
+                          {searchResults.tasks.map((t) => (
+                            <button
+                              key={t.id}
+                              type="button"
+                              onClick={() => handleSelectResult(t.projectId ? `/board?project=${t.projectId}` : '/tasks')}
+                              className="navbar-search-item"
+                            >
+                              <CheckSquare size={14} className="navbar-search-item-icon" />
+                              <span className="navbar-search-item-text">{t.title}</span>
+                              <ArrowRight size={12} className="navbar-search-item-arrow" />
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {searchResults.projects.length > 0 && (
+                        <div className="navbar-search-group">
+                          <span className="navbar-search-group-title">Projects</span>
+                          {searchResults.projects.map((p) => (
+                            <button
+                              key={p.id}
+                              type="button"
+                              onClick={() => handleSelectResult(`/projects/${p.id}`)}
+                              className="navbar-search-item"
+                            >
+                              <FolderKanban size={14} className="navbar-search-item-icon" />
+                              <span className="navbar-search-item-text">{p.name}</span>
+                              <ArrowRight size={12} className="navbar-search-item-arrow" />
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {searchResults.workspaces.length > 0 && (
+                        <div className="navbar-search-group">
+                          <span className="navbar-search-group-title">Workspaces</span>
+                          {searchResults.workspaces.map((w) => (
+                            <button
+                              key={w.id}
+                              type="button"
+                              onClick={() => handleSelectResult('/workspaces')}
+                              className="navbar-search-item"
+                            >
+                              <Building2 size={14} className="navbar-search-item-icon" />
+                              <span className="navbar-search-item-text">{w.name}</span>
+                              <ArrowRight size={12} className="navbar-search-item-arrow" />
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </motion.div>
           ) : (
             <motion.button
