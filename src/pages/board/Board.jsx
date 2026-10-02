@@ -374,7 +374,7 @@ function AddTaskInline({ columnStatus, projectId, onAdd, onCancel }) {
         onKeyDown={(e) => e.key === 'Escape' && onCancel()}
       />
       <div className="kanban-inline-add-btns">
-        <Button type="submit" size="xs" disabled={!title.trim()}>Add Issue</Button>
+        <Button type="submit" size="xs" disabled={!title.trim()}>Add Task</Button>
         <Button type="button" size="xs" variant="ghost" onClick={onCancel}>Cancel</Button>
       </div>
     </motion.form>
@@ -420,7 +420,7 @@ function KanbanColumn({ column, tasks, members, currentUser, projectId, onAddTas
           <button
             onClick={handleOpenCreateDrawer}
             className="kanban-col-add-icon-btn"
-            title={`Add issue to ${column.title}`}
+            title={`Add task to ${column.title}`}
           >
             <Plus size={15} />
           </button>
@@ -467,7 +467,7 @@ function KanbanColumn({ column, tasks, members, currentUser, projectId, onAddTas
         {tasks.length === 0 && !addingTask && (
           <div className="kanban-empty-drop-msg">
             <CheckSquare size={20} style={{ opacity: 0.4 }} />
-            <p className="kanban-empty-drop-text">No issues in {column.title}</p>
+            <p className="kanban-empty-drop-text">No tasks in {column.title}</p>
           </div>
         )}
       </div>
@@ -703,7 +703,7 @@ export default function Board() {
             className="sprint-action-btn-primary"
             onClick={() => dispatch(openCreateTaskDrawer({ projectId: currentProject?.id, status: 'todo' }))}
           >
-            <Plus size={14} /> New Issue
+            <Plus size={14} /> New Task
           </button>
         </div>
       </div>
@@ -719,13 +719,13 @@ export default function Board() {
               onClick={() => setActiveTab('all')}
               className={`board-tab-btn ${activeTab === 'all' ? 'active' : ''}`}
             >
-              All Issues ({projectTasks.length})
+              All Tasks ({projectTasks.length})
             </button>
             <button
               onClick={() => setActiveTab('my')}
               className={`board-tab-btn ${activeTab === 'my' ? 'active' : ''}`}
             >
-              My Issues
+              My Tasks
             </button>
           </div>
 

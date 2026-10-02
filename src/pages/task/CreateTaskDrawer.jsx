@@ -134,7 +134,7 @@ export default function CreateTaskDrawer() {
 
     if (!title.trim()) {
       setTitleError(true);
-      error('Title required', 'Please enter a title for the issue.');
+      error('Title required', 'Please enter a title for the task.');
       return;
     }
 
@@ -155,10 +155,10 @@ export default function CreateTaskDrawer() {
       };
 
       await dispatch(addTaskAsync(taskData)).unwrap();
-      success('Ticket Raised Successfully', `"${title.trim()}" has been added to the board.`);
+      success('Task Created Successfully', `"${title.trim()}" has been created.`);
       handleClose();
     } catch (err) {
-      error('Failed to create issue', err?.message || 'Something went wrong. Please try again.');
+      error('Failed to create task', err?.message || 'Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -173,8 +173,8 @@ export default function CreateTaskDrawer() {
       isOpen={isCreateDrawerOpen}
       onClose={handleClose}
       width="2xl"
-      title="Create Issue"
-      subtitle="Fill in the details below to raise a new ticket on the project board"
+      title="Create Task"
+      subtitle="Fill in the details below to create a new task for your project"
     >
       <form onSubmit={handleSubmit} className="ctd-form-container">
         
@@ -224,11 +224,11 @@ export default function CreateTaskDrawer() {
           </div>
         </div>
 
-        {/* Issue Title Input */}
+        {/* Task Title Input */}
         <div className="ctd-section">
           <div className="ctd-label-row">
             <label className="ctd-field-label">
-              Issue Title <span className="ctd-required-star">*</span>
+              Task Title <span className="ctd-required-star">*</span>
             </label>
             {titleError && (
               <span className="ctd-error-hint">
@@ -572,7 +572,7 @@ export default function CreateTaskDrawer() {
             loading={isSubmitting}
             disabled={!title.trim() || isSubmitting}
           >
-            Raise Ticket
+            Create Task
           </Button>
         </div>
 

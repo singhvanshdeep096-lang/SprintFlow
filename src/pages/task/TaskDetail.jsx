@@ -369,7 +369,7 @@ export default function TaskDetail({ task }) {
     dispatch(updateTaskAsync({ id: task.id, data: { description: descDraft } }));
     setLocalTask((prev) => ({ ...prev, description: descDraft }));
     setIsEditingDesc(false);
-    success('Description updated', 'Issue description has been saved.');
+    success('Description updated', 'Task description has been saved.');
   };
 
   const toggleSubtask = (subtaskId) => {
