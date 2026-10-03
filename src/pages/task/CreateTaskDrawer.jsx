@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   X, Plus, Flag, Calendar, User, Tag, Clock, Layers,
-  ChevronDown, CheckCircle2, AlertCircle, FileText, CheckSquare, Send
+  ChevronDown, CheckCircle2, AlertCircle, FileText, CheckSquare, Send, Kanban
 } from 'lucide-react';
 import Drawer from '../../components/common/Drawer/Drawer';
 import Avatar from '../../components/common/Avatar';
@@ -43,6 +43,7 @@ export default function CreateTaskDrawer() {
   const [customTagInput, setCustomTagInput] = useState('');
   const [subtasks, setSubtasks] = useState([]);
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
+  const [onBoard, setOnBoard] = useState(true);
 
   // Dropdown toggles
   const [statusOpen, setStatusOpen] = useState(false);
@@ -77,6 +78,7 @@ export default function CreateTaskDrawer() {
       setEstimatedHours(8);
       setSelectedLabels(['Feature']);
       setSubtasks([]);
+      setOnBoard(createDrawerDefaults?.onBoard !== undefined ? Boolean(createDrawerDefaults.onBoard) : true);
       setTitleError(false);
       setIsSubmitting(false);
     }
@@ -152,6 +154,7 @@ export default function CreateTaskDrawer() {
         estimatedHours: Number(estimatedHours) || 0,
         labels: selectedLabels,
         subtasks: subtasks,
+        onBoard: Boolean(onBoard),
       };
 
       await dispatch(addTaskAsync(taskData)).unwrap();
@@ -222,6 +225,26 @@ export default function CreateTaskDrawer() {
               )}
             </AnimatePresence>
           </div>
+        </div>
+
+        {/* Board Visibility Toggle */}
+        <div className="ctd-section ctd-board-toggle-row">
+          <div className="ctd-board-toggle-info">
+            <span className="ctd-field-label" style={{ marginBottom: 2, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Kanban size={13} /> Add to Kanban Board
+            </span>
+            <span className="ctd-field-hint">
+              {onBoard ? 'Task will appear as a card on the project Kanban board' : 'Task list only (will not appear on the Kanban board)'}
+            </span>
+          </div>
+          <label className="ctd-switch">
+            <input
+              type="checkbox"
+              checked={onBoard}
+              onChange={(e) => setOnBoard(e.target.checked)}
+            />
+            <span className="ctd-switch-slider" />
+          </label>
         </div>
 
         {/* Task Title Input */}

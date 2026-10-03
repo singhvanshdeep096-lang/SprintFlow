@@ -6,19 +6,21 @@ import {
   Plus, MessageSquare, Paperclip, Flag, Calendar,
   CheckSquare, User, Search, AlertTriangle,
   SlidersHorizontal, CheckCircle2, Zap, ChevronDown, FolderKanban, Layers,
-  Check, X
+  Check, X, Trash2
 } from 'lucide-react';
 import PageTransition from '../../components/common/PageTransition';
 import Avatar from '../../components/common/Avatar';
 import Button from '../../components/common/Button';
 import Drawer from '../../components/common/Drawer/Drawer';
+import Modal from '../../components/common/Modal/Modal';
 import {
   updateTaskStatusAsync,
   updateTaskAsync,
   addTaskAsync,
   openTaskDrawer,
   closeTaskDrawer,
-  openCreateTaskDrawer
+  openCreateTaskDrawer,
+  deleteTaskAsync
 } from '../../redux/taskSlice';
 import { KANBAN_COLUMNS, PRIORITY_CONFIG, PROJECT_STATUS_CONFIG } from '../../constants';
 import { useToast } from '../../hooks/useToast';
@@ -231,7 +233,7 @@ function CardAssigneePicker({ task, assignee, members, currentUser, onUpdateAssi
 }
 
 /* ---- Individual Task Card Component ---- */
-function TaskCard({ task, members, currentUser, onOpen, onUpdateAssignee, delay }) {
+function TaskCard({ task, members, currentUser, onOpen, onUpdateAssignee, delay, isAdmin, onDelete }) {
   const assignee  = members.find((m) => m.id === task.assigneeId);
   const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'done';
 
@@ -273,7 +275,19 @@ function TaskCard({ task, members, currentUser, onOpen, onUpdateAssignee, delay 
             <span className="kc-label-tag">{task.labels[0]}</span>
           )}
         </div>
-        <PriorityBadge priority={task.priority} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <PriorityBadge priority={task.priority} />
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onDelete(task); }}
+              className="kc-del-btn"
+              title="Delete ticket (Admin only)"
+            >
+              <Trash2 size={12} />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Title */}
@@ -382,7 +396,7 @@ function AddTaskInline({ columnStatus, projectId, onAdd, onCancel }) {
 }
 
 /* ---- Kanban Column Component ---- */
-function KanbanColumn({ column, tasks, members, currentUser, projectId, onAddTask, onOpenTask, onUpdateAssignee }) {
+function KanbanColumn({ column, tasks, members, currentUser, projectId, onAddTask, onOpenTask, onUpdateAssignee, isAdmin, onDeleteTask }) {
   const [addingTask, setAddingTask] = useState(false);
   const dispatch = useDispatch();
   const [dragOver, setDragOver]     = useState(false);
@@ -403,7 +417,7 @@ function KanbanColumn({ column, tasks, members, currentUser, projectId, onAddTas
   };
 
   const handleOpenCreateDrawer = () => {
-    dispatch(openCreateTaskDrawer({ projectId, status: column.status }));
+    dispatch(openCreateTaskDrawer({ projectId, status: column.status, onBoard: true }));
   };
 
   return (
@@ -448,6 +462,8 @@ function KanbanColumn({ column, tasks, members, currentUser, projectId, onAddTas
                 onOpen={onOpenTask}
                 onUpdateAssignee={onUpdateAssignee}
                 delay={i * 0.03}
+                isAdmin={isAdmin}
+                onDelete={onDeleteTask}
               />
             </div>
           ))}
@@ -497,6 +513,10 @@ export default function Board() {
   const [allUsers, setAllUsers]             = useState([]);
   const [projectDropdownOpen, setProjectDropdownOpen] = useState(false);
 
+  const [ticketToDelete, setTicketToDelete] = useState(null);
+  const [isDeleting, setIsDeleting]         = useState(false);
+  const isAdmin = currentUser?.role?.toLowerCase() === 'admin' || currentUser?.is_superuser === true;
+
   useEffect(() => {
     userService.getUsers().then((data) => setAllUsers(data)).catch(() => {});
   }, []);
@@ -542,10 +562,10 @@ export default function Board() {
     return allUsers.filter((u) => currentProject.members.includes(u.id));
   }, [currentProject, allUsers]);
 
-  // Tasks scoped to the selected project
+  // Tasks scoped to the selected project (only tasks designated for board)
   const projectTasks = useMemo(() => {
     if (!currentProject) return [];
-    return tasks.filter((t) => t.projectId === currentProject.id);
+    return tasks.filter((t) => t.projectId === currentProject.id && t.onBoard !== false);
   }, [tasks, currentProject]);
 
   // Filter tasks based on search, assignee, and activeTab
@@ -567,7 +587,7 @@ export default function Board() {
   const doneTasks   = projectTasks.filter((t) => t.status === 'done').length;
   const progressPct = projectTasks.length > 0 ? Math.round((doneTasks / projectTasks.length) * 100) : 0;
 
-  const handleAddTask     = (taskData) => dispatch(addTaskAsync({ ...taskData, projectId: currentProject?.id }));
+  const handleAddTask     = (taskData) => dispatch(addTaskAsync({ ...taskData, projectId: currentProject?.id, onBoard: true }));
   const handleOpenTask    = (task) => dispatch(openTaskDrawer(task));
   const handleCloseDrawer = () => dispatch(closeTaskDrawer());
 
@@ -701,7 +721,7 @@ export default function Board() {
           </button>
           <button
             className="sprint-action-btn-primary"
-            onClick={() => dispatch(openCreateTaskDrawer({ projectId: currentProject?.id, status: 'todo' }))}
+            onClick={() => dispatch(openCreateTaskDrawer({ projectId: currentProject?.id, status: 'todo', onBoard: true }))}
           >
             <Plus size={14} /> New Task
           </button>
@@ -779,6 +799,8 @@ export default function Board() {
               onAddTask={handleAddTask}
               onOpenTask={handleOpenTask}
               onUpdateAssignee={handleUpdateAssignee}
+              isAdmin={isAdmin}
+              onDeleteTask={(t) => setTicketToDelete(t)}
             />
           ))}
         </div>
@@ -794,6 +816,45 @@ export default function Board() {
       >
         {selectedTask && <TaskDetail task={selectedTask} />}
       </Drawer>
+
+      {/* Admin Ticket Deletion Modal */}
+      <Modal
+        isOpen={Boolean(ticketToDelete)}
+        onClose={() => setTicketToDelete(null)}
+        title="Delete Ticket"
+        size="sm"
+        footer={
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', width: '100%' }}>
+            <Button variant="ghost" onClick={() => setTicketToDelete(null)} disabled={isDeleting}>
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              onClick={async () => {
+                if (!ticketToDelete) return;
+                setIsDeleting(true);
+                try {
+                  await dispatch(deleteTaskAsync(ticketToDelete.id)).unwrap();
+                  success('Ticket Deleted', `"${ticketToDelete.title}" has been deleted.`);
+                  setTicketToDelete(null);
+                } catch (err) {
+                  error('Delete Failed', err?.message || 'Could not delete ticket.');
+                } finally {
+                  setIsDeleting(false);
+                }
+              }}
+              loading={isDeleting}
+              icon={<Trash2 size={14} />}
+            >
+              Delete Permanently
+            </Button>
+          </div>
+        }
+      >
+        <p style={{ fontSize: 14, color: 'var(--color-surface-600)', lineHeight: 1.6 }}>
+          Are you sure you want to delete ticket <strong>"{ticketToDelete?.title}"</strong>? This will permanently remove the ticket from the board.
+        </p>
+      </Modal>
     </PageTransition>
   );
 }

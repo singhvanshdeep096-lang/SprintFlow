@@ -12,6 +12,16 @@ from app.core.security import get_password_hash
 
 def init_db():
     Base.metadata.create_all(bind=engine)
+    
+    # Ensure on_board column exists in tasks table for existing sqlite databases
+    with engine.connect() as conn:
+        try:
+            from sqlalchemy import text
+            conn.execute(text("ALTER TABLE tasks ADD COLUMN on_board BOOLEAN DEFAULT 1"))
+            conn.commit()
+        except Exception:
+            pass
+
     db: Session = SessionLocal()
 
     # Check if data already exists

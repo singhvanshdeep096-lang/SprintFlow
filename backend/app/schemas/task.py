@@ -19,6 +19,7 @@ class TaskBase(BaseModel):
     subtasks: Optional[List[Any]] = []
     estimatedHours: Optional[int] = 0
     loggedHours: Optional[int] = 0
+    onBoard: Optional[bool] = True
 
 class TaskCreate(TaskBase):
     pass

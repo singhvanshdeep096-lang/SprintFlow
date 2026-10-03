@@ -4,10 +4,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   Flag, Calendar, User, Tag, MessageSquare, CheckSquare,
   ChevronDown, Send, Clock, CheckCircle2, Edit2, Check, X,
-  Zap, Search
+  Zap, Search, Kanban, Trash2
 } from 'lucide-react';
 import Avatar from '../../components/common/Avatar';
-import { updateTaskAsync, updateTaskStatusAsync } from '../../redux/taskSlice';
+import Button from '../../components/common/Button';
+import Modal from '../../components/common/Modal/Modal';
+import { updateTaskAsync, updateTaskStatusAsync, deleteTaskAsync, closeTaskDrawer } from '../../redux/taskSlice';
 import { PRIORITY_CONFIG, STATUS_CONFIG } from '../../constants';
 import { useToast } from '../../hooks/useToast';
 import useDebounce from '../../hooks/useDebounce';
@@ -313,7 +315,6 @@ function AssigneeSelect({ value, members, currentUser, onChange }) {
 /* ---- Main TaskDetail component ---- */
 export default function TaskDetail({ task }) {
   const dispatch = useDispatch();
-  const { success } = useToast();
   const [commentText, setCommentText] = useState('');
   const [localTask, setLocalTask]       = useState(task);
   const [localSubtasks, setLocalSubtasks] = useState(task.subtasks || []);
@@ -339,7 +340,26 @@ export default function TaskDetail({ task }) {
   const assignee = members.find((m) => m.id === localTask.assigneeId);
   const reporter = members.find((m) => m.id === localTask.reporterId);
 
+  const { success, error } = useToast();
   const currentUser = useSelector((state) => state.auth.user);
+  const isAdmin = currentUser?.role?.toLowerCase() === 'admin' || currentUser?.is_superuser === true;
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteTask = async () => {
+    setIsDeleting(true);
+    try {
+      await dispatch(deleteTaskAsync(task.id)).unwrap();
+      success('Task Deleted', `"${task.title}" has been deleted.`);
+      dispatch(closeTaskDrawer());
+    } catch (err) {
+      error('Delete Failed', err?.message || 'Could not delete task.');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteModal(false);
+    }
+  };
 
   const handleStatusChange = (status) => {
     dispatch(updateTaskStatusAsync({ taskId: task.id, status }));
@@ -363,6 +383,16 @@ export default function TaskDetail({ task }) {
   const handlePriorityChange = (priority) => {
     dispatch(updateTaskAsync({ id: task.id, data: { priority } }));
     setLocalTask((prev) => ({ ...prev, priority }));
+  };
+
+  const handleToggleOnBoard = () => {
+    const nextVal = localTask.onBoard === false ? true : false;
+    dispatch(updateTaskAsync({ id: task.id, data: { onBoard: nextVal } }));
+    setLocalTask((prev) => ({ ...prev, onBoard: nextVal }));
+    success(
+      nextVal ? 'Added to Board' : 'Removed from Board',
+      nextVal ? 'Task will now appear on the Kanban board.' : 'Task is now task-list only and removed from the board.'
+    );
   };
 
   const handleSaveDesc = () => {
@@ -394,10 +424,22 @@ export default function TaskDetail({ task }) {
     <div className="td-wrap">
       <div className="td-scroll">
 
-        {/* Status + Priority selectors */}
+        {/* Status + Priority selectors + Admin Delete */}
         <div className="td-controls">
           <StatusSelect value={localTask.status} onChange={handleStatusChange} />
           <PrioritySelect value={localTask.priority} onChange={handlePriorityChange} />
+
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={() => setShowDeleteModal(true)}
+              className="td-delete-task-btn"
+              title="Delete task (Admin only)"
+            >
+              <Trash2 size={13} />
+              <span>Delete</span>
+            </button>
+          )}
         </div>
 
         {/* Description */}
@@ -511,6 +553,23 @@ export default function TaskDetail({ task }) {
               </div>
             </div>
           )}
+
+          <div>
+            <p className="td-section-label"><Kanban size={11} />Board Visibility</p>
+            <button
+              type="button"
+              onClick={handleToggleOnBoard}
+              className="td-info-card"
+              style={{ cursor: 'pointer', border: '1px solid var(--color-surface-200)', background: 'transparent', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+              title="Click to toggle Kanban board visibility"
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Kanban size={12} style={{ color: localTask.onBoard !== false ? '#2563EB' : 'var(--color-surface-400)' }} />
+                <span style={{ fontWeight: 500 }}>{localTask.onBoard !== false ? 'On Board' : 'Task List Only'}</span>
+              </div>
+              <span style={{ fontSize: 10, color: 'var(--color-surface-400)' }}>Toggle</span>
+            </button>
+          </div>
         </div>
 
         {/* Labels */}
@@ -586,6 +645,33 @@ export default function TaskDetail({ task }) {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal (Admin only) */}
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        title="Delete Task"
+        size="sm"
+        footer={
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', width: '100%' }}>
+            <Button variant="ghost" onClick={() => setShowDeleteModal(false)} disabled={isDeleting}>
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              onClick={handleDeleteTask}
+              loading={isDeleting}
+              icon={<Trash2 size={14} />}
+            >
+              Delete Permanently
+            </Button>
+          </div>
+        }
+      >
+        <p style={{ fontSize: 14, color: 'var(--color-surface-600)', lineHeight: 1.6 }}>
+          Are you sure you want to delete <strong>"{localTask.title}"</strong>? This will permanently remove the task and all associated comments.
+        </p>
+      </Modal>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
@@ -81,6 +81,7 @@ function NotificationPreview({ notifications, onViewAll, onNotificationClick }) 
 export default function Navbar({ isMobile }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const { success } = useToast();
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
@@ -324,7 +325,10 @@ export default function Navbar({ isMobile }) {
         <motion.button
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
-          onClick={() => dispatch(openCreateTaskDrawer())}
+          onClick={() => {
+            const isTasksPage = location.pathname.startsWith('/tasks');
+            dispatch(openCreateTaskDrawer({ onBoard: !isTasksPage }));
+          }}
           className="navbar-create-btn"
         >
           <Plus size={15} />

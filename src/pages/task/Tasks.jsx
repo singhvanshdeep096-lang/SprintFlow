@@ -1,21 +1,23 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Plus, Filter, Search, CheckSquare, Flag, Calendar, FolderKanban } from 'lucide-react';
+import { Plus, Filter, Search, CheckSquare, Flag, Calendar, FolderKanban, Trash2 } from 'lucide-react';
 import PageTransition from '../../components/common/PageTransition';
 import Button from '../../components/common/Button';
 import Avatar from '../../components/common/Avatar';
 import Tabs from '../../components/common/Tabs/Tabs';
 import Drawer from '../../components/common/Drawer/Drawer';
+import Modal from '../../components/common/Modal/Modal';
 import EmptyState from '../../components/common/EmptyState/EmptyState';
 import TaskDetail from './TaskDetail';
-import { openTaskDrawer, closeTaskDrawer, openCreateTaskDrawer } from '../../redux/taskSlice';
+import { openTaskDrawer, closeTaskDrawer, openCreateTaskDrawer, deleteTaskAsync } from '../../redux/taskSlice';
 import { PRIORITY_CONFIG, STATUS_CONFIG } from '../../constants';
 import useDebounce from '../../hooks/useDebounce';
+import { useToast } from '../../hooks/useToast';
 import userService from '../../services/user.service';
 import './Tasks.css';
 
-function TaskRow({ task, members, projects, onOpen, delay }) {
+function TaskRow({ task, members, projects, onOpen, delay, isAdmin, onDelete }) {
   const assignee    = members.find((m) => m.id === task.assigneeId);
   const project     = projects.find((p) => p.id === task.projectId);
   const priorityCfg = PRIORITY_CONFIG[task.priority] || PRIORITY_CONFIG.medium;
@@ -38,6 +40,15 @@ function TaskRow({ task, members, projects, onOpen, delay }) {
             <p className="tasks-row-subtitle" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
               <span>{project?.icon || '📁'}</span>
               <span>{project?.name || task.projectId}</span>
+              {task.onBoard === false ? (
+                <span style={{ marginLeft: 6, fontSize: '10px', padding: '1px 6px', borderRadius: '4px', background: 'var(--color-surface-200, #E2E8F0)', color: 'var(--color-surface-600, #475569)', fontWeight: 500 }}>
+                  Task Only
+                </span>
+              ) : (
+                <span style={{ marginLeft: 6, fontSize: '10px', padding: '1px 6px', borderRadius: '4px', background: 'rgba(37, 99, 235, 0.1)', color: '#2563EB', fontWeight: 500 }}>
+                  Board
+                </span>
+              )}
             </p>
           </div>
         </div>
@@ -75,7 +86,7 @@ function TaskRow({ task, members, projects, onOpen, delay }) {
         )}
       </td>
 
-      <td className="tasks-td tasks-td--last">
+      <td className={`tasks-td ${!isAdmin ? 'tasks-td--last' : ''}`}>
         {task.labels?.length > 0 && (
           <div className="tasks-labels">
             {task.labels.slice(0, 2).map((l) => (
@@ -84,6 +95,19 @@ function TaskRow({ task, members, projects, onOpen, delay }) {
           </div>
         )}
       </td>
+
+      {isAdmin && (
+        <td className="tasks-td tasks-td--last" style={{ textAlign: 'right', width: 44 }} onClick={(e) => e.stopPropagation()}>
+          <button
+            type="button"
+            onClick={() => onDelete(task)}
+            className="tasks-row-del-btn"
+            title="Delete task (Admin only)"
+          >
+            <Trash2 size={13} />
+          </button>
+        </td>
+      )}
     </motion.tr>
   );
 }
@@ -94,6 +118,13 @@ export default function Tasks() {
   const projects      = useSelector((state) => state.projects.list);
   const selectedTask  = useSelector((state) => state.tasks.selected);
   const isDrawerOpen  = useSelector((state) => state.tasks.isDrawerOpen);
+  const currentUser   = useSelector((state) => state.auth.user);
+  const isAdmin       = currentUser?.role?.toLowerCase() === 'admin' || currentUser?.is_superuser === true;
+
+  const { success, error } = useToast();
+  const [taskToDelete, setTaskToDelete] = useState(null);
+  const [isDeleting, setIsDeleting]     = useState(false);
+
   const [search, setSearch]                 = useState('');
   const debouncedSearch = useDebounce(search, 300);
   const [selectedProjectFilter, setSelectedProjectFilter] = useState('all');
@@ -136,7 +167,10 @@ export default function Tasks() {
         <Button
           variant="primary"
           icon={<Plus size={16} />}
-          onClick={() => dispatch(openCreateTaskDrawer({ projectId: selectedProjectFilter !== 'all' ? selectedProjectFilter : projects[0]?.id }))}
+          onClick={() => dispatch(openCreateTaskDrawer({
+            projectId: selectedProjectFilter !== 'all' ? selectedProjectFilter : projects[0]?.id,
+            onBoard: false
+          }))}
         >
           New Task
         </Button>
@@ -192,11 +226,12 @@ export default function Tasks() {
                   {['Task / Project', 'Status', 'Priority', 'Assignee', 'Due Date', 'Labels'].map((h, i) => (
                     <th
                       key={h}
-                      className={`tasks-th${i === 0 ? ' tasks-th--first' : i === 5 ? ' tasks-th--last' : ''}`}
+                      className={`tasks-th${i === 0 ? ' tasks-th--first' : i === 5 && !isAdmin ? ' tasks-th--last' : ''}`}
                     >
                       {h}
                     </th>
                   ))}
+                  {isAdmin && <th className="tasks-th tasks-th--last" style={{ width: 44, textAlign: 'right' }}>Actions</th>}
                 </tr>
               </thead>
               <tbody>
@@ -207,7 +242,9 @@ export default function Tasks() {
                     members={members}
                     projects={projects}
                     delay={i * 0.03}
+                    isAdmin={isAdmin}
                     onOpen={(t) => dispatch(openTaskDrawer(t))}
+                    onDelete={(t) => setTaskToDelete(t)}
                   />
                 ))}
               </tbody>
@@ -225,6 +262,45 @@ export default function Tasks() {
       >
         {selectedTask && <TaskDetail task={selectedTask} />}
       </Drawer>
+
+      {/* Admin Task Deletion Modal */}
+      <Modal
+        isOpen={Boolean(taskToDelete)}
+        onClose={() => setTaskToDelete(null)}
+        title="Delete Task"
+        size="sm"
+        footer={
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', width: '100%' }}>
+            <Button variant="ghost" onClick={() => setTaskToDelete(null)} disabled={isDeleting}>
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              onClick={async () => {
+                if (!taskToDelete) return;
+                setIsDeleting(true);
+                try {
+                  await dispatch(deleteTaskAsync(taskToDelete.id)).unwrap();
+                  success('Task Deleted', `"${taskToDelete.title}" has been deleted.`);
+                  setTaskToDelete(null);
+                } catch (err) {
+                  error('Delete Failed', err?.message || 'Could not delete task.');
+                } finally {
+                  setIsDeleting(false);
+                }
+              }}
+              loading={isDeleting}
+              icon={<Trash2 size={14} />}
+            >
+              Delete Permanently
+            </Button>
+          </div>
+        }
+      >
+        <p style={{ fontSize: 14, color: 'var(--color-surface-600)', lineHeight: 1.6 }}>
+          Are you sure you want to delete <strong>"{taskToDelete?.title}"</strong>? This will permanently delete the task from the system.
+        </p>
+      </Modal>
     </PageTransition>
   );
 }

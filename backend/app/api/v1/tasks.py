@@ -30,7 +30,8 @@ def format_task(t: Task):
         "attachmentCount": t.attachment_count or 0,
         "subtasks": t.subtasks or [],
         "estimatedHours": t.estimated_hours or 0,
-        "loggedHours": t.logged_hours or 0
+        "loggedHours": t.logged_hours or 0,
+        "onBoard": t.on_board if t.on_board is not None else True
     }
 
 @router.get("/")
@@ -101,7 +102,8 @@ async def create_task(
         attachment_count=0,
         subtasks=payload.subtasks or [],
         estimated_hours=payload.estimatedHours or 8,
-        logged_hours=payload.loggedHours or 0
+        logged_hours=payload.loggedHours or 0,
+        on_board=payload.onBoard if payload.onBoard is not None else True
     )
     db.add(t)
     
@@ -152,7 +154,8 @@ async def update_task(
         "attachmentCount": "attachment_count",
         "estimatedHours": "estimated_hours",
         "loggedHours": "logged_hours",
-        "updatedAt": "updated_at"
+        "updatedAt": "updated_at",
+        "onBoard": "on_board"
     }
 
     t.updated_at = datetime.date.today().isoformat()
@@ -199,6 +202,12 @@ async def delete_task(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    if not is_admin_user(current_user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: Only administrators have access to delete tasks and tickets"
+        )
+
     t = db.query(Task).filter(Task.id == task_id).first()
     if not t:
         raise HTTPException(status_code=404, detail="Task not found")
@@ -206,6 +215,12 @@ async def delete_task(
     p = db.query(Project).filter(Project.id == t.project_id).first()
     if p and (p.task_count or 0) > 0:
         p.task_count = max(0, (p.task_count or 1) - 1)
+        if t.status == "done":
+            p.completed_tasks = max(0, (p.completed_tasks or 1) - 1)
+        if p.task_count > 0:
+            p.progress = min(100, int(((p.completed_tasks or 0) / p.task_count) * 100))
+        else:
+            p.progress = 0
         
     db.delete(t)
     db.commit()

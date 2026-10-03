@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, JSON, Text, DateTime
+from sqlalchemy import Column, Integer, String, JSON, Text, DateTime, Boolean
 from sqlalchemy.sql import func
 from app.core.database import Base
 
@@ -22,3 +22,4 @@ class Task(Base):
     subtasks = Column(JSON, default=[])
     estimated_hours = Column(Integer, default=0)
     logged_hours = Column(Integer, default=0)
+    on_board = Column(Boolean, default=True)
