@@ -8,16 +8,22 @@ from app.models.task import Task
 from app.models.comment import Comment
 from app.models.notification import Notification
 from app.models.activity import Activity
+from app.models.attachment import Attachment
+from app.models.board import Board
+from app.models.column import Column
 from app.core.security import get_password_hash
 
 def init_db():
     Base.metadata.create_all(bind=engine)
     
-    # Ensure on_board column exists in tasks table for existing sqlite databases
+    # Ensure on_board column exists in tasks table
     with engine.connect() as conn:
         try:
             from sqlalchemy import text
-            conn.execute(text("ALTER TABLE tasks ADD COLUMN on_board BOOLEAN DEFAULT 1"))
+            if engine.dialect.name == "sqlite":
+                conn.execute(text("ALTER TABLE tasks ADD COLUMN on_board BOOLEAN DEFAULT 1"))
+            else:
+                conn.execute(text("ALTER TABLE tasks ADD COLUMN IF NOT EXISTS on_board BOOLEAN DEFAULT TRUE"))
             conn.commit()
         except Exception:
             pass
